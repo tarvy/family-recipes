@@ -1,0 +1,36 @@
+# Thai-lint Configuration
+# AI-focused code quality linting
+# https://github.com/be-wise-be-kind/thai-lint
+
+# DRY - Duplicate code detection
+min_duplicate_lines: 5
+
+# Nesting - Maximum nesting depth for control structures
+max_nesting_depth: 4
+
+# Magic numbers - Only these numeric literals are allowed without naming
+allowed_numbers:
+  - 0
+  - 1
+  - -1
+  - 100
+
+# SRP - Single Responsibility Principle
+# Maximum number of public methods per class
+max_public_methods: 10
+
+# File size limits
+max_file_lines: 500
+
+# Paths to include
+include:
+  - "src/**/*.ts"
+  - "src/**/*.tsx"
+
+# Paths to exclude
+exclude:
+  - "node_modules/**"
+  - ".next/**"
+  - "drizzle/**"
+  - "**/*.d.ts"
+  - "**/*.config.ts"

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.12/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 15
+          }
+        },
+        "noExcessiveNestedTestSuites": "error",
+        "noForEach": "warn",
+        "noUselessSwitchCase": "error",
+        "noUselessThisAlias": "error",
+        "noVoid": "error",
+        "useSimplifiedLogicExpression": "warn"
+      },
+      "style": {
+        "noNegationElse": "error",
+        "useBlockStatements": "error",
+        "useConst": "error",
+        "useExponentiationOperator": "error",
+        "useShorthandFunctionType": "error",
+        "useTemplate": "error"
+      },
+      "suspicious": {
+        "noConsole": "warn",
+        "noDebugger": "error",
+        "noDoubleEquals": "error",
+        "noExplicitAny": "warn",
+        "noImplicitAnyLet": "error"
+      },
+      "performance": {
+        "noAccumulatingSpread": "error",
+        "noDelete": "warn"
+      },
+      "correctness": {
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error",
+        "useExhaustiveDependencies": "warn",
+        "useHookAtTopLevel": "error"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "error"
+      },
+      "a11y": {
+        "noAriaUnsupportedElements": "error",
+        "useAltText": "error",
+        "useValidAriaRole": "error"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "all",
+      "semicolons": "always"
+    }
+  },
+  "json": {
+    "formatter": {
+      "trailingCommas": "none"
+    }
+  }
+}

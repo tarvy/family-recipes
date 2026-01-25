@@ -1,19 +1,23 @@
 {
   "name": "family-recipes",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "biome check .",
-    "progress": "python scripts/progress.py"
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit",
+    "progress": "python scripts/progress.py",
+    "prepare": "husky"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx,json,jsonc}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
+  },
   "type": "module",
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.18",
@@ -22,10 +26,13 @@
     "react-dom": "^19.2.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.12",
     "@types/node": "^25.0.10",
     "@types/react": "^19.2.9",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.23",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"
