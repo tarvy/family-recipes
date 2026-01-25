@@ -7,7 +7,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "biome check ."
+    "lint": "biome check .",
+    "progress": "python scripts/progress.py"
   },
   "keywords": [],
   "author": "",

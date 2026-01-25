@@ -1,13 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm create:*)",
-      "Bash(mkdir:*)",
-      "Bash(cp:*)",
-      "Bash(mv:*)",
-      "Bash(rm:*)",
-      "Bash(npm install)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run *)",
+      "Bash(npm install*)",
+      "Bash(npm pkg *)",
+      "Bash(npx *)",
+      "Bash(git *)",
+      "Bash(vercel *)",
+      "Bash(python scripts/*)",
+      "Bash(mkdir *)",
+      "Bash(rm *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(cat *)",
+      "Bash(ls *)"
     ],
     "deny": []
   }
