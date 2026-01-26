@@ -67,7 +67,10 @@ family-recipes/
 │   ├── db/               # Database schema and queries
 │   ├── lib/              # Shared utilities
 │   └── mcp/              # MCP server implementation
-├── docs/                 # Documentation
+├── docs/                 # Permanent documentation
+├── work/                 # PR working documents (temporary)
+│   ├── TEMPLATES/        # Document templates
+│   └── PR-XXX/           # Active PR docs
 ├── scripts/              # Utility scripts
 ├── e2e/                  # Playwright E2E tests
 └── tests/                # Unit tests
@@ -75,9 +78,10 @@ family-recipes/
 
 ## Documentation
 
+- [AI Agent Instructions](AGENTS.md) - **Read this first if you're an AI agent**
 - [Architecture](docs/ARCHITECTURE.md)
 - [Environment Setup](docs/ENVIRONMENT.md)
-- [Development Guide](docs/DEVELOPMENT.md)
+- [Development Guide](docs/DEVELOPMENT.md) - Local setup, workflow, CI/CD
 - [Linting](docs/LINTING.md)
 - [Observability](docs/OBSERVABILITY.md)
 - [Authentication](docs/AUTH.md)

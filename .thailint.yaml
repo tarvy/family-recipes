@@ -22,6 +22,22 @@ max_public_methods: 10
 # File size limits
 max_file_lines: 500
 
+# Documentation hygiene
+# file-header: Require documentation headers in key files
+require_file_headers: true
+file_header_paths:
+  - "src/lib/**/*.ts"
+  - "src/db/**/*.ts"
+  - "src/mcp/**/*.ts"
+
+# lazy-ignores: Flag unjustified lint suppressions
+disallow_lazy_ignores: true
+
+# print-statements: No console.log in production
+disallow_print_statements: true
+print_statement_exceptions:
+  - "src/lib/logger.ts"
+
 # Paths to include
 include:
   - "src/**/*.ts"
