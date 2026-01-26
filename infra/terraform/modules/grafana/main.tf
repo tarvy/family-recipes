@@ -30,13 +30,13 @@ resource "grafana_dashboard" "application" {
     panels = [
       # Row: Overview
       {
-        type   = "row"
-        title  = "Overview"
+        type    = "row"
+        title   = "Overview"
         gridPos = { h = 1, w = 24, x = 0, y = 0 }
       },
       {
-        type  = "stat"
-        title = "Request Rate"
+        type    = "stat"
+        title   = "Request Rate"
         gridPos = { h = 4, w = 6, x = 0, y = 1 }
         targets = [{
           expr   = "sum(rate(http_requests_total{app=\"family-recipes\"}[5m]))"
@@ -44,8 +44,8 @@ resource "grafana_dashboard" "application" {
         }]
       },
       {
-        type  = "stat"
-        title = "Error Rate"
+        type    = "stat"
+        title   = "Error Rate"
         gridPos = { h = 4, w = 6, x = 6, y = 1 }
         targets = [{
           expr   = "sum(rate(http_requests_total{app=\"family-recipes\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{app=\"family-recipes\"}[5m])) * 100"
@@ -53,8 +53,8 @@ resource "grafana_dashboard" "application" {
         }]
       },
       {
-        type  = "stat"
-        title = "P95 Latency"
+        type    = "stat"
+        title   = "P95 Latency"
         gridPos = { h = 4, w = 6, x = 12, y = 1 }
         targets = [{
           expr   = "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{app=\"family-recipes\"}[5m])) by (le))"
@@ -62,8 +62,8 @@ resource "grafana_dashboard" "application" {
         }]
       },
       {
-        type  = "stat"
-        title = "Active Traces"
+        type    = "stat"
+        title   = "Active Traces"
         gridPos = { h = 4, w = 6, x = 18, y = 1 }
         targets = [{
           expr   = "sum(tempo_traces_total{app=\"family-recipes\"})"
@@ -73,13 +73,13 @@ resource "grafana_dashboard" "application" {
 
       # Row: Database
       {
-        type   = "row"
-        title  = "MongoDB"
+        type    = "row"
+        title   = "MongoDB"
         gridPos = { h = 1, w = 24, x = 0, y = 5 }
       },
       {
-        type  = "graph"
-        title = "Database Query Duration"
+        type    = "graph"
+        title   = "Database Query Duration"
         gridPos = { h = 8, w = 12, x = 0, y = 6 }
         targets = [{
           expr   = "histogram_quantile(0.95, sum(rate(db_query_duration_seconds_bucket{app=\"family-recipes\"}[5m])) by (le, operation))"
@@ -87,8 +87,8 @@ resource "grafana_dashboard" "application" {
         }]
       },
       {
-        type  = "graph"
-        title = "Database Connections"
+        type    = "graph"
+        title   = "Database Connections"
         gridPos = { h = 8, w = 12, x = 12, y = 6 }
         targets = [{
           expr   = "mongodb_connections_current{app=\"family-recipes\"}"
@@ -98,13 +98,13 @@ resource "grafana_dashboard" "application" {
 
       # Row: API Routes
       {
-        type   = "row"
-        title  = "API Routes"
+        type    = "row"
+        title   = "API Routes"
         gridPos = { h = 1, w = 24, x = 0, y = 14 }
       },
       {
-        type  = "graph"
-        title = "Request Rate by Route"
+        type    = "graph"
+        title   = "Request Rate by Route"
         gridPos = { h = 8, w = 24, x = 0, y = 15 }
         targets = [{
           expr   = "sum(rate(http_requests_total{app=\"family-recipes\"}[5m])) by (route)"
@@ -131,8 +131,8 @@ resource "grafana_dashboard" "traces" {
 
     panels = [
       {
-        type  = "traces"
-        title = "Recent Traces"
+        type    = "traces"
+        title   = "Recent Traces"
         gridPos = { h = 20, w = 24, x = 0, y = 0 }
         targets = [{
           datasource = { type = "tempo" }
