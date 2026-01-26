@@ -27,8 +27,7 @@ const sessionSchema = new Schema<ISessionDocument>(
   },
 );
 
-// Indexes
-sessionSchema.index({ token: 1 });
+// Indexes (token index created by unique: true)
 sessionSchema.index({ userId: 1 });
 sessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
 

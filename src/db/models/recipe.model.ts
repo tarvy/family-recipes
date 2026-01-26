@@ -122,9 +122,7 @@ const recipeSchema = new Schema<IRecipeDocument>(
   },
 );
 
-// Indexes for common queries
-recipeSchema.index({ slug: 1 });
-recipeSchema.index({ filePath: 1 });
+// Indexes for common queries (slug and filePath indexes created by unique: true)
 recipeSchema.index({ tags: 1 });
 recipeSchema.index({ cuisine: 1 });
 recipeSchema.index({ course: 1 });

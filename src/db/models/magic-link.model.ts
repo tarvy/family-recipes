@@ -32,8 +32,7 @@ const magicLinkSchema = new Schema<IMagicLinkDocument>(
   },
 );
 
-// Indexes
-magicLinkSchema.index({ token: 1 });
+// Indexes (token index created by unique: true)
 magicLinkSchema.index({ email: 1 });
 magicLinkSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
 

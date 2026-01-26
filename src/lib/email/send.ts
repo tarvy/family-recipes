@@ -53,10 +53,13 @@ function getSenderEmail(): string {
   const appUrl = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000';
   try {
     const url = new URL(appUrl);
+    // Resend free tier requires using onboarding@resend.dev as sender
+    // For production, use your verified domain
     const domain = url.hostname === 'localhost' ? 'resend.dev' : url.hostname;
-    return `noreply@${domain}`;
+    const localPart = domain === 'resend.dev' ? 'onboarding' : 'noreply';
+    return `${localPart}@${domain}`;
   } catch {
-    return 'noreply@resend.dev';
+    return 'onboarding@resend.dev';
   }
 }
 

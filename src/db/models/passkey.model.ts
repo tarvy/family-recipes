@@ -46,8 +46,7 @@ const passkeySchema = new Schema<IPasskeyDocument>(
   },
 );
 
-// Indexes
-passkeySchema.index({ credentialId: 1 });
+// Indexes (credentialId index created by unique: true)
 passkeySchema.index({ userId: 1 });
 
 export const Passkey: Model<IPasskeyDocument> =
