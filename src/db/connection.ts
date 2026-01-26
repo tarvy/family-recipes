@@ -32,6 +32,13 @@ if (!MONGODB_URI_RAW) {
 
 const MONGODB_URI: string = MONGODB_URI_RAW;
 
+/** Connection pool size per serverless instance */
+const MAX_POOL_SIZE = 10;
+/** Timeout for selecting a server on cold start (ms) */
+const SERVER_SELECTION_TIMEOUT_MS = 5000;
+/** Timeout for socket operations (ms) */
+const SOCKET_TIMEOUT_MS = 45000;
+
 /**
  * Global cache for the MongoDB connection.
  * This survives across serverless function invocations on the same instance.
@@ -58,9 +65,9 @@ const cached = global.mongooseCache;
  * - socketTimeoutMS: Standard timeout for operations
  */
 const connectionOptions: mongoose.ConnectOptions = {
-  maxPoolSize: 10,
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000,
+  maxPoolSize: MAX_POOL_SIZE,
+  serverSelectionTimeoutMS: SERVER_SELECTION_TIMEOUT_MS,
+  socketTimeoutMS: SOCKET_TIMEOUT_MS,
   dbName: MONGODB_DB_NAME,
 };
 

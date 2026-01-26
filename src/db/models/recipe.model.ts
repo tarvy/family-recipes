@@ -156,6 +156,9 @@ export const Recipe: Model<IRecipeDocument> =
 // Search Helpers
 // -----------------------------------------------------------------------------
 
+/** Default limit for search results */
+const DEFAULT_SEARCH_LIMIT = 20;
+
 /**
  * Search recipes using MongoDB text search (M0 compatible).
  *
@@ -172,7 +175,7 @@ export async function searchRecipes(
     tags?: string[];
   } = {},
 ): Promise<IRecipeDocument[]> {
-  const { limit = 20, skip = 0, cuisine, course, tags } = options;
+  const { limit = DEFAULT_SEARCH_LIMIT, skip = 0, cuisine, course, tags } = options;
 
   const filter: Record<string, unknown> = {
     $text: { $search: query },
