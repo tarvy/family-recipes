@@ -158,7 +158,7 @@ src/
 - [ ] Authentication required for endpoints
 - [ ] Authorization checks in place
 - [ ] No sensitive data in logs
-- [ ] SQL injection prevented (Drizzle parameterized queries)
+- [ ] NoSQL injection prevented (Mongoose schema validation)
 
 ---
 

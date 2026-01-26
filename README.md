@@ -13,9 +13,10 @@ Personal recipe management application using Cooklang format with mobile-first d
 ## Tech Stack
 
 - **Frontend**: Next.js 15 + React + shadcn/ui + Tailwind CSS
-- **Database**: Neon PostgreSQL + Drizzle ORM
+- **Database**: MongoDB Atlas + Mongoose
 - **Auth**: Magic links + Passkeys
 - **Observability**: OpenTelemetry + Grafana Cloud
+- **Infrastructure**: Terraform (Atlas, Vercel, Grafana)
 - **Linting**: Biome + Thai-lint
 
 ## Getting Started
@@ -34,10 +35,7 @@ npm install
 
 # Copy environment variables
 cp .env.example .env.local
-# Edit .env.local with your credentials
-
-# Run database migrations
-npm run db:push
+# Edit .env.local with your credentials (MONGODB_URI required)
 
 # Start development server
 npm run dev
@@ -51,9 +49,7 @@ npm run dev
 | `npm run build` | Build for production |
 | `npm run start` | Start production server |
 | `npm run lint` | Run Biome linter |
-| `npm run db:studio` | Open Drizzle Studio |
-| `npm run db:generate` | Generate migrations |
-| `npm run db:push` | Push schema to database |
+| `npm run typecheck` | Run TypeScript checks |
 | `python scripts/progress.py` | Check project progress |
 
 ## Project Structure

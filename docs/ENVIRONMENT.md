@@ -11,22 +11,27 @@ cp .env.example .env.local
 
 ## Required Credentials
 
-### Database
+### Database (MongoDB Atlas)
 
-#### `DATABASE_URL`
-Neon PostgreSQL connection string.
+#### `MONGODB_URI`
+MongoDB Atlas connection string.
 
 **How to obtain:**
-1. Create account at [neon.tech](https://neon.tech)
-2. Create a new project
-3. Create database named `family_recipes`
-4. Copy the connection string from the dashboard
-5. Use the pooled connection for serverless
+1. Create account at [mongodb.com/atlas](https://www.mongodb.com/atlas)
+2. Create a new project and cluster (M0 free tier works)
+3. Create a database user with readWrite access
+4. Add your IP to the access list (or 0.0.0.0/0 for development)
+5. Copy the connection string from the cluster's "Connect" button
 
 **Format:**
 ```
-postgresql://user:password@ep-xxx.us-east-1.aws.neon.tech/family_recipes?sslmode=require
+***REMOVED***
 ```
+
+#### `MONGODB_DB_NAME`
+Database name within the cluster.
+
+**Default:** `family_recipes`
 
 ---
 
@@ -159,6 +164,27 @@ Relying Party ID for WebAuthn/Passkeys.
 
 ---
 
+## Terraform Variables (CI Only)
+
+These are used by Terraform in CI/CD pipelines for infrastructure management. Set them as GitHub Secrets with the `TF_VAR_` prefix automatically applied in the workflow:
+
+| GitHub Secret | Terraform Variable | Purpose |
+|---------------|-------------------|---------|
+| `MONGODB_ATLAS_PUBLIC_KEY` | `mongodb_atlas_public_key` | Atlas API public key |
+| `MONGODB_ATLAS_PRIVATE_KEY` | `mongodb_atlas_private_key` | Atlas API private key |
+| `MONGODB_ATLAS_ORG_ID` | `mongodb_atlas_org_id` | Atlas organization ID |
+| `MONGODB_DB_PASSWORD` | `mongodb_db_password` | Database password |
+| `VERCEL_TOKEN` | `vercel_api_token` | Vercel API token |
+| `VERCEL_PROJECT_ID` | `vercel_project_id` | Vercel project ID |
+| `VERCEL_TEAM_ID` | `vercel_team_id` | Vercel team ID (optional) |
+| `GRAFANA_URL` | `grafana_url` | Grafana Cloud instance URL |
+| `GRAFANA_API_KEY` | `grafana_auth` | Grafana API key (admin access) |
+| `GRAFANA_CLOUD_STACK_SLUG` | `grafana_cloud_stack_slug` | Grafana stack slug |
+
+**Note:** The Terraform workflow requires `GRAFANA_URL` and `GRAFANA_CLOUD_STACK_SLUG` which are separate from the app runtime variables (`GRAFANA_OTLP_ENDPOINT`, `GRAFANA_INSTANCE_ID`).
+
+---
+
 ## Environment Files
 
 | File | Git | Purpose |
@@ -181,3 +207,4 @@ All production credentials should be set in Vercel dashboard:
 - Rotate `JWT_SECRET` if compromised (invalidates all sessions)
 - Use minimal scopes for GitHub tokens
 - Grafana API keys should have write-only access (no read needed)
+- MongoDB credentials should use dedicated database user, not Atlas admin

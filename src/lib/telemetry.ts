@@ -11,7 +11,7 @@
  *   });
  *
  *   // Trace database queries
- *   const users = await traceDbQuery('select', 'users', () => db.select().from(users));
+ *   const users = await traceDbQuery('find', 'users', () => User.find());
  */
 
 import { type Span, SpanStatusCode, trace } from '@opentelemetry/api';
@@ -51,14 +51,14 @@ export async function withTrace<T>(
  */
 export async function traceDbQuery<T>(
   operation: string,
-  table: string,
+  collection: string,
   fn: () => Promise<T>,
 ): Promise<T> {
   return withTrace(`db.${operation}`, async (span) => {
     span.setAttributes({
-      'db.system': 'postgresql',
+      'db.system': 'mongodb',
       'db.operation': operation,
-      'db.sql.table': table,
+      'db.mongodb.collection': collection,
     });
     return fn();
   });

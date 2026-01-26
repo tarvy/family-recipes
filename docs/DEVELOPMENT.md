@@ -13,6 +13,7 @@ This guide covers local development setup, workflow, and CI/CD processes.
 | Python | 3.9+ | Thai-lint (optional for local) |
 | Just | 1.0+ | Task runner (optional) |
 | Git | 2.x | Version control |
+| Terraform | 1.5+ | Infrastructure management (optional) |
 
 ---
 
@@ -62,14 +63,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run typecheck` | Run TypeScript type checking |
 | `npm run progress` | Check project progress (Python) |
 
-### Database Scripts (after PR-006)
-
-| Command | Description |
-|---------|-------------|
-| `npm run db:generate` | Generate Drizzle migrations |
-| `npm run db:push` | Push schema to database |
-| `npm run db:studio` | Open Drizzle Studio |
-
 ### Just Recipes (optional)
 
 | Command | Description |
@@ -79,6 +72,32 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `just typecheck` | Run TypeScript checks |
 | `just thai-lint` | Run Thai-lint checks |
 | `just check` | Run lint + typecheck |
+
+---
+
+## Terraform Setup (Infrastructure)
+
+Infrastructure is managed in `infra/terraform/`. For local development, you only need `MONGODB_URI` in your `.env.local`. Terraform is primarily used for CI/CD.
+
+### Running Terraform locally
+
+```bash
+cd infra/terraform
+terraform init
+terraform plan -var-file=environments/dev.tfvars
+terraform apply -var-file=environments/dev.tfvars
+```
+
+Required environment variables for Terraform:
+- `TF_VAR_mongodb_atlas_public_key`
+- `TF_VAR_mongodb_atlas_private_key`
+- `TF_VAR_mongodb_atlas_org_id`
+- `TF_VAR_mongodb_db_password`
+- `TF_VAR_vercel_api_token`
+- `TF_VAR_vercel_project_id`
+- `TF_VAR_grafana_url`
+- `TF_VAR_grafana_auth`
+- `TF_VAR_grafana_cloud_stack_slug`
 
 ---
 
@@ -146,6 +165,7 @@ The following checks run automatically:
 | Lint | Biome | Code style and formatting |
 | Type Check | TypeScript | Type safety |
 | Thai-lint | Thai-lint | AI code quality patterns |
+| Terraform Plan | Terraform | Infrastructure change preview (if infra/ changed) |
 
 A preview deployment is created on Vercel.
 
@@ -153,6 +173,7 @@ A preview deployment is created on Vercel.
 
 - Production deployment triggers automatically
 - Deploys to Vercel production environment
+- Terraform apply runs for infrastructure changes
 
 ### Required GitHub Secrets
 
@@ -163,6 +184,20 @@ For deployments to work, these secrets must be configured:
 | `VERCEL_TOKEN` | Vercel CLI authentication |
 | `VERCEL_ORG_ID` | Vercel organization ID |
 | `VERCEL_PROJECT_ID` | Vercel project ID |
+| `MONGODB_ATLAS_PUBLIC_KEY` | Atlas API public key |
+| `MONGODB_ATLAS_PRIVATE_KEY` | Atlas API private key |
+| `MONGODB_ATLAS_ORG_ID` | Atlas organization ID |
+| `MONGODB_DB_PASSWORD` | Database password |
+| `GRAFANA_OTLP_ENDPOINT` | Grafana Cloud OTLP endpoint (for app traces) |
+| `GRAFANA_INSTANCE_ID` | Grafana Cloud instance ID |
+| `GRAFANA_API_KEY` | Grafana API key |
+
+**Additional secrets for Terraform** (if using infra/terraform/):
+
+| Secret | Purpose |
+|--------|---------|
+| `GRAFANA_URL` | Grafana Cloud instance URL (for Terraform provider) |
+| `GRAFANA_CLOUD_STACK_SLUG` | Grafana stack slug |
 
 ---
 
@@ -225,6 +260,12 @@ Or use Docker:
 ```bash
 docker run --rm -v $(pwd):/data washad/thailint:latest dry src/
 ```
+
+### MongoDB connection issues
+
+Ensure your IP is whitelisted in MongoDB Atlas:
+1. Go to Atlas > Network Access
+2. Add your current IP or use 0.0.0.0/0 for development
 
 ---
 

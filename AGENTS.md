@@ -19,6 +19,12 @@ This repository is designed for AI-agent maintainability. All AI agents (Claude 
 - All code MUST pass Biome checks (see `biome.json`)
 - All code MUST pass Thai-lint checks in CI (see `.thailint.yaml`)
 
+### 2a. Lint Ownership (Agents)
+- The agent owns lint health end-to-end; do not defer Biome or Thai-lint failures to CI
+- Run `npm run lint:fix` then `npm run lint`, and run Thai-lint locally (see `docs/LINTING.md`)
+- Fix violations rather than suppressing rules; only suppress with documented justification
+- More details: see `docs/LINTING.md` (Agent Responsibilities section)
+
 ### 3. Documentation Hygiene
 - **Keep docs current**: When modifying code, update related documentation
 - **Remove stale docs**: Delete research notes, implementation plans, or temporary docs after feature completion
@@ -34,7 +40,7 @@ This repository is designed for AI-agent maintainability. All AI agents (Claude 
 ### 5. Security
 - Never commit secrets or credentials
 - Validate all user input at system boundaries
-- Use parameterized queries (Drizzle handles this)
+- Use Mongoose models for database access (prevents injection)
 - No `dangerouslySetInnerHTML` without sanitization
 
 ---
@@ -132,7 +138,7 @@ See `work/README.md` for full details.
 - Pages: `src/app/(group)/route/page.tsx`
 - API routes: `src/app/api/{resource}/route.ts`
 - Utilities: `src/lib/{domain}/{function}.ts`
-- Database: `src/db/schema.ts`, `src/db/queries/{resource}.ts`
+- Database: `src/db/models/*.model.ts`, `src/db/connection.ts`
 
 ### Naming
 - Files: `kebab-case.ts`
@@ -202,5 +208,5 @@ The script checks file existence - no AI reasoning. If a deliverable file exists
 - Project structure: See `docs/ARCHITECTURE.md`
 - Credentials setup: See `docs/ENVIRONMENT.md`
 - Linting issues: See `docs/LINTING.md`
-- Database schema: See `src/db/schema.ts` (when created)
+- Database schema: See `src/db/models/` directory
 - Current progress: Run `python scripts/progress.py`

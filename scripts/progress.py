@@ -64,10 +64,10 @@ DELIVERABLES = {
     "PR-006": {
         "name": "Database Schema",
         "checks": [
-            ("file", "drizzle.config.ts"),
-            ("file", "src/db/schema.ts"),
-            ("file", "src/db/index.ts"),
-            ("dir", "drizzle"),
+            ("file", "src/db/connection.ts"),
+            ("file", "src/db/models/index.ts"),
+            ("file", "src/db/models/user.model.ts"),
+            ("file", "src/db/models/recipe.model.ts"),
         ],
     },
     "PR-007": {
@@ -170,6 +170,23 @@ DELIVERABLES = {
             ("file", "playwright.config.ts"),
             ("file", "tests/setup.ts"),
             ("file", "docs/TESTING.md"),
+        ],
+    },
+    "PR-018": {
+        "name": "Terraform Infrastructure",
+        "checks": [
+            ("file", "infra/terraform/main.tf"),
+            ("file", "infra/terraform/modules/mongodb-atlas/main.tf"),
+            ("file", "infra/terraform/modules/vercel/main.tf"),
+            ("file", ".github/workflows/terraform.yml"),
+        ],
+    },
+    "PR-019": {
+        "name": "Documentation Updates",
+        "checks": [
+            ("file", "docs/ARCHITECTURE.md"),
+            ("file", "docs/DEVELOPMENT.md"),
+            ("file", "docs/ENVIRONMENT.md"),
         ],
     },
 }

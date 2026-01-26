@@ -47,6 +47,5 @@ include:
 exclude:
   - "node_modules/**"
   - ".next/**"
-  - "drizzle/**"
   - "**/*.d.ts"
   - "**/*.config.ts"

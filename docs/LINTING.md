@@ -182,6 +182,18 @@ const HTTP_OK = 200;
 
 ---
 
+## Agent Responsibilities (Lint Ownership)
+
+Agents are responsible for keeping lint green end-to-end. Do not defer lint failures to CI.
+
+1. Run `npm run lint:fix`, then `npm run lint`.
+2. Run Thai-lint locally (`thailint all src/` or `just thai-lint`).
+3. Fix violations and re-run until clean.
+4. Avoid suppressions; only use them with explicit, documented justification.
+5. For the canonical agent rules, see `AGENTS.md` (Lint Ownership section).
+
+---
+
 ## Recommended Workflow
 
 1. **While coding**: Biome formats and checks in real-time

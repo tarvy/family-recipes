@@ -18,153 +18,168 @@
         ┌─────────────────────┼─────────────────────┐
         ▼                     ▼                     ▼
 ┌───────────────┐   ┌─────────────────┐   ┌───────────────┐
-│ Neon Postgres │   │ Git Repository  │   │ Vercel Blob   │
+│ MongoDB Atlas │   │ Git Repository  │   │ Vercel Blob   │
 │  (metadata)   │   │ (.cook files)   │   │  (photos)     │
 └───────────────┘   └─────────────────┘   └───────────────┘
 ```
+
+## Infrastructure as Code
+
+All infrastructure is managed via Terraform in `infra/terraform/`:
+
+| Resource | Provider | Purpose |
+|----------|----------|---------|
+| MongoDB Atlas | `mongodb/mongodbatlas` | Database cluster, users, IP access |
+| Vercel | `vercel/vercel` | Environment variables |
+| Grafana | `grafana/grafana` | Dashboards, alerts |
 
 ## Data Flow
 
 ### Recipe Management
 
 1. **Source of Truth**: Cooklang files (`.cook`) in `recipes/` directory
-2. **Sync Process**: On git push, files are parsed and metadata synced to Neon
-3. **Search**: Full-text search uses PostgreSQL tsvector on synced metadata
+2. **Sync Process**: On git push, files are parsed and metadata synced to MongoDB
+3. **Search**: Full-text search uses MongoDB text indexes (Atlas Search on M10+ tiers)
 4. **Photos**: Stored in Vercel Blob, URLs referenced in database
 
 ### Authentication
 
 1. **Magic Link**: Email → Token → Session (JWT in httpOnly cookie)
 2. **Passkey**: WebAuthn credential → Session
-3. **Sessions**: 30-day expiry, stored in database
+3. **Sessions**: 30-day expiry, stored in database with TTL index
 
-## Database Schema
+## Database Collections
 
 ### Users & Auth
 
 ```
 users
-├── id (uuid, primary key)
+├── _id (ObjectId)
 ├── email (unique)
 ├── name
 ├── role (owner | family | friend)
-├── created_at
-└── updated_at
+├── createdAt
+└── updatedAt
 
 sessions
-├── id (uuid)
-├── user_id (fk → users)
+├── _id (ObjectId)
+├── userId (ref → users)
 ├── token (unique)
-├── expires_at
-└── created_at
+├── expiresAt (TTL index)
+└── createdAt
 
 magic_links
-├── id (uuid)
+├── _id (ObjectId)
 ├── email
 ├── token (unique)
-├── expires_at
-├── used_at
-└── created_at
+├── expiresAt (TTL index)
+├── usedAt
+└── createdAt
 
 passkeys
-├── id (uuid)
-├── user_id (fk → users)
-├── credential_id (unique)
-├── public_key
+├── _id (ObjectId)
+├── userId (ref → users)
+├── credentialId (unique)
+├── publicKey
 ├── counter
-├── device_type
-├── backed_up
-├── transports (jsonb)
-├── created_at
-└── last_used_at
+├── deviceType
+├── backedUp
+├── transports []
+├── createdAt
+└── lastUsedAt
 ```
 
 ### Recipes
 
 ```
 recipes
-├── id (uuid, primary key)
-├── file_path (unique)
-├── git_commit_hash
+├── _id (ObjectId)
+├── filePath (unique)
+├── gitCommitHash
 ├── title
 ├── slug (unique)
 ├── description
 ├── servings
-├── prep_time
-├── cook_time
-├── total_time
+├── prepTime
+├── cookTime
+├── totalTime
 ├── difficulty
 ├── cuisine
 ├── course
-├── ingredients (jsonb)
-├── cookware (jsonb)
-├── steps (jsonb)
-├── tags (jsonb)
-├── primary_photo_url
-├── photo_urls (jsonb)
-├── search_vector
-├── created_at
-├── updated_at
-└── last_synced_at
+├── ingredients [] (embedded)
+│   ├── name
+│   ├── quantity
+│   └── unit
+├── cookware [] (embedded)
+│   ├── name
+│   └── quantity
+├── steps [] (embedded)
+│   ├── text
+│   ├── ingredients []
+│   ├── cookware []
+│   └── timers []
+├── tags []
+├── primaryPhotoUrl
+├── photoUrls []
+├── createdAt
+├── updatedAt
+└── lastSyncedAt
+
+Text index on: title, description, ingredients.name, tags
 ```
 
-### Shopping Lists
+### Shopping Lists (Embedded Items Pattern)
 
 ```
 shopping_lists
-├── id (uuid, primary key)
-├── user_id (fk → users)
+├── _id (ObjectId)
+├── userId (ref → users)
 ├── name
 ├── status (active | completed | archived)
-├── created_at
-└── updated_at
-
-shopping_list_items
-├── id (uuid)
-├── shopping_list_id (fk → shopping_lists)
-├── ingredient_name
-├── quantity
-├── unit
-├── category
-├── is_checked
-├── checked_at
-├── checked_by_user_id
-├── source_recipe_id
-├── is_manually_added
-└── created_at
-
-shopping_list_recipes
-├── id (uuid)
-├── shopping_list_id (fk → shopping_lists)
-├── recipe_id (fk → recipes)
-├── servings_multiplier
-└── added_at
+├── items [] (embedded)
+│   ├── _id (ObjectId)
+│   ├── ingredientName
+│   ├── quantity
+│   ├── unit
+│   ├── category
+│   ├── isChecked
+│   ├── checkedAt
+│   ├── checkedByUserId
+│   ├── sourceRecipeId
+│   ├── isManuallyAdded
+│   └── createdAt
+├── recipes [] (embedded)
+│   ├── recipeId (ref → recipes)
+│   ├── servingsMultiplier
+│   └── addedAt
+├── createdAt
+└── updatedAt
 ```
 
 ### User Interactions
 
 ```
 recipe_favorites
-├── id (uuid)
-├── user_id (fk → users)
-├── recipe_id (fk → recipes)
-└── created_at
+├── _id (ObjectId)
+├── userId (ref → users)
+├── recipeId (ref → recipes)
+└── createdAt
 
 recipe_history
-├── id (uuid)
-├── user_id (fk → users)
-├── recipe_id (fk → recipes)
-├── cooked_at
+├── _id (ObjectId)
+├── userId (ref → users)
+├── recipeId (ref → recipes)
+├── cookedAt
 ├── notes
 └── rating (1-5)
 
 recipe_notes
-├── id (uuid)
-├── user_id (fk → users)
-├── recipe_id (fk → recipes)
+├── _id (ObjectId)
+├── userId (ref → users)
+├── recipeId (ref → recipes)
 ├── content
-├── created_at
-└── updated_at
+├── createdAt
+└── updatedAt
 ```
 
 ## API Routes

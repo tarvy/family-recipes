@@ -31,7 +31,8 @@
         "noUselessSwitchCase": "error",
         "noUselessThisAlias": "error",
         "noVoid": "error",
-        "useSimplifiedLogicExpression": "warn"
+        "useSimplifiedLogicExpression": "warn",
+        "useLiteralKeys": "off"
       },
       "style": {
         "noNegationElse": "error",
