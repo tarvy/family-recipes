@@ -23,7 +23,7 @@
 ## Deliverables Checklist
 
 - [x] Rotate MongoDB Atlas credentials and update Vercel env vars
-- [ ] Verify production/preview deploys connect successfully
+- [x] Verify production/preview deploys connect successfully
 - [x] Rewrite git history to remove leaked URI
 - [x] Close GitHub secret-scanning alert #1
 - [x] Ensure GitHub Actions deploy + Terraform plan/apply use GitHub Secrets
@@ -154,6 +154,7 @@ Verification:
 - [x] Rotated password and updated Vercel `MONGODB_URI` (preview + production)
 - [x] Updated local `.env.local` with new URI
 - [x] Deleted legacy Atlas DB user `app`
+- [x] Verified MongoDB connectivity with `mongosh` ping
 
 ### Session 5 - 2026-01-26
 
