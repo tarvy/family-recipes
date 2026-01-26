@@ -281,6 +281,7 @@ docker run --rm -v $(pwd):/data washad/thailint:latest dry src/
 Ensure your IP is whitelisted in MongoDB Atlas:
 1. Go to Atlas > Network Access
 2. Add your current IP or use 0.0.0.0/0 for development
+3. For Vercel preview/production, use 0.0.0.0/0 to allow dynamic serverless IPs
 
 ---
 

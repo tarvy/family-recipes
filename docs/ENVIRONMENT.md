@@ -20,7 +20,7 @@ MongoDB Atlas connection string.
 1. Create account at [mongodb.com/atlas](https://www.mongodb.com/atlas)
 2. Create a new project and cluster (M0 free tier works)
 3. Create a database user with readWrite access
-4. Add your IP to the access list (or 0.0.0.0/0 for development)
+4. Add your IP to the access list (for Vercel/serverless, use 0.0.0.0/0 to allow dynamic IPs)
 5. Copy the connection string from the cluster's "Connect" button
 
 **Format:**
