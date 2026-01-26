@@ -8,7 +8,7 @@ mongodb_project_name = "family-recipes"
 mongodb_cluster_name = "family-recipes"
 mongodb_cluster_tier = "M0" # Upgrade to M10+ for production SLA
 mongodb_region       = "US_EAST_1"
-mongodb_db_username  = "app"
+mongodb_db_username  = "family_recipes_app_20260126"
 
 # Note: The following must be provided via TF_VAR_* environment variables:
 # - mongodb_atlas_public_key

@@ -49,6 +49,7 @@ jobs:
     needs: terraform-validate
     if: github.event_name == 'pull_request'
     env:
+      TF_TOKEN_app_terraform_io: ${{ secrets.TERRAFORM_CLOUD_TOKEN }}
       # MongoDB Atlas
       TF_VAR_mongodb_atlas_public_key: ${{ secrets.MONGODB_ATLAS_PUBLIC_KEY }}
       TF_VAR_mongodb_atlas_private_key: ${{ secrets.MONGODB_ATLAS_PRIVATE_KEY }}
@@ -76,11 +77,11 @@ jobs:
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init
 
-      - name: Terraform Plan (Dev)
+      - name: Terraform Plan (Prod)
         id: plan
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
-          terraform plan -var-file=environments/dev.tfvars -no-color -out=tfplan 2>&1 | tee plan_output.txt
+          terraform plan -var-file=environments/prod.tfvars -no-color -out=tfplan 2>&1 | tee plan_output.txt
           echo "plan_output<<EOF" >> $GITHUB_OUTPUT
           cat plan_output.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -122,6 +123,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: production
     env:
+      TF_TOKEN_app_terraform_io: ${{ secrets.TERRAFORM_CLOUD_TOKEN }}
       # MongoDB Atlas
       TF_VAR_mongodb_atlas_public_key: ${{ secrets.MONGODB_ATLAS_PUBLIC_KEY }}
       TF_VAR_mongodb_atlas_private_key: ${{ secrets.MONGODB_ATLAS_PRIVATE_KEY }}

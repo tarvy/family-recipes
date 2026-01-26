@@ -25,7 +25,7 @@ mongodb_cluster_tier = "M0"  # Free tier
 mongodb_region       = "US_EAST_1"
 
 # Database credentials
-mongodb_db_username = "app"
+mongodb_db_username = "family_recipes_app"
 mongodb_db_password = ""  # Generate a strong password
 
 # -----------------------------------------------------------------------------

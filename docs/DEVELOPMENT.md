@@ -100,6 +100,21 @@ Required environment variables for Terraform:
 - `TF_VAR_grafana_auth`
 - `TF_VAR_grafana_cloud_stack_slug`
 
+### Terraform Cloud Remote State
+
+Terraform uses Terraform Cloud for remote state and locking.
+
+1. Create or select workspace: `tarvy-terraform-org` → `family-recipes`
+2. Generate a Terraform Cloud user API token
+3. Export locally:
+   ```bash
+   export TF_TOKEN_app_terraform_io="your-terraform-cloud-token"
+   ```
+4. Add the token as a GitHub Secret: `TERRAFORM_CLOUD_TOKEN`
+
+**Note:** The CI plan uses `environments/prod.tfvars` to keep a single workspace
+and avoid duplicate resource errors.
+
 ---
 
 ## Development Workflow
@@ -199,13 +214,14 @@ For deployments to work, these secrets must be configured:
 | `VERCEL_TOKEN` | Vercel CLI authentication |
 | `VERCEL_ORG_ID` | Vercel organization ID |
 | `VERCEL_PROJECT_ID` | Vercel project ID |
+| `TERRAFORM_CLOUD_TOKEN` | Terraform Cloud API token for remote state |
 | `MONGODB_ATLAS_PUBLIC_KEY` | Atlas API public key |
 | `MONGODB_ATLAS_PRIVATE_KEY` | Atlas API private key |
 | `MONGODB_ATLAS_ORG_ID` | Atlas organization ID |
 | `MONGODB_DB_PASSWORD` | Database password |
 | `GRAFANA_OTLP_ENDPOINT` | Grafana Cloud OTLP endpoint (for app traces) |
 | `GRAFANA_INSTANCE_ID` | Grafana Cloud instance ID |
-| `GRAFANA_API_KEY` | Grafana API key |
+| `GRAFANA_API_KEY` | Grafana service account API key (Terraform only) |
 
 **Additional secrets for Terraform** (if using infra/terraform/):
 

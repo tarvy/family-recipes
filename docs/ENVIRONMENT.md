@@ -94,6 +94,9 @@ API key with write access for metrics, logs, and traces.
    - Role: `MetricsPublisher`, `LogsWriter`, `TracesWriter`
    - Or use "Admin" for simplicity in personal projects
 
+**Note:** This app key is for OTLP ingestion. Terraform uses a separate Grafana
+service account API token stored as the GitHub Secret `GRAFANA_API_KEY`.
+
 ---
 
 ### File Storage
@@ -184,6 +187,15 @@ These are used by Terraform in CI/CD pipelines for infrastructure management. Se
 | `GRAFANA_CLOUD_STACK_SLUG` | `grafana_cloud_stack_slug` | Grafana stack slug |
 
 **Note:** The Terraform workflow requires `GRAFANA_URL` and `GRAFANA_CLOUD_STACK_SLUG` which are separate from the app runtime variables (`GRAFANA_OTLP_ENDPOINT`, `GRAFANA_INSTANCE_ID`).
+
+### Terraform Cloud (Remote State)
+
+Terraform uses Terraform Cloud for remote state and locking. Configure the GitHub
+secret below so CI can authenticate:
+
+| GitHub Secret | Purpose |
+|---------------|---------|
+| `TERRAFORM_CLOUD_TOKEN` | Terraform Cloud user API token (maps to `TF_TOKEN_app_terraform_io`) |
 
 ---
 

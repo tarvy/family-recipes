@@ -87,5 +87,5 @@ resource "mongodbatlas_database_user" "app" {
 resource "mongodbatlas_project_ip_access_list" "anywhere" {
   project_id = mongodbatlas_project.main.id
   cidr_block = "0.0.0.0/0"
-  comment    = "Allow access from Vercel serverless functions"
+  comment    = "Vercel serverless"
 }
