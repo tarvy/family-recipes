@@ -11,6 +11,7 @@
 # Sensitive variable files
 *.tfvars
 !*.tfvars.example
+!environments/*.tfvars
 
 # Crash logs
 crash.log
