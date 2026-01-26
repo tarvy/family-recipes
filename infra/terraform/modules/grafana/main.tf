@@ -5,6 +5,15 @@
  * Data sources (Prometheus, Loki, Tempo) are pre-configured in Grafana Cloud.
  */
 
+terraform {
+  required_providers {
+    grafana = {
+      source  = "grafana/grafana"
+      version = "~> 2.14"
+    }
+  }
+}
+
 # -----------------------------------------------------------------------------
 # Folder for dashboards
 # -----------------------------------------------------------------------------

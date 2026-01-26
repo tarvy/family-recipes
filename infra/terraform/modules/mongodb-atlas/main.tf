@@ -8,6 +8,15 @@
  * - IP access list (allow from anywhere for Vercel)
  */
 
+terraform {
+  required_providers {
+    mongodbatlas = {
+      source  = "mongodb/mongodbatlas"
+      version = "~> 1.15"
+    }
+  }
+}
+
 # -----------------------------------------------------------------------------
 # Project
 # -----------------------------------------------------------------------------

@@ -5,6 +5,15 @@
  * The project itself is created by Vercel's GitHub integration.
  */
 
+terraform {
+  required_providers {
+    vercel = {
+      source  = "vercel/vercel"
+      version = "~> 1.11"
+    }
+  }
+}
+
 locals {
   # Map environment to Vercel targets
   vercel_target = var.environment == "prod" ? "production" : "preview"
