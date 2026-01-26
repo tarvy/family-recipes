@@ -25,8 +25,10 @@ MongoDB Atlas connection string.
 
 **Format:**
 ```
-***REMOVED***
+<protocol>://<username>:<password>@<cluster-host>/<db>?retryWrites=true&w=majority
 ```
+
+Use the `mongodb+srv` protocol for Atlas SRV connections.
 
 #### `MONGODB_DB_NAME`
 Database name within the cluster.
@@ -192,6 +194,17 @@ These are used by Terraform in CI/CD pipelines for infrastructure management. Se
 | `.env.example` | Tracked | Template with all variables |
 | `.env.local` | Ignored | Local development credentials |
 | `.env.production.local` | Ignored | Production overrides (if needed) |
+
+## Secret Management (Public Repo)
+
+This repository is public. Do not store real secrets in git or documentation.
+
+Recommended practice:
+- **Source of truth**: Store secrets in 1Password.
+- **Local dev**: Copy values from 1Password into `.env.local` (ignored by git).
+- **Production**: Set secrets as Vercel environment variables (Terraform manages these in `infra/terraform/`).
+
+If you use the 1Password CLI (`op`), you can pull values from your vault as needed without keeping them in the repo.
 
 ## Vercel Environment Variables
 

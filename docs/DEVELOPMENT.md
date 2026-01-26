@@ -38,7 +38,7 @@ npm install
 cp .env.example .env.local
 ```
 
-Edit `.env.local` with your credentials. See [docs/ENVIRONMENT.md](ENVIRONMENT.md) for details on each variable.
+Edit `.env.local` with your credentials. For public repos, keep secrets in a manager (1Password recommended) and copy values into `.env.local` as needed. See [docs/ENVIRONMENT.md](ENVIRONMENT.md) for details on each variable.
 
 ### 4. Start development server
 
