@@ -16,3 +16,9 @@ thai-lint:
 check:
   just lint
   just typecheck
+
+pre-commit:
+  just lint-fix
+  just lint
+  just typecheck
+  just thai-lint
