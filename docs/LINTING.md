@@ -40,9 +40,19 @@ npm run format
 npm run typecheck
 ```
 
+### Just (optional)
+
+If you use `just`, run:
+
+```bash
+just lint
+just lint-fix
+just thai-lint
+```
+
 ### Pre-commit Hook
 
-Biome runs automatically on staged files via Husky + lint-staged:
+Biome runs on the entire repo before every commit, then re-checks staged files via Husky + lint-staged:
 
 ```json
 {
@@ -95,7 +105,7 @@ max_file_lines: 500         # Maximum file size
 | `dry` | Duplicate code detection |
 | `nesting` | Excessive nesting depth |
 | `magic-numbers` | Unnamed numeric literals |
-| `performance` | O(n²) patterns (loops with string concat, etc.) |
+| `perf` | O(n²) patterns (loops with string concat, etc.) |
 | `srp` | Single Responsibility Principle violations |
 | `file-header` | Documentation headers |
 | `stateless-class` | Classes that should be functions |
@@ -111,7 +121,7 @@ max_file_lines: 500         # Maximum file size
 thailint dry src/
 thailint nesting src/
 thailint magic-numbers src/
-thailint performance src/
+thailint perf src/
 
 # Run all linters
 thailint all src/
@@ -122,7 +132,7 @@ thailint all src/ --format json
 
 ### CI Integration
 
-Thai-lint runs in GitHub Actions CI. See `.github/workflows/ci.yml`:
+Thai-lint runs in GitHub Actions CI and fails the build on violations. See `.github/workflows/ci.yml`:
 
 ```yaml
 - name: Run Thai-lint
