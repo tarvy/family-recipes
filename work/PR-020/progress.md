@@ -23,7 +23,7 @@
 ## Deliverables Checklist
 
 - [x] Rotate MongoDB Atlas credentials and update Vercel env vars
-- [x] Verify production/preview deploys connect successfully
+- [ ] Verify production/preview deploys connect successfully
 - [x] Rewrite git history to remove leaked URI
 - [x] Close GitHub secret-scanning alert #1
 - [x] Ensure GitHub Actions deploy + Terraform plan/apply use GitHub Secrets
@@ -166,3 +166,16 @@ Verification:
 - [x] Set missing GitHub Secrets (`GRAFANA_URL`, `GRAFANA_CLOUD_STACK_SLUG`, `VERCEL_TEAM_ID`)
 - [x] Rewrote git history to purge leaked URI and force-pushed main
 - [x] Resolved GitHub secret-scanning alert #1
+
+### Session 6 - 2026-01-26
+
+**Agent**: Codex
+**Duration**: 10 minutes
+
+**Completed**:
+- [x] Verified GitHub Actions deploy workflow succeeded
+- [x] Verified latest production deployments are Ready in Vercel
+
+**Notes**:
+- Preview deploy not triggered (no PR run during this session).
+- No DB health endpoint exists yet, so production DB connectivity wasn't directly tested in Vercel.
