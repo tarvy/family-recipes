@@ -72,6 +72,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `just typecheck` | Run TypeScript checks |
 | `just thai-lint` | Run Thai-lint checks |
 | `just check` | Run lint + typecheck |
+| `just pre-commit` | Run lint:fix + lint + typecheck + Thai-lint |
 
 ---
 
@@ -168,6 +169,20 @@ The following checks run automatically:
 | Terraform Plan | Terraform | Infrastructure change preview (if infra/ changed) |
 
 A preview deployment is created on Vercel.
+
+### Health Checks
+
+Use the health endpoint to verify production/preview deployments can reach MongoDB:
+
+```bash
+curl https://<deployment-url>/api/health
+```
+
+Expected response:
+
+```json
+{ "status": "ok", "db": { "status": "connected", "latencyMs": 12 } }
+```
 
 ### On Merge to Main
 
