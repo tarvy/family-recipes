@@ -14,6 +14,12 @@ import { CATEGORY_LABELS } from '@/lib/shopping/categories';
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
 
+/** Thicker stroke width for checkmark icon */
+const CHECKMARK_STROKE_WIDTH = 3;
+
+/** Icon size classes for Tailwind */
+const ICON_SIZE_SM = 'h-5 w-5';
+
 interface ShoppingListProps {
   /** All items in the list */
   items: AggregatedIngredient[];
@@ -168,7 +174,7 @@ function CategorySection({
       >
         <div className="flex items-center gap-3">
           <ChevronIcon
-            className={`h-5 w-5 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+            className={`${ICON_SIZE_SM} transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
           />
           <span className="font-medium text-foreground">{CATEGORY_LABELS[category]}</span>
         </div>
@@ -289,7 +295,7 @@ function CheckIcon({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       aria-hidden="true"
     >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={CHECKMARK_STROKE_WIDTH} d="M5 13l4 4L19 7" />
     </svg>
   );
 }

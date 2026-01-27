@@ -50,23 +50,40 @@ export interface RecipeIngredients {
   servingsMultiplier?: number;
 }
 
+/** Fraction decimal values */
+const FRACTION_HALF = 0.5;
+const FRACTION_THIRD = 1 / 3;
+const FRACTION_TWO_THIRDS = 2 / 3;
+const FRACTION_QUARTER = 0.25;
+const FRACTION_THREE_QUARTERS = 0.75;
+const FRACTION_FIFTH = 0.2;
+const FRACTION_TWO_FIFTHS = 0.4;
+const FRACTION_THREE_FIFTHS = 0.6;
+const FRACTION_FOUR_FIFTHS = 0.8;
+const FRACTION_SIXTH = 1 / 6;
+const FRACTION_FIVE_SIXTHS = 5 / 6;
+const FRACTION_EIGHTH = 0.125;
+const FRACTION_THREE_EIGHTHS = 0.375;
+const FRACTION_FIVE_EIGHTHS = 0.625;
+const FRACTION_SEVEN_EIGHTHS = 0.875;
+
 /** Fraction patterns for parsing */
 const FRACTION_MAP: Record<string, number> = {
-  '½': 0.5,
-  '⅓': 1 / 3,
-  '⅔': 2 / 3,
-  '¼': 0.25,
-  '¾': 0.75,
-  '⅕': 0.2,
-  '⅖': 0.4,
-  '⅗': 0.6,
-  '⅘': 0.8,
-  '⅙': 1 / 6,
-  '⅚': 5 / 6,
-  '⅛': 0.125,
-  '⅜': 0.375,
-  '⅝': 0.625,
-  '⅞': 0.875,
+  '½': FRACTION_HALF,
+  '⅓': FRACTION_THIRD,
+  '⅔': FRACTION_TWO_THIRDS,
+  '¼': FRACTION_QUARTER,
+  '¾': FRACTION_THREE_QUARTERS,
+  '⅕': FRACTION_FIFTH,
+  '⅖': FRACTION_TWO_FIFTHS,
+  '⅗': FRACTION_THREE_FIFTHS,
+  '⅘': FRACTION_FOUR_FIFTHS,
+  '⅙': FRACTION_SIXTH,
+  '⅚': FRACTION_FIVE_SIXTHS,
+  '⅛': FRACTION_EIGHTH,
+  '⅜': FRACTION_THREE_EIGHTHS,
+  '⅝': FRACTION_FIVE_EIGHTHS,
+  '⅞': FRACTION_SEVEN_EIGHTHS,
 };
 
 /** Common unit normalizations */
@@ -121,6 +138,32 @@ const UNIT_NORMALIZATIONS: Record<string, string> = {
   small: 'small',
 };
 
+/** parseInt radix for decimal numbers */
+const RADIX_DECIMAL = 10;
+
+/** Regex capture group indices for numeric parsing */
+const REGEX_GROUP_RANGE_LOW = 1;
+const REGEX_GROUP_RANGE_HIGH = 2;
+const REGEX_GROUP_MIXED_WHOLE = 3;
+const REGEX_GROUP_MIXED_NUM = 4;
+const REGEX_GROUP_MIXED_DENOM = 5;
+const REGEX_GROUP_FRAC_NUM = 6;
+const REGEX_GROUP_FRAC_DENOM = 7;
+const REGEX_GROUP_SIMPLE = 8;
+
+/** Divisor for calculating range average */
+const RANGE_AVERAGE_DIVISOR = 2;
+
+/** Tolerance for fraction matching in formatAmount */
+const FRACTION_TOLERANCE = 0.01;
+
+/** Common fractions for display formatting */
+const DISPLAY_FRACTION_QUARTER = 0.25;
+const DISPLAY_FRACTION_THIRD = 0.33;
+const DISPLAY_FRACTION_HALF = 0.5;
+const DISPLAY_FRACTION_TWO_THIRDS = 0.67;
+const DISPLAY_FRACTION_THREE_QUARTERS = 0.75;
+
 /** Result from trying to parse a unicode fraction */
 interface FractionParseResult {
   amount: number;
@@ -136,10 +179,10 @@ function tryParseLeadingFraction(trimmed: string): FractionParseResult | null {
     if (trimmed.startsWith(fraction)) {
       const rest = trimmed.slice(fraction.length).trim();
       const wholeMatch = rest.match(/^(\d+)/);
-      if (wholeMatch?.[1]) {
+      if (wholeMatch?.[REGEX_GROUP_RANGE_LOW]) {
         return {
-          amount: parseInt(wholeMatch[1], 10) + value,
-          unitPart: rest.slice(wholeMatch[1].length).trim(),
+          amount: parseInt(wholeMatch[REGEX_GROUP_RANGE_LOW], RADIX_DECIMAL) + value,
+          unitPart: rest.slice(wholeMatch[REGEX_GROUP_RANGE_LOW].length).trim(),
         };
       }
       return { amount: value, unitPart: rest };
@@ -158,9 +201,9 @@ function tryParseNumberWithFraction(trimmed: string): FractionParseResult | null
     if (idx > 0) {
       const beforeFraction = trimmed.slice(0, idx).trim();
       const numMatch = beforeFraction.match(/(\d+)$/);
-      if (numMatch?.[1]) {
+      if (numMatch?.[REGEX_GROUP_RANGE_LOW]) {
         return {
-          amount: parseInt(numMatch[1], 10) + value,
+          amount: parseInt(numMatch[REGEX_GROUP_RANGE_LOW], RADIX_DECIMAL) + value,
           unitPart: trimmed.slice(idx + fraction.length).trim(),
         };
       }
@@ -186,30 +229,34 @@ function tryParseNumericFormat(trimmed: string): FractionParseResult | null {
   const unitPart = trimmed.slice(matchLength).trim();
 
   // Range: "2-3" → average
-  if (numericMatch[1] && numericMatch[2]) {
-    const low = parseFloat(numericMatch[1]);
-    const high = parseFloat(numericMatch[2]);
-    return { amount: (low + high) / 2, unitPart };
+  if (numericMatch[REGEX_GROUP_RANGE_LOW] && numericMatch[REGEX_GROUP_RANGE_HIGH]) {
+    const low = parseFloat(numericMatch[REGEX_GROUP_RANGE_LOW]);
+    const high = parseFloat(numericMatch[REGEX_GROUP_RANGE_HIGH]);
+    return { amount: (low + high) / RANGE_AVERAGE_DIVISOR, unitPart };
   }
 
   // Mixed: "1 1/2"
-  if (numericMatch[3] && numericMatch[4] && numericMatch[5]) {
-    const whole = parseInt(numericMatch[3], 10);
-    const num = parseInt(numericMatch[4], 10);
-    const denom = parseInt(numericMatch[5], 10);
+  if (
+    numericMatch[REGEX_GROUP_MIXED_WHOLE] &&
+    numericMatch[REGEX_GROUP_MIXED_NUM] &&
+    numericMatch[REGEX_GROUP_MIXED_DENOM]
+  ) {
+    const whole = parseInt(numericMatch[REGEX_GROUP_MIXED_WHOLE], RADIX_DECIMAL);
+    const num = parseInt(numericMatch[REGEX_GROUP_MIXED_NUM], RADIX_DECIMAL);
+    const denom = parseInt(numericMatch[REGEX_GROUP_MIXED_DENOM], RADIX_DECIMAL);
     return { amount: whole + num / denom, unitPart };
   }
 
   // Fraction: "1/2"
-  if (numericMatch[6] && numericMatch[7]) {
-    const num = parseInt(numericMatch[6], 10);
-    const denom = parseInt(numericMatch[7], 10);
+  if (numericMatch[REGEX_GROUP_FRAC_NUM] && numericMatch[REGEX_GROUP_FRAC_DENOM]) {
+    const num = parseInt(numericMatch[REGEX_GROUP_FRAC_NUM], RADIX_DECIMAL);
+    const denom = parseInt(numericMatch[REGEX_GROUP_FRAC_DENOM], RADIX_DECIMAL);
     return { amount: num / denom, unitPart };
   }
 
   // Simple number
-  if (numericMatch[8]) {
-    return { amount: parseFloat(numericMatch[8]), unitPart };
+  if (numericMatch[REGEX_GROUP_SIMPLE]) {
+    return { amount: parseFloat(numericMatch[REGEX_GROUP_SIMPLE]), unitPart };
   }
 
   return null;
@@ -407,20 +454,19 @@ export function formatAmount(amount: number): string {
   }
 
   // Check for common fractions
-  const tolerance = 0.01;
   const fractions: [number, string][] = [
-    [0.25, '¼'],
-    [0.33, '⅓'],
-    [0.5, '½'],
-    [0.67, '⅔'],
-    [0.75, '¾'],
+    [DISPLAY_FRACTION_QUARTER, '¼'],
+    [DISPLAY_FRACTION_THIRD, '⅓'],
+    [DISPLAY_FRACTION_HALF, '½'],
+    [DISPLAY_FRACTION_TWO_THIRDS, '⅔'],
+    [DISPLAY_FRACTION_THREE_QUARTERS, '¾'],
   ];
 
   const whole = Math.floor(amount);
   const decimal = amount - whole;
 
   for (const [value, symbol] of fractions) {
-    if (Math.abs(decimal - value) < tolerance) {
+    if (Math.abs(decimal - value) < FRACTION_TOLERANCE) {
       return whole > 0 ? `${whole}${symbol}` : symbol;
     }
   }

@@ -26,6 +26,9 @@ import {
 /** localStorage key for persisting shopping list state */
 const STORAGE_KEY = 'family-recipes-shopping-list';
 
+/** parseInt radix for decimal numbers */
+const RADIX_DECIMAL = 10;
+
 /** State shape for localStorage */
 interface PersistedState {
   selectedRecipes: Record<string, number>; // slug → multiplier
@@ -180,7 +183,7 @@ export function ShoppingListClient({ recipes }: ShoppingListClientProps) {
       if (itemId.startsWith('manual-')) {
         const match = itemId.match(/^manual-(\d+)-/);
         if (match?.[1]) {
-          manualIdsToRemove.add(parseInt(match[1], 10));
+          manualIdsToRemove.add(parseInt(match[1], RADIX_DECIMAL));
         }
       }
     }
