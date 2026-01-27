@@ -11,6 +11,7 @@
  */
 
 import { promises as fs } from 'node:fs';
+import type { IRecipe } from '@/db/types';
 import { parseCooklang } from '@/lib/cooklang/parser';
 import { type CookFile, scanCooklangFiles } from '@/lib/git-recipes/file-scanner';
 import { logger } from '@/lib/logger';
@@ -183,4 +184,152 @@ export async function getAllRecipes(): Promise<RecipePreview[]> {
  */
 export function getCategories(): string[] {
   return ['breakfast', 'desserts', 'entrees', 'salads', 'sides', 'soups'];
+}
+
+/**
+ * Full recipe data for detail view
+ */
+export interface RecipeDetail {
+  slug: string;
+  title: string;
+  category: string;
+  description?: string;
+  servings?: number;
+  prepTime?: number;
+  cookTime?: number;
+  totalTime?: number;
+  difficulty?: string;
+  cuisine?: string;
+  course?: string;
+  ingredients: Array<{
+    name: string;
+    quantity?: string;
+    unit?: string;
+  }>;
+  cookware: Array<{
+    name: string;
+    quantity?: number;
+  }>;
+  steps: Array<{
+    text: string;
+    timers?: Array<{ duration: number; unit: string }>;
+  }>;
+  tags: string[];
+}
+
+/**
+ * Convert IRecipe steps to RecipeDetail steps
+ */
+function convertStepsForDetail(
+  steps: Array<{ text: string; timers?: Array<{ duration: number; unit: string }> }>,
+): RecipeDetail['steps'] {
+  return steps.map((step) => {
+    const mapped: { text: string; timers?: Array<{ duration: number; unit: string }> } = {
+      text: step.text,
+    };
+    if (step.timers && step.timers.length > 0) {
+      mapped.timers = step.timers;
+    }
+    return mapped;
+  });
+}
+
+/**
+ * Apply optional fields from IRecipe to RecipeDetail
+ */
+function applyOptionalDetailFields(detail: RecipeDetail, recipe: IRecipe): void {
+  if (recipe.description) {
+    detail.description = recipe.description;
+  }
+  if (recipe.servings !== undefined) {
+    detail.servings = recipe.servings;
+  }
+  if (recipe.prepTime !== undefined) {
+    detail.prepTime = recipe.prepTime;
+  }
+  if (recipe.cookTime !== undefined) {
+    detail.cookTime = recipe.cookTime;
+  }
+  if (recipe.totalTime !== undefined) {
+    detail.totalTime = recipe.totalTime;
+  }
+  if (recipe.difficulty) {
+    detail.difficulty = recipe.difficulty;
+  }
+  if (recipe.cuisine) {
+    detail.cuisine = recipe.cuisine;
+  }
+  if (recipe.course) {
+    detail.course = recipe.course;
+  }
+}
+
+/**
+ * Build RecipeDetail from IRecipe and file info
+ */
+function buildRecipeDetail(recipe: IRecipe, relativePath: string): RecipeDetail {
+  const detail: RecipeDetail = {
+    slug: recipe.slug,
+    title: recipe.title,
+    category: extractCategory(relativePath),
+    ingredients: recipe.ingredients,
+    cookware: recipe.cookware,
+    steps: convertStepsForDetail(recipe.steps),
+    tags: recipe.tags,
+  };
+
+  applyOptionalDetailFields(detail, recipe);
+  return detail;
+}
+
+/**
+ * Load a single recipe by slug
+ *
+ * @param slug - URL-safe recipe identifier
+ * @returns RecipeDetail or null if not found
+ */
+export async function getRecipeBySlug(slug: string): Promise<RecipeDetail | null> {
+  return withTrace('recipes.getRecipeBySlug', async (span) => {
+    span.setAttribute('slug', slug);
+
+    const files = await scanCooklangFiles(RECIPES_DIRECTORY);
+
+    for (const file of files) {
+      const detail = await tryParseRecipeFile(file, slug);
+      if (detail) {
+        logger.recipes.info('Loaded recipe detail', { slug, title: detail.title });
+        return detail;
+      }
+    }
+
+    logger.recipes.warn('Recipe not found', { slug });
+    return null;
+  });
+}
+
+/**
+ * Try to parse a file and return RecipeDetail if it matches the slug
+ */
+async function tryParseRecipeFile(
+  file: CookFile,
+  targetSlug: string,
+): Promise<RecipeDetail | null> {
+  try {
+    const content = await fs.readFile(file.absolutePath, 'utf-8');
+    const result = await parseCooklang(content, {
+      filePath: file.relativePath,
+      gitCommitHash: 'detail',
+    });
+
+    if (!result.success || result.recipe.slug !== targetSlug) {
+      return null;
+    }
+
+    return buildRecipeDetail(result.recipe, file.relativePath);
+  } catch (error) {
+    logger.recipes.error('Error reading recipe file', error instanceof Error ? error : undefined, {
+      file: file.relativePath,
+    });
+    return null;
+  }
 }
