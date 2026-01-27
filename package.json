@@ -20,6 +20,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@cooklang/cooklang-ts": "^1.2.7",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.211.0",
     "@opentelemetry/resources": "^2.5.0",
