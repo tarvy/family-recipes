@@ -18,6 +18,13 @@ import {
   serializePublicKey,
   verifyPasskeyRegistration,
 } from '@/lib/auth/passkey';
+import {
+  HTTP_BAD_REQUEST,
+  HTTP_CONFLICT,
+  HTTP_FORBIDDEN,
+  HTTP_INTERNAL_SERVER_ERROR,
+  HTTP_UNAUTHORIZED,
+} from '@/lib/constants/http-status';
 import { logger } from '@/lib/logger';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
 
@@ -38,7 +45,7 @@ export async function POST(request: Request): Promise<Response> {
 
     if (!user) {
       span.setAttribute('error', 'unauthorized');
-      return Response.json({ error: 'unauthorized' }, { status: 401 });
+      return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
     }
 
     await ensureOwnerAllowlist();
@@ -49,7 +56,7 @@ export async function POST(request: Request): Promise<Response> {
       logger.auth.warn('Passkey registration blocked for non-allowlisted email', {
         email: user.email,
       });
-      return Response.json({ error: 'not_allowed' }, { status: 403 });
+      return Response.json({ error: 'not_allowed' }, { status: HTTP_FORBIDDEN });
     }
 
     let body: RegisterRequestBody = {};
@@ -62,7 +69,7 @@ export async function POST(request: Request): Promise<Response> {
     if (body.response) {
       if (!isRegistrationResponse(body.response)) {
         span.setAttribute('error', 'invalid_payload');
-        return Response.json({ error: 'invalid_payload' }, { status: 400 });
+        return Response.json({ error: 'invalid_payload' }, { status: HTTP_BAD_REQUEST });
       }
 
       return handleVerification(body.response, user.id, cookieStore);
@@ -116,7 +123,7 @@ async function handleOptions(
       'Passkey registration options failed',
       error instanceof Error ? error : undefined,
     );
-    return Response.json({ error: 'registration_failed' }, { status: 500 });
+    return Response.json({ error: 'registration_failed' }, { status: HTTP_INTERNAL_SERVER_ERROR });
   }
 }
 
@@ -131,7 +138,7 @@ async function handleVerification(
   if (!challenge || challenge.type !== 'registration' || challenge.userId !== userId) {
     logger.auth.warn('Passkey registration challenge missing or invalid');
     cookieStore.delete(getPasskeyChallengeCookieName());
-    return Response.json({ error: 'invalid_challenge' }, { status: 400 });
+    return Response.json({ error: 'invalid_challenge' }, { status: HTTP_BAD_REQUEST });
   }
 
   try {
@@ -140,7 +147,7 @@ async function handleVerification(
     if (!(verification.verified && verification.registrationInfo)) {
       logger.auth.warn('Passkey registration verification failed');
       cookieStore.delete(getPasskeyChallengeCookieName());
-      return Response.json({ error: 'verification_failed' }, { status: 400 });
+      return Response.json({ error: 'verification_failed' }, { status: HTTP_BAD_REQUEST });
     }
 
     const { credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
@@ -154,7 +161,7 @@ async function handleVerification(
     if (existing) {
       logger.auth.warn('Passkey credential already exists', { credentialId: credential.id });
       cookieStore.delete(getPasskeyChallengeCookieName());
-      return Response.json({ error: 'credential_exists' }, { status: 409 });
+      return Response.json({ error: 'credential_exists' }, { status: HTTP_CONFLICT });
     }
 
     await traceDbQuery('create', 'passkeys', async () => {
@@ -181,6 +188,6 @@ async function handleVerification(
       error instanceof Error ? error : undefined,
     );
     cookieStore.delete(getPasskeyChallengeCookieName());
-    return Response.json({ error: 'verification_failed' }, { status: 500 });
+    return Response.json({ error: 'verification_failed' }, { status: HTTP_INTERNAL_SERVER_ERROR });
   }
 }

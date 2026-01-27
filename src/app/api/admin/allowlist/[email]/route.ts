@@ -12,6 +12,12 @@ import {
   normalizeEmail,
   removeAllowedEmail,
 } from '@/lib/auth/allowlist';
+import {
+  HTTP_BAD_REQUEST,
+  HTTP_FORBIDDEN,
+  HTTP_NOT_FOUND,
+  HTTP_UNAUTHORIZED,
+} from '@/lib/constants/http-status';
 import { logger } from '@/lib/logger';
 import { withTrace } from '@/lib/telemetry';
 
@@ -32,12 +38,12 @@ export async function DELETE(_request: Request, { params }: RouteParams): Promis
 
     if (!user) {
       span.setAttribute('error', 'unauthorized');
-      return Response.json({ error: 'unauthorized' }, { status: 401 });
+      return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
     }
 
     if (user.role !== OWNER_ROLE) {
       span.setAttribute('error', 'forbidden');
-      return Response.json({ error: 'forbidden' }, { status: 403 });
+      return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
     }
 
     await ensureOwnerAllowlist();
@@ -47,13 +53,13 @@ export async function DELETE(_request: Request, { params }: RouteParams): Promis
 
     if (!isValidEmail(normalizedEmail)) {
       span.setAttribute('error', 'invalid_email');
-      return Response.json({ error: 'invalid_email' }, { status: 400 });
+      return Response.json({ error: 'invalid_email' }, { status: HTTP_BAD_REQUEST });
     }
 
     const removed = await removeAllowedEmail(normalizedEmail);
 
     if (!removed) {
-      return Response.json({ error: 'not_found' }, { status: 404 });
+      return Response.json({ error: 'not_found' }, { status: HTTP_NOT_FOUND });
     }
 
     logger.auth.info('Allowlist entry removed', {

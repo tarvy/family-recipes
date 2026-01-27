@@ -24,8 +24,24 @@ import { Session, User, type UserRole } from '@/db/models';
 import { logger } from '@/lib/logger';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
 
+/** Seconds per minute */
+const SECONDS_PER_MINUTE = 60;
+
+/** Minutes per hour */
+const MINUTES_PER_HOUR = 60;
+
+/** Hours per day */
+const HOURS_PER_DAY = 24;
+
+/** Session duration in days */
+const SESSION_DURATION_DAYS = 7;
+
+/** Session token length in characters (provides 128 bits of entropy) */
+const SESSION_TOKEN_LENGTH = 32;
+
 /** Session duration in seconds (7 days) */
-const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 7;
+const SESSION_DURATION_SECONDS =
+  SECONDS_PER_MINUTE * MINUTES_PER_HOUR * HOURS_PER_DAY * SESSION_DURATION_DAYS;
 
 /** Cookie name for session token */
 export const SESSION_COOKIE_NAME = 'session';
@@ -67,7 +83,7 @@ export async function createSession(userId: string): Promise<CreateSessionResult
 
     await connectDB();
 
-    const token = nanoid(32);
+    const token = nanoid(SESSION_TOKEN_LENGTH);
     const expiresAt = new Date(Date.now() + SESSION_DURATION_SECONDS * 1000);
 
     await traceDbQuery('create', 'sessions', async () => {

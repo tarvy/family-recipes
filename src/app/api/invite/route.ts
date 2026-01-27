@@ -13,6 +13,7 @@ import {
   isValidEmail,
   normalizeEmail,
 } from '@/lib/auth/allowlist';
+import { HTTP_BAD_REQUEST, HTTP_FORBIDDEN, HTTP_UNAUTHORIZED } from '@/lib/constants/http-status';
 import { logger } from '@/lib/logger';
 import { withTrace } from '@/lib/telemetry';
 
@@ -40,12 +41,12 @@ export async function POST(request: Request): Promise<Response> {
 
     if (!user) {
       span.setAttribute('error', 'unauthorized');
-      return Response.json({ error: 'unauthorized' }, { status: 401 });
+      return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
     }
 
     if (!(user.role === OWNER_ROLE || user.role === FAMILY_ROLE)) {
       span.setAttribute('error', 'forbidden');
-      return Response.json({ error: 'forbidden' }, { status: 403 });
+      return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
     }
 
     await ensureOwnerAllowlist();
@@ -57,7 +58,7 @@ export async function POST(request: Request): Promise<Response> {
 
     if (!canInvite(user.role, payload.role)) {
       span.setAttribute('error', 'forbidden_role');
-      return Response.json({ error: 'forbidden_role' }, { status: 403 });
+      return Response.json({ error: 'forbidden_role' }, { status: HTTP_FORBIDDEN });
     }
 
     const entry = await addAllowedEmail({
@@ -104,18 +105,18 @@ async function parseInvitePayload(
 
   if (!(emailInput && role)) {
     span.setAttribute('error', 'invalid_payload');
-    return { response: Response.json({ error: 'invalid_payload' }, { status: 400 }) };
+    return { response: Response.json({ error: 'invalid_payload' }, { status: HTTP_BAD_REQUEST }) };
   }
 
   if (!INVITABLE_ROLES.includes(role)) {
     span.setAttribute('error', 'invalid_role');
-    return { response: Response.json({ error: 'invalid_role' }, { status: 400 }) };
+    return { response: Response.json({ error: 'invalid_role' }, { status: HTTP_BAD_REQUEST }) };
   }
 
   const email = normalizeEmail(emailInput);
   if (!isValidEmail(email)) {
     span.setAttribute('error', 'invalid_email');
-    return { response: Response.json({ error: 'invalid_email' }, { status: 400 }) };
+    return { response: Response.json({ error: 'invalid_email' }, { status: HTTP_BAD_REQUEST }) };
   }
 
   return { email, role };

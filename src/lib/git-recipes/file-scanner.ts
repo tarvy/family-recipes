@@ -9,6 +9,7 @@
  *   const files = await scanCooklangFiles('recipes');
  */
 
+import type { Dirent } from 'node:fs';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { logger } from '@/lib/logger';
@@ -28,36 +29,70 @@ export interface CookFile {
  */
 async function scanDirectory(dir: string, baseDir: string): Promise<CookFile[]> {
   const files: CookFile[] = [];
+  const directories = [dir];
 
+  for (const currentDir of directories) {
+    const entries = await readDirectoryEntries(currentDir);
+    const { subdirectories, cookFiles } = collectEntries(entries, currentDir, baseDir);
+    directories.push(...subdirectories);
+    files.push(...cookFiles);
+  }
+
+  return files;
+}
+
+function isSkippableDirectory(name: string): boolean {
+  return name.startsWith('.') || name === 'node_modules';
+}
+
+function isCookFile(name: string): boolean {
+  return name.endsWith('.cook');
+}
+
+async function readDirectoryEntries(dir: string): Promise<Dirent[]> {
   try {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-
-      if (entry.isDirectory()) {
-        // Skip hidden directories and node_modules
-        if (!entry.name.startsWith('.') && entry.name !== 'node_modules') {
-          const subFiles = await scanDirectory(fullPath, baseDir);
-          files.push(...subFiles);
-        }
-      } else if (entry.isFile() && entry.name.endsWith('.cook')) {
-        files.push({
-          absolutePath: fullPath,
-          relativePath: path.relative(baseDir, fullPath),
-          baseName: entry.name.replace(/\.cook$/, ''),
-        });
-      }
-    }
+    return await fs.readdir(dir, { withFileTypes: true });
   } catch (error) {
     // Directory might not exist or be inaccessible
     logger.recipes.warn('Failed to scan directory', {
       dir,
       error: error instanceof Error ? error.message : String(error),
     });
+    return [];
+  }
+}
+
+function collectEntries(
+  entries: Dirent[],
+  currentDir: string,
+  baseDir: string,
+): { subdirectories: string[]; cookFiles: CookFile[] } {
+  const subdirectories: string[] = [];
+  const cookFiles: CookFile[] = [];
+
+  for (const entry of entries) {
+    const fullPath = path.join(currentDir, entry.name);
+
+    if (entry.isDirectory()) {
+      if (isSkippableDirectory(entry.name)) {
+        continue;
+      }
+      subdirectories.push(fullPath);
+      continue;
+    }
+
+    if (!(entry.isFile() && isCookFile(entry.name))) {
+      continue;
+    }
+
+    cookFiles.push({
+      absolutePath: fullPath,
+      relativePath: path.relative(baseDir, fullPath),
+      baseName: entry.name.replace(/\.cook$/, ''),
+    });
   }
 
-  return files;
+  return { subdirectories, cookFiles };
 }
 
 /**

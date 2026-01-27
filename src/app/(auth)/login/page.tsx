@@ -14,6 +14,9 @@ import { Suspense, useEffect, useState } from 'react';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
+/** Magic link expiry time in minutes - must match TOKEN_EXPIRY_MINUTES in magic-link.ts */
+const MAGIC_LINK_EXPIRY_MINUTES = 15;
+
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_token: 'This link is invalid or has already been used.',
   missing_token: 'Invalid login link.',
@@ -153,7 +156,8 @@ function LoginForm() {
           We sent a login link to <strong className="text-foreground">{email}</strong>
         </p>
         <p className="text-sm text-muted-foreground">
-          Click the link in the email to sign in. The link expires in 15 minutes.
+          Click the link in the email to sign in. The link expires in {MAGIC_LINK_EXPIRY_MINUTES}{' '}
+          minutes.
         </p>
         <button
           type="button"

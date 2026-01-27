@@ -5,6 +5,10 @@
  * Traces are exported to Grafana Cloud via OTLP.
  */
 
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('instrumentation');
+
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     const { NodeSDK } = await import('@opentelemetry/sdk-node');
@@ -18,8 +22,7 @@ export async function register() {
     const apiKey = process.env.GRAFANA_API_KEY;
 
     if (!(endpoint && instanceId && apiKey)) {
-      // biome-ignore lint/suspicious/noConsole: Intentional warning before logger is available
-      console.warn('[instrumentation] Grafana credentials not configured, tracing disabled');
+      log.warn('Grafana credentials not configured, tracing disabled');
       return;
     }
 

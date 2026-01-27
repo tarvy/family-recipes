@@ -23,6 +23,15 @@ import { traceDbQuery, withTrace } from '@/lib/telemetry';
 /** Magic link token expiry time in minutes */
 const TOKEN_EXPIRY_MINUTES = 15;
 
+/** Magic link token length in characters (provides 128 bits of entropy) */
+const MAGIC_LINK_TOKEN_LENGTH = 32;
+
+/** Seconds per minute for time calculations */
+const SECONDS_PER_MINUTE = 60;
+
+/** Milliseconds per second for time calculations */
+const MILLISECONDS_PER_SECOND = 1000;
+
 export interface GenerateMagicLinkResult {
   success: boolean;
   error?: string;
@@ -101,8 +110,10 @@ export async function generateMagicLink(email: string): Promise<GenerateMagicLin
       await connectDB();
 
       // Generate secure token (32 chars = 128 bits entropy)
-      const token = nanoid(32);
-      const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_MINUTES * 60 * 1000);
+      const token = nanoid(MAGIC_LINK_TOKEN_LENGTH);
+      const expiresAt = new Date(
+        Date.now() + TOKEN_EXPIRY_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND,
+      );
 
       // Delete any existing unused magic links for this email
       await traceDbQuery('deleteMany', 'magicLinks', async () => {

@@ -18,6 +18,12 @@ import {
   toWebAuthnCredential,
   verifyPasskeyAuthentication,
 } from '@/lib/auth/passkey';
+import {
+  HTTP_BAD_REQUEST,
+  HTTP_FORBIDDEN,
+  HTTP_INTERNAL_SERVER_ERROR,
+  HTTP_NOT_FOUND,
+} from '@/lib/constants/http-status';
 import { logger } from '@/lib/logger';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
 
@@ -45,7 +51,7 @@ export async function POST(request: Request): Promise<Response> {
     if (body.response) {
       if (!isAuthenticationResponse(body.response)) {
         span.setAttribute('error', 'invalid_payload');
-        return Response.json({ error: 'invalid_payload' }, { status: 400 });
+        return Response.json({ error: 'invalid_payload' }, { status: HTTP_BAD_REQUEST });
       }
 
       return handleVerification(body.response, cookieStore);
@@ -72,7 +78,10 @@ async function handleOptions(cookieStore: Awaited<ReturnType<typeof cookies>>): 
       'Passkey authentication options failed',
       error instanceof Error ? error : undefined,
     );
-    return Response.json({ error: 'authentication_failed' }, { status: 500 });
+    return Response.json(
+      { error: 'authentication_failed' },
+      { status: HTTP_INTERNAL_SERVER_ERROR },
+    );
   }
 }
 
@@ -86,7 +95,7 @@ async function handleVerification(
   if (!challenge || challenge.type !== 'authentication') {
     logger.auth.warn('Passkey authentication challenge missing or invalid');
     cookieStore.delete(getPasskeyChallengeCookieName());
-    return Response.json({ error: 'invalid_challenge' }, { status: 400 });
+    return Response.json({ error: 'invalid_challenge' }, { status: HTTP_BAD_REQUEST });
   }
 
   try {
@@ -99,7 +108,7 @@ async function handleVerification(
     if (!passkey) {
       logger.auth.warn('Passkey credential not found', { credentialId: response.id });
       cookieStore.delete(getPasskeyChallengeCookieName());
-      return Response.json({ error: 'credential_not_found' }, { status: 404 });
+      return Response.json({ error: 'credential_not_found' }, { status: HTTP_NOT_FOUND });
     }
 
     const user = await traceDbQuery('findById', 'users', async () => {
@@ -109,7 +118,7 @@ async function handleVerification(
     if (!user) {
       logger.auth.error('Passkey user not found', undefined, { userId: passkey.userId.toString() });
       cookieStore.delete(getPasskeyChallengeCookieName());
-      return Response.json({ error: 'user_not_found' }, { status: 404 });
+      return Response.json({ error: 'user_not_found' }, { status: HTTP_NOT_FOUND });
     }
 
     await ensureOwnerAllowlist();
@@ -120,7 +129,7 @@ async function handleVerification(
         email: user.email,
       });
       cookieStore.delete(getPasskeyChallengeCookieName());
-      return Response.json({ error: 'not_allowed' }, { status: 403 });
+      return Response.json({ error: 'not_allowed' }, { status: HTTP_FORBIDDEN });
     }
 
     if (user.role !== allowed.role) {
@@ -154,7 +163,7 @@ async function handleVerification(
         credentialId: response.id,
       });
       cookieStore.delete(getPasskeyChallengeCookieName());
-      return Response.json({ error: 'verification_failed' }, { status: 400 });
+      return Response.json({ error: 'verification_failed' }, { status: HTTP_BAD_REQUEST });
     }
 
     const { authenticationInfo } = verification;
@@ -186,7 +195,10 @@ async function handleVerification(
   } catch (error) {
     logger.auth.error('Passkey authentication failed', error instanceof Error ? error : undefined);
     cookieStore.delete(getPasskeyChallengeCookieName());
-    return Response.json({ error: 'authentication_failed' }, { status: 500 });
+    return Response.json(
+      { error: 'authentication_failed' },
+      { status: HTTP_INTERNAL_SERVER_ERROR },
+    );
   }
 }
 
