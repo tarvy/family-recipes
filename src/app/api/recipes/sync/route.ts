@@ -27,14 +27,8 @@ import { withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
 
-/** Seconds per minute */
-const SECONDS_PER_MINUTE = 60;
-
-/** Maximum sync duration in minutes */
-const MAX_SYNC_DURATION_MINUTES = 5;
-
-/** Maximum sync duration (5 minutes) */
-export const maxDuration = SECONDS_PER_MINUTE * MAX_SYNC_DURATION_MINUTES;
+/** Maximum sync duration in seconds (5 minutes) */
+export const maxDuration = 300;
 
 /** Owner role constant */
 const OWNER_ROLE = 'owner';
