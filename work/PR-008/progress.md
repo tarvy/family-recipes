@@ -1,6 +1,6 @@
 # PR-008: Auth - Passkeys - Progress & Agent Handoff
 
-> **Status**: In Progress
+> **Status**: Testing
 > **Started**: 2026-01-27
 > **Target**: 2026-01-30
 > **Branch**: `feat/pr-008-passkeys`
@@ -13,9 +13,9 @@
 |-------|--------|-------|
 | Requirements | [x] Draft [ ] Review [ ] Approved | Drafted 2026-01-27 |
 | Design | [x] Draft [ ] Review [ ] Approved | Drafted 2026-01-27 |
-| Implementation | [ ] Not Started [x] In Progress [ ] Complete | Server + UI in progress |
-| Testing | [ ] Unit [ ] Integration [ ] E2E | Manual verification planned |
-| Documentation | [ ] Updated [ ] Reviewed | Update `docs/AUTH.md` |
+| Implementation | [ ] Not Started [ ] In Progress [x] Complete | Server + UI complete |
+| Testing | [ ] Unit [ ] Integration [ ] E2E | Manual verification pending |
+| Documentation | [x] Updated [ ] Reviewed | Updated auth + environment docs |
 | Cleanup | [ ] Temp files removed [ ] Ready for merge | Remove work/PR-008 after merge |
 
 ---
@@ -24,16 +24,21 @@
 
 From `.progress.json` PR definition:
 
-- [ ] `src/lib/auth/passkey.ts` - Passkey registration/auth helpers
-- [ ] `src/app/api/auth/passkey/register/route.ts` - Registration API
-- [ ] `src/app/api/auth/passkey/authenticate/route.ts` - Authentication API
-- [ ] `src/app/(main)/settings/page.tsx` - Settings page for passkeys
+- [x] `src/lib/auth/passkey.ts` - Passkey registration/auth helpers
+- [x] `src/app/api/auth/passkey/register/route.ts` - Registration API
+- [x] `src/app/api/auth/passkey/authenticate/route.ts` - Authentication API
+- [x] `src/app/(main)/settings/page.tsx` - Settings page for passkeys
 
 Additional deliverables:
 
-- [ ] `src/components/auth/passkey-manager.tsx` - Client UI for passkey actions
-- [ ] `src/app/(auth)/login/page.tsx` - Passkey sign-in option
-- [ ] `docs/AUTH.md` - Passkey documentation
+- [x] `src/components/auth/passkey-manager.tsx` - Client UI for passkey actions
+- [x] `src/app/(auth)/login/page.tsx` - Passkey sign-in option
+- [x] `docs/AUTH.md` - Passkey documentation
+- [x] `src/db/models/allowed-email.model.ts` - Allowlist model
+- [x] `src/lib/auth/allowlist.ts` - Allowlist helpers + owner bootstrap
+- [x] `src/app/api/admin/allowlist/route.ts` - Allowlist list/add
+- [x] `src/app/api/admin/allowlist/[email]/route.ts` - Allowlist removal
+- [x] `src/app/api/invite/route.ts` - Invitation endpoint
 
 ---
 
@@ -98,7 +103,7 @@ Verification:
 **Dependencies**: Phase 2
 
 **Deliverables**:
-- [ ] `docs/AUTH.md`
+- [x] `docs/AUTH.md`
 - [ ] Manual verification notes
 
 **Agent Prompt**:
@@ -123,22 +128,23 @@ Verification:
 | Register passkey | Passkey saved and listed | | [ ] Pass [ ] Fail |
 | Passkey login | Session created, redirected | | [ ] Pass [ ] Fail |
 | Unknown credential | Error response, no session | | [ ] Pass [ ] Fail |
+| Non-allowlisted email | No email sent, sign-in blocked | | [ ] Pass [ ] Fail |
 
 ---
 
 ## Completion Confidence
 
 ### Automated Checks
-- [ ] `npm run lint:fix` - Biome fixes applied
-- [ ] `npm run lint` - All files pass Biome
-- [ ] `npm run typecheck` - No TypeScript errors
-- [ ] `python scripts/progress.py` - PR shows complete
+- [x] `npm run lint:fix` - Biome fixes applied
+- [x] `npm run lint` - All files pass Biome
+- [x] `npm run typecheck` - No TypeScript errors
+- [x] `python scripts/progress.py` - PR shows complete
 
 ### Quality Checks
 - [ ] Thai-lint passes (run locally or in CI)
 - [ ] No TODO comments left in code
 - [ ] No console.log statements (use logger)
-- [ ] Documentation updated
+- [x] Documentation updated
 
 ---
 
@@ -153,3 +159,25 @@ Verification:
 - [x] Drafted requirements.md
 - [x] Drafted design.md
 - [x] Drafted progress.md
+
+### Session 2 - 2026-01-27
+
+**Agent**: Codex
+**Duration**: 90 min
+
+**Completed**:
+- [x] Implemented passkey helpers and API routes
+- [x] Added settings UI and passkey sign-in on login
+- [x] Updated auth/environment docs
+- [x] Ran lint, typecheck, and progress script
+
+### Session 3 - 2026-01-27
+
+**Agent**: Codex
+**Duration**: 60 min
+
+**Completed**:
+- [x] Added allowlist model and auth enforcement
+- [x] Implemented admin allowlist + invite endpoints
+- [x] Updated requirements/design + docs
+- [x] Ran lint and typecheck

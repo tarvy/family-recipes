@@ -13,6 +13,8 @@ import type { Document, Types } from 'mongoose';
 
 export type UserRole = 'owner' | 'family' | 'friend';
 
+export type AllowedEmailRole = UserRole;
+
 export type ShoppingListStatus = 'active' | 'completed' | 'archived';
 
 // -----------------------------------------------------------------------------
@@ -28,6 +30,16 @@ export interface IUser {
 }
 
 export interface IUserDocument extends IUser, Document {}
+
+export interface IAllowedEmail {
+  email: string;
+  role: AllowedEmailRole;
+  invitedBy?: Types.ObjectId | null;
+  createdAt: Date;
+  firstSignedInAt?: Date | null;
+}
+
+export interface IAllowedEmailDocument extends IAllowedEmail, Document {}
 
 export interface ISession {
   userId: Types.ObjectId;

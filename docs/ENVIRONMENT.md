@@ -40,7 +40,7 @@ Database name within the cluster.
 ### Authentication
 
 #### `JWT_SECRET`
-Random secret for signing session JWTs.
+Random secret for signing session JWTs and passkey challenge cookies.
 
 **How to obtain:**
 ```bash
@@ -48,6 +48,15 @@ openssl rand -base64 48
 ```
 
 **Security:** Keep this secret. If compromised, regenerate and all sessions will be invalidated.
+
+#### `OWNER_EMAIL`
+Seed email address for the initial owner allowlist entry. If set, the auth
+pipeline will ensure this email is present in the allowlist with role `owner`.
+
+**Example:**
+```
+OWNER_EMAIL=you@example.com
+```
 
 #### `RESEND_API_KEY`
 API key for sending magic link emails.

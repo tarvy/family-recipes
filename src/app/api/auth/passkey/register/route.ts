@@ -9,6 +9,7 @@ import { cookies } from 'next/headers';
 import { connectDB } from '@/db/connection';
 import { Passkey } from '@/db/models';
 import { getSessionFromCookies, type SessionUser } from '@/lib/auth';
+import { ensureOwnerAllowlist, findAllowedEmail } from '@/lib/auth/allowlist';
 import {
   buildPasskeyChallengeCookie,
   buildRegistrationOptions,
@@ -40,6 +41,17 @@ export async function POST(request: Request): Promise<Response> {
       return Response.json({ error: 'unauthorized' }, { status: 401 });
     }
 
+    await ensureOwnerAllowlist();
+
+    const allowed = await findAllowedEmail(user.email);
+    if (!allowed) {
+      span.setAttribute('error', 'not_allowed');
+      logger.auth.warn('Passkey registration blocked for non-allowlisted email', {
+        email: user.email,
+      });
+      return Response.json({ error: 'not_allowed' }, { status: 403 });
+    }
+
     let body: RegisterRequestBody = {};
     try {
       body = (await request.json()) as RegisterRequestBody;
@@ -48,11 +60,32 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     if (body.response) {
+      if (!isRegistrationResponse(body.response)) {
+        span.setAttribute('error', 'invalid_payload');
+        return Response.json({ error: 'invalid_payload' }, { status: 400 });
+      }
+
       return handleVerification(body.response, user.id, cookieStore);
     }
 
     return handleOptions(user, cookieStore);
   });
+}
+
+function isRegistrationResponse(value: unknown): value is RegistrationResponseJSON {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  return (
+    typeof record['id'] === 'string' &&
+    typeof record['rawId'] === 'string' &&
+    typeof record['type'] === 'string' &&
+    typeof record['response'] === 'object' &&
+    record['response'] !== null
+  );
 }
 
 async function handleOptions(
@@ -97,6 +130,7 @@ async function handleVerification(
 
   if (!challenge || challenge.type !== 'registration' || challenge.userId !== userId) {
     logger.auth.warn('Passkey registration challenge missing or invalid');
+    cookieStore.delete(getPasskeyChallengeCookieName());
     return Response.json({ error: 'invalid_challenge' }, { status: 400 });
   }
 
@@ -105,6 +139,7 @@ async function handleVerification(
 
     if (!(verification.verified && verification.registrationInfo)) {
       logger.auth.warn('Passkey registration verification failed');
+      cookieStore.delete(getPasskeyChallengeCookieName());
       return Response.json({ error: 'verification_failed' }, { status: 400 });
     }
 
@@ -118,6 +153,7 @@ async function handleVerification(
 
     if (existing) {
       logger.auth.warn('Passkey credential already exists', { credentialId: credential.id });
+      cookieStore.delete(getPasskeyChallengeCookieName());
       return Response.json({ error: 'credential_exists' }, { status: 409 });
     }
 
@@ -144,6 +180,7 @@ async function handleVerification(
       'Passkey registration verification error',
       error instanceof Error ? error : undefined,
     );
+    cookieStore.delete(getPasskeyChallengeCookieName());
     return Response.json({ error: 'verification_failed' }, { status: 500 });
   }
 }

@@ -1,14 +1,15 @@
 # Authentication
 
-Family Recipes uses passwordless authentication via email magic links. This provides a secure, user-friendly authentication experience without the need to remember passwords.
+Family Recipes uses passwordless authentication via email magic links and passkeys. This provides a secure, user-friendly authentication experience without the need to remember passwords.
 
 ## Overview
 
 The authentication system consists of:
 
 1. **Magic Links** - One-time use tokens sent via email
-2. **Sessions** - Server-side session management with secure cookies
-3. **User Management** - Automatic user creation on first sign-in
+2. **Passkeys** - WebAuthn credentials for fast sign-in
+3. **Sessions** - Server-side session management with secure cookies
+4. **User Management** - Automatic user creation on first sign-in
 
 ## Authentication Flow
 
@@ -28,6 +29,24 @@ The authentication system consists of:
 │  session    │     │  - Find/create user │
 │  cookie     │     │  - Create session   │
 └─────────────┘     └─────────────────────┘
+```
+
+### Passkey Flow
+
+```
+┌─────────────┐     ┌────────────────────────────────┐     ┌────────────────┐
+│  User       │     │ POST /api/auth/passkey/         │     │  Browser       │
+│  chooses    │────>│ authenticate (options)          │────>│  WebAuthn UI   │
+│  passkey    │     │ - Generate challenge            │     │  (passkey)     │
+└─────────────┘     └────────────────────────────────┘     └────────┬───────┘
+                                                                    │ Assertion
+                                                                    ▼
+┌─────────────┐     ┌────────────────────────────────┐
+│  Session    │<────│ POST /api/auth/passkey/         │
+│  cookie set │     │ authenticate (verify)           │
+└─────────────┘     │ - Verify response               │
+                    │ - Create session                │
+                    └────────────────────────────────┘
 ```
 
 ## API Endpoints
@@ -68,6 +87,7 @@ Verify a magic link token and create a session. This is the callback URL from ma
 |------|-------------|
 | `missing_token` | No token provided in URL |
 | `invalid_token` | Token not found, already used, or expired |
+| `not_allowed` | Email not in allowlist |
 | `server_error` | Internal server error |
 
 ### POST /api/auth/logout
@@ -80,6 +100,96 @@ Destroy the current session and clear the session cookie.
   "success": true
 }
 ```
+
+### POST /api/auth/passkey/register
+
+Start or complete passkey registration for the signed-in user.
+
+**Request (options):**
+```json
+{}
+```
+
+**Response (options):**
+```json
+{
+  "options": { "challenge": "..." }
+}
+```
+
+**Request (verification):**
+```json
+{
+  "response": { "id": "...", "rawId": "..." }
+}
+```
+
+**Response (verification):**
+```json
+{
+  "success": true
+}
+```
+
+### POST /api/auth/passkey/authenticate
+
+Start or complete passkey authentication.
+
+**Request (options):**
+```json
+{}
+```
+
+**Response (options):**
+```json
+{
+  "options": { "challenge": "..." }
+}
+```
+
+**Request (verification):**
+```json
+{
+  "response": { "id": "...", "rawId": "..." }
+}
+```
+
+**Response (verification):**
+```json
+{
+  "success": true
+}
+```
+
+### Access Control (Allowlist + Invites)
+
+Only emails in the allowlist can request magic links or complete verification. Invites and
+allowlist management are owner-only (with limited invite rights for family members).
+
+**Rules:**
+- Only allowlisted emails can receive magic links or sign in
+- Owner can add/remove allowlist entries directly
+- Owner and family can invite new users (family can invite `friend` only)
+- Allowlist entries capture the first successful sign-in timestamp
+
+**Owner bootstrap:**
+- Set `OWNER_EMAIL` to seed the initial owner allowlist entry
+
+### GET /api/admin/allowlist
+
+List all allowlisted emails (owner only).
+
+### POST /api/admin/allowlist
+
+Add an email to the allowlist (owner only).
+
+### DELETE /api/admin/allowlist/[email]
+
+Remove an email from the allowlist (owner only).
+
+### POST /api/invite
+
+Create an invitation (owner or family).
 
 ## Security
 
@@ -101,6 +211,16 @@ Destroy the current session and clear the session cookie.
 | `sameSite` | `lax` | CSRF protection |
 | `path` | `/` | Available site-wide |
 | `maxAge` | 7 days | Session duration |
+
+### Passkey Security
+
+| Measure | Implementation |
+|---------|----------------|
+| Challenge signing | Signed HTTP-only cookie with `JWT_SECRET` |
+| Challenge TTL | 5 minutes |
+| Origin validation | `NEXT_PUBLIC_APP_URL` |
+| RP ID validation | `WEBAUTHN_RP_ID` |
+| User verification | Required during registration and authentication |
 
 ### Additional Measures
 
@@ -130,6 +250,34 @@ interface ISession {
   token: string;      // 32-char nanoid
   expiresAt: Date;    // 7 days from creation
   createdAt: Date;
+}
+```
+
+### Passkey
+
+```typescript
+interface IPasskey {
+  userId: ObjectId;     // Reference to User
+  credentialId: string; // Base64URL credential ID
+  publicKey: string;    // Base64URL public key
+  counter: number;      // Signature counter
+  deviceType?: string;  // singleDevice | multiDevice
+  backedUp: boolean;    // Backup state for multi-device credentials
+  transports?: string[];
+  createdAt: Date;
+  lastUsedAt?: Date;
+}
+```
+
+### AllowedEmail
+
+```typescript
+interface IAllowedEmail {
+  email: string;              // Normalized (lowercase, trimmed)
+  role: 'owner' | 'family' | 'friend';
+  invitedBy?: ObjectId | null;
+  createdAt: Date;
+  firstSignedInAt?: Date | null;
 }
 ```
 
@@ -187,6 +335,8 @@ async function handleLogout() {
 |----------|-------------|---------|
 | `RESEND_API_KEY` | API key for Resend email service | `re_xxx...` |
 | `NEXT_PUBLIC_APP_URL` | Application base URL | `https://recipes.example.com` |
+| `WEBAUTHN_RP_ID` | WebAuthn relying party ID | `recipes.example.com` |
+| `JWT_SECRET` | Signs session and passkey challenge cookies | `base64-random` |
 
 ### Email Sender
 
@@ -202,21 +352,30 @@ The sender email address is derived from `NEXT_PUBLIC_APP_URL`:
    ```
    RESEND_API_KEY=re_xxx...
    NEXT_PUBLIC_APP_URL=http://localhost:3000
+   WEBAUTHN_RP_ID=localhost
+   JWT_SECRET=replace-with-random
+   OWNER_EMAIL=you@example.com
    ```
 
-2. Visit `/login` and enter your email
+2. Visit `/login` and enter your email or choose passkey sign-in
 
 3. Check your inbox for the magic link (or check Resend dashboard for test emails)
+
+4. After signing in, visit `/settings` to register a passkey
 
 ### Test Scenarios
 
 | Scenario | Expected Behavior |
 |----------|-------------------|
 | Valid email | Magic link sent, "Check your email" shown |
+| Non-allowlisted email | Magic link request silently succeeds but no email sent |
 | Click valid link | Redirected to `/` with session |
+| Click valid link after removal | Redirected to `/login?error=not_allowed` |
 | Click expired link | Redirected to `/login?error=invalid_token` |
 | Click used link | Redirected to `/login?error=invalid_token` |
 | Invalid token | Redirected to `/login?error=invalid_token` |
+| Register passkey | Passkey stored and listed in settings |
+| Passkey sign-in | Session created and redirected to `/` |
 | Logout | Session cleared, cookie removed |
 
 ## Future Enhancements
@@ -225,5 +384,4 @@ The authentication system is designed to be extensible. Potential future additio
 
 - **SMS Magic Links**: Add phone number verification
 - **TOTP**: Time-based one-time passwords for 2FA
-- **Passkeys**: WebAuthn/FIDO2 support (model already exists)
 - **Social Login**: OAuth providers (Google, Apple, etc.)

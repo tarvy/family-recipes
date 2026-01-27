@@ -10,7 +10,8 @@
 
 Magic links work well but require email access and add friction for frequent use. We need passkey
 support so family members can sign in quickly with platform authenticators while keeping the
-existing magic link flow as a fallback.
+existing magic link flow as a fallback. We also need access control so only approved emails can
+sign up, with invitations for family members to bring others in.
 
 ---
 
@@ -68,6 +69,39 @@ Feature: Passkey authentication
     And I remain signed out
 ```
 
+### Story 3: Control access with allowlist + invitations
+
+**As an** owner
+**I want** to control who can sign up via an allowlist and invitations
+**So that** only approved people can access the app
+
+#### Acceptance Criteria
+
+```gherkin
+Feature: Allowlist enforcement
+
+  Scenario: Block non-allowlisted email
+    Given an email is not on the allowlist
+    When a magic link is requested
+    Then the API returns success without sending email
+
+  Scenario: Reject verification when removed
+    Given an email is removed from the allowlist
+    When a valid magic link is verified
+    Then sign-in is rejected with a not_allowed error
+
+  Scenario: Invite a new family member
+    Given I am the owner
+    When I invite a new email as family or friend
+    Then an allowlist entry is created
+
+  Scenario: Family invites friend only
+    Given I am a family member
+    When I invite a friend role
+    Then the allowlist entry is created
+    And inviting a family role is rejected
+```
+
 ---
 
 ## Out of Scope
@@ -76,6 +110,7 @@ Feature: Passkey authentication
 - Account recovery flows beyond existing magic links
 - MFA or TOTP integration
 - Enterprise attestation requirements
+- Allowlist management UI (API only)
 
 ---
 
@@ -94,6 +129,7 @@ Feature: Passkey authentication
 - [ ] Should passkeys require user verification (`UV`) or allow `preferred`?
 - [ ] Do we want to support deleting passkeys in the same PR?
 - [ ] Should passkey login be shown on the login page by default or behind a toggle?
+- [ ] Should we add allowlist management UI in a future PR?
 
 ---
 

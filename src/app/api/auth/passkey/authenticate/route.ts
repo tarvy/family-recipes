@@ -7,10 +7,12 @@
 import type { AuthenticationResponseJSON } from '@simplewebauthn/server';
 import { cookies } from 'next/headers';
 import { connectDB } from '@/db/connection';
-import { Passkey, User } from '@/db/models';
+import { AllowedEmail, Passkey, User } from '@/db/models';
 import { createSession, SESSION_COOKIE_NAME, SESSION_COOKIE_OPTIONS } from '@/lib/auth';
+import { ensureOwnerAllowlist, findAllowedEmail } from '@/lib/auth/allowlist';
 import {
   buildAuthenticationOptions,
+  buildPasskeyChallengeCookie,
   getPasskeyChallengeCookieName,
   parsePasskeyChallengeCookie,
   toWebAuthnCredential,
@@ -57,7 +59,11 @@ async function handleOptions(cookieStore: Awaited<ReturnType<typeof cookies>>): 
   try {
     const options = await buildAuthenticationOptions();
 
-    const cookie = buildAuthenticationChallengeCookie(options.challenge);
+    const cookie = buildPasskeyChallengeCookie({
+      challenge: options.challenge,
+      type: 'authentication',
+      createdAt: Date.now(),
+    });
     cookieStore.set(cookie.name, cookie.value, cookie.options);
 
     return Response.json({ options });
@@ -79,6 +85,7 @@ async function handleVerification(
 
   if (!challenge || challenge.type !== 'authentication') {
     logger.auth.warn('Passkey authentication challenge missing or invalid');
+    cookieStore.delete(getPasskeyChallengeCookieName());
     return Response.json({ error: 'invalid_challenge' }, { status: 400 });
   }
 
@@ -91,6 +98,7 @@ async function handleVerification(
 
     if (!passkey) {
       logger.auth.warn('Passkey credential not found', { credentialId: response.id });
+      cookieStore.delete(getPasskeyChallengeCookieName());
       return Response.json({ error: 'credential_not_found' }, { status: 404 });
     }
 
@@ -100,7 +108,38 @@ async function handleVerification(
 
     if (!user) {
       logger.auth.error('Passkey user not found', undefined, { userId: passkey.userId.toString() });
+      cookieStore.delete(getPasskeyChallengeCookieName());
       return Response.json({ error: 'user_not_found' }, { status: 404 });
+    }
+
+    await ensureOwnerAllowlist();
+
+    const allowed = await findAllowedEmail(user.email);
+    if (!allowed) {
+      logger.auth.warn('Passkey authentication blocked for non-allowlisted email', {
+        email: user.email,
+      });
+      cookieStore.delete(getPasskeyChallengeCookieName());
+      return Response.json({ error: 'not_allowed' }, { status: 403 });
+    }
+
+    if (user.role !== allowed.role) {
+      await traceDbQuery('updateOne', 'users', async () => {
+        return User.updateOne({ _id: user._id }, { $set: { role: allowed.role } });
+      });
+      logger.auth.info('User role updated from allowlist', {
+        email: user.email,
+        role: allowed.role,
+      });
+    }
+
+    if (!allowed.firstSignedInAt) {
+      await traceDbQuery('updateOne', 'allowedEmails', async () => {
+        return AllowedEmail.updateOne(
+          { _id: allowed._id },
+          { $set: { firstSignedInAt: new Date() } },
+        );
+      });
     }
 
     const credential = toWebAuthnCredential(passkey);
@@ -114,6 +153,7 @@ async function handleVerification(
       logger.auth.warn('Passkey authentication verification failed', {
         credentialId: response.id,
       });
+      cookieStore.delete(getPasskeyChallengeCookieName());
       return Response.json({ error: 'verification_failed' }, { status: 400 });
     }
 
@@ -145,51 +185,9 @@ async function handleVerification(
     return Response.json({ success: true });
   } catch (error) {
     logger.auth.error('Passkey authentication failed', error instanceof Error ? error : undefined);
+    cookieStore.delete(getPasskeyChallengeCookieName());
     return Response.json({ error: 'authentication_failed' }, { status: 500 });
   }
-}
-
-function buildAuthenticationChallengeCookie(challenge: string) {
-  return {
-    name: getPasskeyChallengeCookieName(),
-    value: buildChallengeToken(challenge),
-    options: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax' as const,
-      path: '/',
-      maxAge: 5 * 60,
-    },
-  };
-}
-
-function buildChallengeToken(challenge: string): string {
-  const payload = {
-    challenge,
-    type: 'authentication',
-    createdAt: Date.now(),
-  };
-
-  return buildSignedChallengeToken(payload);
-}
-
-function buildSignedChallengeToken(payload: {
-  challenge: string;
-  type: string;
-  createdAt: number;
-}): string {
-  const encodedPayload = Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
-  const signature = getChallengeSignature(encodedPayload);
-  return `${encodedPayload}.${signature}`;
-}
-
-function getChallengeSignature(value: string): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET is required for passkey challenge signing');
-  }
-
-  return require('node:crypto').createHmac('sha256', secret).update(value).digest('base64url');
 }
 
 function isAuthenticationResponse(value: unknown): value is AuthenticationResponseJSON {
@@ -200,10 +198,10 @@ function isAuthenticationResponse(value: unknown): value is AuthenticationRespon
   const record = value as Record<string, unknown>;
 
   return (
-    typeof record.id === 'string' &&
-    typeof record.rawId === 'string' &&
-    typeof record.type === 'string' &&
-    typeof record.response === 'object' &&
-    record.response !== null
+    typeof record['id'] === 'string' &&
+    typeof record['rawId'] === 'string' &&
+    typeof record['type'] === 'string' &&
+    typeof record['response'] === 'object' &&
+    record['response'] !== null
   );
 }

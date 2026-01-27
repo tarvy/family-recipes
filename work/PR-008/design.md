@@ -10,7 +10,8 @@
 
 Add WebAuthn passkey registration and authentication. Signed-in users can register passkeys on the
 settings page, and returning users can sign in with a passkey from the login page. Magic links
-remain the fallback authentication method.
+remain the fallback authentication method. Add allowlist access control so only approved emails
+can sign up, with invitations for family members.
 
 ---
 
@@ -19,6 +20,8 @@ remain the fallback authentication method.
 - Enable passkey registration for signed-in users
 - Enable passkey authentication and session creation
 - Store passkey credentials in MongoDB using existing `passkeys` collection
+- Restrict authentication to allowlisted emails
+- Provide invite and allowlist management APIs
 - Maintain observability (logging + tracing) for auth and DB operations
 
 ## Non-Goals
@@ -37,6 +40,7 @@ remain the fallback authentication method.
   - `NEXT_PUBLIC_APP_URL` (origin)
   - `WEBAUTHN_RP_ID` (relying party ID)
   - `JWT_SECRET` (signing challenge cookie)
+  - `OWNER_EMAIL` (owner allowlist seed)
 
 ---
 
@@ -66,6 +70,16 @@ Uses existing `passkeys` collection:
 - `backedUp`
 - `transports[]`
 - `lastUsedAt`
+
+### Allowlist Collection
+
+Uses new `allowed_emails` collection:
+
+- `email`
+- `role` (owner | family | friend)
+- `invitedBy`
+- `createdAt`
+- `firstSignedInAt`
 
 ---
 
@@ -130,6 +144,15 @@ Uses existing `passkeys` collection:
 - `404` credential not found
 - `500` verification failure
 
+### Allowlist + Invite APIs
+
+| Route | Method | Auth | Description |
+|-------|--------|------|-------------|
+| `/api/admin/allowlist` | GET | owner | List allowlisted emails |
+| `/api/admin/allowlist` | POST | owner | Add allowlisted email |
+| `/api/admin/allowlist/[email]` | DELETE | owner | Remove allowlisted email |
+| `/api/invite` | POST | owner, family | Invite a new email (family can invite friend only) |
+
 ---
 
 ## UI/UX
@@ -168,6 +191,7 @@ Uses existing `passkeys` collection:
 - Verify `expectedOrigin` and `expectedRPID` on responses
 - Require user verification when validating passkeys
 - Signed, short-lived challenge cookies
+- Enforce allowlist on magic link send, verify, and passkey auth
 
 ---
 
@@ -179,6 +203,8 @@ Manual verification (until PR-017 adds test harness):
 2. Register a passkey in settings
 3. Sign out and sign back in using passkey
 4. Attempt authentication with unknown credential (expect failure)
+5. Request magic link with non-allowlisted email (expect silent success, no email)
+6. Verify magic link after removal from allowlist (expect not_allowed)
 
 ---
 

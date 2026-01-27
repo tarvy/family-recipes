@@ -17,6 +17,9 @@ export default async function Home() {
             Signed in as <span className="font-medium text-foreground">{user.email}</span>
           </p>
           <p className="text-xs text-muted-foreground">Role: {user.role}</p>
+          <Link href="/settings" className="text-sm text-primary hover:underline">
+            Manage settings
+          </Link>
           <LogoutButton />
         </div>
       ) : (

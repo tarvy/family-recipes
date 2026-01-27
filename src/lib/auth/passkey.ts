@@ -10,6 +10,7 @@ import {
   type PublicKeyCredentialCreationOptionsJSON,
   type PublicKeyCredentialRequestOptionsJSON,
   type RegistrationResponseJSON,
+  type Uint8Array_,
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
   type WebAuthnCredential,
@@ -22,7 +23,10 @@ import type { SessionUser } from './session';
 const DEFAULT_APP_URL = 'http://localhost:3000';
 const PASSKEY_RP_NAME = 'Family Recipes';
 const PASSKEY_CHALLENGE_COOKIE_NAME = 'passkey_challenge';
-const PASSKEY_CHALLENGE_TTL_SECONDS = 5 * 60;
+const PASSKEY_CHALLENGE_TTL_MINUTES = 5;
+const SECONDS_PER_MINUTE = 60;
+const MILLISECONDS_PER_SECOND = 1000;
+const PASSKEY_CHALLENGE_TTL_SECONDS = PASSKEY_CHALLENGE_TTL_MINUTES * SECONDS_PER_MINUTE;
 
 const PASSKEY_CHALLENGE_COOKIE_OPTIONS: Partial<ResponseCookie> = {
   httpOnly: true,
@@ -88,10 +92,13 @@ export function buildRegistrationOptions(
 ): Promise<PublicKeyCredentialCreationOptionsJSON> {
   const rpId = getRpId();
   const userIdBytes = isoUint8Array.fromUTF8String(user.id);
-  const excludeCredentials = passkeys.map((passkey) => ({
-    id: passkey.credentialId,
-    transports: normalizeTransports(passkey.transports),
-  }));
+  const excludeCredentials = passkeys.map((passkey) => {
+    const transports = normalizeTransports(passkey.transports);
+    if (transports) {
+      return { id: passkey.credentialId, transports };
+    }
+    return { id: passkey.credentialId };
+  });
 
   return generateRegistrationOptions({
     rpName: PASSKEY_RP_NAME,
@@ -102,7 +109,7 @@ export function buildRegistrationOptions(
     attestationType: 'none',
     authenticatorSelection: {
       residentKey: 'preferred',
-      userVerification: 'preferred',
+      userVerification: 'required',
     },
     excludeCredentials,
   });
@@ -112,7 +119,7 @@ export function buildAuthenticationOptions(): Promise<PublicKeyCredentialRequest
   const rpId = getRpId();
   return generateAuthenticationOptions({
     rpID: rpId,
-    userVerification: 'preferred',
+    userVerification: 'required',
   });
 }
 
@@ -149,15 +156,24 @@ export async function verifyPasskeyAuthentication(
 }
 
 export function toWebAuthnCredential(passkey: IPasskeyDocument): WebAuthnCredential {
+  const transports = normalizeTransports(passkey.transports);
+  if (transports) {
+    return {
+      id: passkey.credentialId,
+      publicKey: isoBase64URL.toBuffer(passkey.publicKey),
+      counter: passkey.counter,
+      transports,
+    };
+  }
+
   return {
     id: passkey.credentialId,
     publicKey: isoBase64URL.toBuffer(passkey.publicKey),
     counter: passkey.counter,
-    transports: normalizeTransports(passkey.transports),
   };
 }
 
-export function serializePublicKey(publicKey: Uint8Array): string {
+export function serializePublicKey(publicKey: Uint8Array_): string {
   return isoBase64URL.fromBuffer(publicKey);
 }
 
@@ -200,40 +216,44 @@ function createSignedChallengeToken(payload: PasskeyChallengePayload): string {
 }
 
 function parseSignedChallengeToken(token: string): PasskeyChallengePayload | null {
-  const [encodedPayload, signature] = token.split('.', 2);
+  try {
+    const [encodedPayload, signature] = token.split('.', 2);
 
-  if (!(encodedPayload && signature)) {
+    if (!(encodedPayload && signature)) {
+      return null;
+    }
+
+    const secret = getChallengeSecret();
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(encodedPayload)
+      .digest('base64url');
+
+    const signatureBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expectedSignature);
+
+    if (signatureBuffer.length !== expectedBuffer.length) {
+      return null;
+    }
+
+    if (!crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
+      return null;
+    }
+
+    const payload = parsePayload(encodedPayload);
+    if (!payload) {
+      return null;
+    }
+
+    const ageMs = Date.now() - payload.createdAt;
+    if (ageMs > PASSKEY_CHALLENGE_TTL_SECONDS * MILLISECONDS_PER_SECOND) {
+      return null;
+    }
+
+    return payload;
+  } catch {
     return null;
   }
-
-  const secret = getChallengeSecret();
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(encodedPayload)
-    .digest('base64url');
-
-  const signatureBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expectedSignature);
-
-  if (signatureBuffer.length !== expectedBuffer.length) {
-    return null;
-  }
-
-  if (!crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
-    return null;
-  }
-
-  const payload = parsePayload(encodedPayload);
-  if (!payload) {
-    return null;
-  }
-
-  const ageMs = Date.now() - payload.createdAt;
-  if (ageMs > PASSKEY_CHALLENGE_TTL_SECONDS * 1000) {
-    return null;
-  }
-
-  return payload;
 }
 
 function parsePayload(encodedPayload: string): PasskeyChallengePayload | null {
@@ -257,7 +277,10 @@ function isChallengePayload(value: unknown): value is PasskeyChallengePayload {
   }
 
   const record = value as Record<string, unknown>;
-  const { challenge, type, createdAt, userId } = record;
+  const challenge = record['challenge'];
+  const type = record['type'];
+  const createdAt = record['createdAt'];
+  const userId = record['userId'];
 
   if (typeof challenge !== 'string' || typeof type !== 'string' || typeof createdAt !== 'number') {
     return false;

@@ -6,6 +6,12 @@
  */
 
 import { generateMagicLink } from '@/lib/auth';
+import {
+  ensureOwnerAllowlist,
+  findAllowedEmail,
+  isValidEmail,
+  normalizeEmail,
+} from '@/lib/auth/allowlist';
 import { logger } from '@/lib/logger';
 import { withTrace } from '@/lib/telemetry';
 
@@ -15,18 +21,17 @@ interface SendRequest {
   email?: string;
 }
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export async function POST(request: Request): Promise<Response> {
   return withTrace('api.auth.send', async (span) => {
     logger.api.info('Magic link send requested', { path: '/api/auth/send' });
 
     try {
       const body = (await request.json()) as SendRequest;
-      const email = body.email?.trim().toLowerCase();
+      const emailInput = body.email?.trim();
+      const email = emailInput ? normalizeEmail(emailInput) : undefined;
 
       // Validate email format
-      if (!(email && EMAIL_REGEX.test(email))) {
+      if (!(email && isValidEmail(email))) {
         span.setAttribute('error', 'invalid_email');
         logger.auth.warn('Invalid email format provided');
         // Still return 200 to prevent enumeration
@@ -34,6 +39,14 @@ export async function POST(request: Request): Promise<Response> {
       }
 
       span.setAttribute('email', email);
+
+      await ensureOwnerAllowlist();
+
+      const allowed = await findAllowedEmail(email);
+      if (!allowed) {
+        logger.auth.warn('Magic link request rejected (not allowlisted)', { email });
+        return Response.json({ success: true });
+      }
 
       // Generate and send magic link
       const result = await generateMagicLink(email);

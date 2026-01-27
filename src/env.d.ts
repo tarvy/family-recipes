@@ -17,6 +17,7 @@ declare global {
 
       // Authentication
       JWT_SECRET?: string;
+      OWNER_EMAIL?: string;
       RESEND_API_KEY?: string;
 
       // Observability

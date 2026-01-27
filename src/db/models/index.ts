@@ -11,6 +11,9 @@
 
 // Re-export types for convenience
 export type {
+  AllowedEmailRole,
+  IAllowedEmail,
+  IAllowedEmailDocument,
   ICookware,
   IIngredient,
   IMagicLink,
@@ -37,6 +40,7 @@ export type {
   ShoppingListStatus,
   UserRole,
 } from '../types';
+export { AllowedEmail } from './allowed-email.model';
 export { MagicLink } from './magic-link.model';
 export { Passkey } from './passkey.model';
 export { findRecipesByIngredient, Recipe, searchRecipes } from './recipe.model';

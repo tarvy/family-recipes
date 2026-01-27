@@ -63,6 +63,66 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run typecheck` | Run TypeScript type checking |
 | `npm run progress` | Check project progress (Python) |
 
+---
+
+## AI Agent Data Access Patterns
+
+Use API routes for routine access control operations. They include logging/tracing and enforce
+permissions. For ad-hoc read-only queries, use a short-lived Node script that reads `.env.local`.
+
+### Recommended (API-first)
+
+1. Sign in as owner (magic link or passkey).
+2. Copy the `session` cookie from the browser.
+3. Use the cookie in CLI requests:
+
+```bash
+curl -sS -H "Cookie: session=<token>" http://localhost:3000/api/admin/allowlist
+```
+
+Add to allowlist:
+```bash
+curl -sS -X POST -H "Cookie: session=<token>" -H "Content-Type: application/json" \\
+  http://localhost:3000/api/admin/allowlist \\
+  -d '{"email":"person@example.com","role":"family"}'
+```
+
+Invite (owner/family):
+```bash
+curl -sS -X POST -H "Cookie: session=<token>" -H "Content-Type: application/json" \\
+  http://localhost:3000/api/invite \\
+  -d '{"email":"friend@example.com","role":"friend"}'
+```
+
+### Ad-hoc Read-only DB Query (Mongoose)
+
+Use this pattern sparingly and avoid printing secrets:
+
+```bash
+node -e "\
+const fs=require('fs');\
+const env=fs.readFileSync('.env.local','utf8');\
+env.split(/\\n/).forEach(line=>{\
+  const trimmed=line.trim();\
+  if(!trimmed||trimmed.startsWith('#')) return;\
+  const idx=trimmed.indexOf('=');\
+  if(idx===-1) return;\
+  const key=trimmed.slice(0,idx);\
+  const val=trimmed.slice(idx+1);\
+  process.env[key]=val;\
+});\
+const mongoose=require('mongoose');\
+(async()=>{\
+  await mongoose.connect(process.env.MONGODB_URI,{dbName:process.env.MONGODB_DB_NAME});\
+  const docs=await mongoose.connection.collection('allowedemails').find({}).toArray();\
+  console.log(JSON.stringify(docs,null,2));\
+  await mongoose.disconnect();\
+})().catch(err=>{console.error(err);process.exitCode=1;});\
+"
+```
+
+If you need a repeatable task for agents, prefer adding an API endpoint over custom scripts.
+
 ### Just Recipes (optional)
 
 | Command | Description |
