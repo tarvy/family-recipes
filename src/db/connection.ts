@@ -23,14 +23,19 @@
 import mongoose from 'mongoose';
 import { logger } from '@/lib/logger';
 
-const MONGODB_URI_RAW = process.env['MONGODB_URI'];
 const MONGODB_DB_NAME = process.env['MONGODB_DB_NAME'] || 'family_recipes';
 
-if (!MONGODB_URI_RAW) {
-  throw new Error('MONGODB_URI environment variable is not set');
+/**
+ * Get MongoDB URI, throwing if not configured.
+ * Lazy evaluation allows builds to succeed without env vars.
+ */
+function getMongoUri(): string {
+  const uri = process.env['MONGODB_URI'];
+  if (!uri) {
+    throw new Error('MONGODB_URI environment variable is not set');
+  }
+  return uri;
 }
-
-const MONGODB_URI: string = MONGODB_URI_RAW;
 
 /** Connection pool size per serverless instance */
 const MAX_POOL_SIZE = 10;
@@ -92,7 +97,7 @@ export async function connectDB(): Promise<typeof mongoose> {
   // Create new connection
   logger.db.info('Connecting to MongoDB Atlas...');
 
-  cached.promise = mongoose.connect(MONGODB_URI, connectionOptions).then((mongooseInstance) => {
+  cached.promise = mongoose.connect(getMongoUri(), connectionOptions).then((mongooseInstance) => {
     logger.db.info('MongoDB connection established');
     return mongooseInstance;
   });
