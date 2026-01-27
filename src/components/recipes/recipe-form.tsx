@@ -25,6 +25,9 @@ const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
 
+/** Default number of rows for textarea inputs */
+const TEXTAREA_ROWS = 3;
+
 /** Counter for generating unique IDs */
 let cookwareIdCounter = 0;
 
@@ -283,7 +286,7 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
               value={formData.description}
               onChange={(e) => updateField('description', e.target.value)}
               placeholder="Brief description of the recipe"
-              rows={3}
+              rows={TEXTAREA_ROWS}
               className="mt-1.5 w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
             />
           </div>

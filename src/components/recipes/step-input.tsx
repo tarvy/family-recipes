@@ -9,6 +9,9 @@
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
 
+/** Default number of rows for step textarea */
+const TEXTAREA_ROWS = 3;
+
 export interface StepRow {
   id: string;
   text: string;
@@ -69,7 +72,7 @@ export function StepInput({ steps, onChange }: StepInputProps) {
               placeholder={`Step ${index + 1} instructions...`}
               value={step.text}
               onChange={(e) => handleChange(step.id, e.target.value)}
-              rows={3}
+              rows={TEXTAREA_ROWS}
               className="w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
             />
           </div>
