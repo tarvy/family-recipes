@@ -25,6 +25,8 @@
     "@opentelemetry/resources": "^2.5.0",
     "@opentelemetry/sdk-node": "^0.211.0",
     "@opentelemetry/semantic-conventions": "^1.39.0",
+    "@simplewebauthn/browser": "^13.2.2",
+    "@simplewebauthn/server": "^13.2.2",
     "@tailwindcss/postcss": "^4.1.18",
     "mongoose": "^8.2.0",
     "nanoid": "^5.1.6",

@@ -73,6 +73,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `just thai-lint` | Run Thai-lint checks |
 | `just check` | Run lint + typecheck |
 | `just pre-commit` | Run lint:fix + lint + typecheck + Thai-lint |
+| `just dev` | Start the Next.js dev server |
 
 ---
 

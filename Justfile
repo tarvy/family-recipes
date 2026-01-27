@@ -22,3 +22,6 @@ pre-commit:
   just lint
   just typecheck
   just thai-lint
+
+dev:
+  npm run dev
