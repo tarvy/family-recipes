@@ -9,11 +9,20 @@ min_duplicate_lines: 5
 max_nesting_depth: 4
 
 # Magic numbers - Only these numeric literals are allowed without naming
-allowed_numbers:
-  - 0
-  - 1
-  - -1
-  - 100
+# Common small numbers (2-10) are allowed for array indices, conditionals, etc.
+# 100, 300, 1000 are allowed for percentages and timeouts
+magic-numbers:
+  allowed_numbers:
+    - 0
+    - 1
+    - -1
+    - 2
+    - 3
+    - 5
+    - 10
+    - 100
+    - 300
+    - 1000
 
 # SRP - Single Responsibility Principle
 # Maximum number of public methods per class
