@@ -127,15 +127,21 @@ export async function disconnectDB(): Promise<void> {
   }
 }
 
+/** Mongoose connection state codes (from mongoose.connection.readyState) */
+const MONGOOSE_STATE_DISCONNECTED = 0;
+const MONGOOSE_STATE_CONNECTED = 1;
+const MONGOOSE_STATE_CONNECTING = 2;
+const MONGOOSE_STATE_DISCONNECTING = 3;
+
 /**
  * Get the current connection state.
  */
 export function getConnectionState(): string {
   const states: Record<number, string> = {
-    0: 'disconnected',
-    1: 'connected',
-    2: 'connecting',
-    3: 'disconnecting',
+    [MONGOOSE_STATE_DISCONNECTED]: 'disconnected',
+    [MONGOOSE_STATE_CONNECTED]: 'connected',
+    [MONGOOSE_STATE_CONNECTING]: 'connecting',
+    [MONGOOSE_STATE_DISCONNECTING]: 'disconnecting',
   };
   return states[mongoose.connection.readyState] || 'unknown';
 }

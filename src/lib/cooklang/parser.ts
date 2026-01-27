@@ -21,7 +21,7 @@ import {
 import type { ICookware, IIngredient, IRecipe, IStep } from '@/db/types';
 import { logger } from '@/lib/logger';
 import { withTrace } from '@/lib/telemetry';
-import { METADATA_KEYS, TIME_UNIT_TO_MINUTES } from './constants';
+import { DECIMAL_RADIX, METADATA_KEYS, TIME_UNIT_TO_MINUTES } from './constants';
 
 export interface ParseContext {
   /** Path to the .cook file relative to recipes directory */
@@ -61,17 +61,21 @@ function titleFromFilePath(filePath: string): string {
   return filename.replace(/\.cook$/, '').replace(/-/g, ' ');
 }
 
+/** Regex capture group indices for time parsing: (value)(unit) */
+const TIME_REGEX_VALUE_GROUP = 1;
+const TIME_REGEX_UNIT_GROUP = 2;
+
 /**
  * Parse a time string like "30 minutes" or "1 hour" to minutes
  */
 function parseTimeToMinutes(timeStr: string): number | undefined {
   const match = timeStr.match(/^(\d+(?:\.\d+)?)\s*(\w+)?$/);
-  if (!match?.[1]) {
+  if (!match?.[TIME_REGEX_VALUE_GROUP]) {
     return undefined;
   }
 
-  const value = parseFloat(match[1]);
-  const unit = (match[2] ?? 'minutes').toLowerCase();
+  const value = parseFloat(match[TIME_REGEX_VALUE_GROUP]);
+  const unit = (match[TIME_REGEX_UNIT_GROUP] ?? 'minutes').toLowerCase();
   const multiplier = TIME_UNIT_TO_MINUTES[unit] ?? 1;
 
   return Math.round(value * multiplier);
@@ -82,7 +86,7 @@ function parseTimeToMinutes(timeStr: string): number | undefined {
  */
 function parseServings(value: string): number | undefined {
   const match = value.match(/^(\d+)/);
-  return match?.[1] ? parseInt(match[1], 10) : undefined;
+  return match?.[1] ? parseInt(match[1], DECIMAL_RADIX) : undefined;
 }
 
 /**
@@ -120,7 +124,7 @@ function convertCookware(cw: Cookware): ICookware {
 
   if (cw.quantity !== undefined && cw.quantity !== '' && cw.quantity !== 1) {
     result.quantity =
-      typeof cw.quantity === 'number' ? cw.quantity : parseInt(String(cw.quantity), 10);
+      typeof cw.quantity === 'number' ? cw.quantity : parseInt(String(cw.quantity), DECIMAL_RADIX);
   }
 
   return result;

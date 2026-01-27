@@ -17,6 +17,9 @@ type FormState = 'idle' | 'loading' | 'success' | 'error';
 /** Magic link expiry time in minutes - must match TOKEN_EXPIRY_MINUTES in magic-link.ts */
 const MAGIC_LINK_EXPIRY_MINUTES = 15;
 
+/** SVG icon stroke width for consistent styling */
+const ICON_STROKE_WIDTH = 2;
+
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_token: 'This link is invalid or has already been used.',
   missing_token: 'Invalid login link.',
@@ -145,7 +148,7 @@ function LoginForm() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
+                strokeWidth={ICON_STROKE_WIDTH}
                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
               />
             </svg>

@@ -5,6 +5,10 @@
 import mongoose, { type Model, Schema } from 'mongoose';
 import type { IRecipeHistoryDocument } from '../types';
 
+/** Rating scale: 1-5 stars */
+const MIN_RATING = 1;
+const MAX_RATING = 5;
+
 const recipeHistorySchema = new Schema<IRecipeHistoryDocument>(
   {
     userId: {
@@ -26,8 +30,8 @@ const recipeHistorySchema = new Schema<IRecipeHistoryDocument>(
     },
     rating: {
       type: Number,
-      min: 1,
-      max: 5,
+      min: MIN_RATING,
+      max: MAX_RATING,
     },
   },
   {

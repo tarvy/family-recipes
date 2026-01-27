@@ -128,6 +128,12 @@ recipeSchema.index({ cuisine: 1 });
 recipeSchema.index({ course: 1 });
 recipeSchema.index({ 'ingredients.name': 1 });
 
+// Text search weights - higher numbers = more relevance in search results
+const SEARCH_WEIGHT_TITLE = 10;
+const SEARCH_WEIGHT_DESCRIPTION = 5;
+const SEARCH_WEIGHT_INGREDIENTS = 3;
+const SEARCH_WEIGHT_TAGS = 2;
+
 // Text index for basic search (free tier compatible)
 recipeSchema.index(
   {
@@ -138,10 +144,10 @@ recipeSchema.index(
   },
   {
     weights: {
-      title: 10,
-      description: 5,
-      'ingredients.name': 3,
-      tags: 2,
+      title: SEARCH_WEIGHT_TITLE,
+      description: SEARCH_WEIGHT_DESCRIPTION,
+      'ingredients.name': SEARCH_WEIGHT_INGREDIENTS,
+      tags: SEARCH_WEIGHT_TAGS,
     },
     name: 'recipe_text_search',
   },

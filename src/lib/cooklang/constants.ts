@@ -52,3 +52,6 @@ export const PHOTO_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'] as const;
 
 /** Maximum step photos per recipe (e.g., RecipeName.1.png through RecipeName.10.png) */
 export const MAX_STEP_PHOTOS = 10;
+
+/** Decimal radix for parseInt - always use to avoid octal interpretation */
+export const DECIMAL_RADIX = 10;

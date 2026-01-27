@@ -28,6 +28,9 @@ const SECONDS_PER_MINUTE = 60;
 const MILLISECONDS_PER_SECOND = 1000;
 const PASSKEY_CHALLENGE_TTL_SECONDS = PASSKEY_CHALLENGE_TTL_MINUTES * SECONDS_PER_MINUTE;
 
+/** Token format: payload.signature (2 parts separated by dot) */
+const TOKEN_PARTS_COUNT = 2;
+
 const PASSKEY_CHALLENGE_COOKIE_OPTIONS: Partial<ResponseCookie> = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
@@ -217,7 +220,7 @@ function createSignedChallengeToken(payload: PasskeyChallengePayload): string {
 
 function parseSignedChallengeToken(token: string): PasskeyChallengePayload | null {
   try {
-    const [encodedPayload, signature] = token.split('.', 2);
+    const [encodedPayload, signature] = token.split('.', TOKEN_PARTS_COUNT);
 
     if (!(encodedPayload && signature)) {
       return null;
