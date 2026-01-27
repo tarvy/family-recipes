@@ -1,9 +1,8 @@
 /**
- * PUT /api/recipes/[slug]
+ * Recipe API routes for individual recipes
  *
- * Update an existing recipe. Writes updated .cook file to the filesystem.
- *
- * Auth: Session required.
+ * GET /api/recipes/[slug] - Get recipe details (no auth)
+ * PUT /api/recipes/[slug] - Update recipe (auth required)
  */
 
 import { cookies } from 'next/headers';
@@ -43,6 +42,36 @@ interface UpdateRecipeRequest {
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
+}
+
+/**
+ * GET /api/recipes/[slug]
+ *
+ * Get recipe details by slug. No authentication required.
+ */
+export async function GET(_request: Request, { params }: RouteParams): Promise<Response> {
+  return withTrace('api.recipes.get', async (span) => {
+    const { slug } = await params;
+    span.setAttribute('slug', slug);
+
+    try {
+      const recipe = await getRecipeBySlug(slug);
+
+      if (!recipe) {
+        span.setAttribute('error', 'not_found');
+        return Response.json({ error: 'Recipe not found' }, { status: HTTP_NOT_FOUND });
+      }
+
+      return Response.json(recipe);
+    } catch (error) {
+      logger.recipes.error('Failed to get recipe', error instanceof Error ? error : undefined);
+      span.setAttribute('error', error instanceof Error ? error.message : 'unknown');
+      return Response.json(
+        { error: 'Failed to get recipe' },
+        { status: HTTP_INTERNAL_SERVER_ERROR },
+      );
+    }
+  });
 }
 
 /**
