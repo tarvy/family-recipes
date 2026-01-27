@@ -12,6 +12,9 @@ interface StepListProps {
   steps: Step[];
 }
 
+/** Characters to include in step key for uniqueness */
+const STEP_KEY_SLICE_LENGTH = 20;
+
 /**
  * Display recipe steps with numbered instructions
  *
@@ -65,8 +68,8 @@ export function StepList({ steps }: StepListProps) {
  * Create a stable key for a step
  */
 function createStepKey(step: Step, index: number): string {
-  // Use first 20 chars of text + index for uniqueness
-  return `step-${index}-${step.text.slice(0, 20).replace(/\s+/g, '-')}`;
+  // Use first N chars of text + index for uniqueness
+  return `step-${index}-${step.text.slice(0, STEP_KEY_SLICE_LENGTH).replace(/\s+/g, '-')}`;
 }
 
 /**

@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import type { RecipePreview } from '@/lib/recipes/loader';
 
+/** Minutes per hour for time conversion */
+const MINUTES_PER_HOUR = 60;
+
 /**
  * Category color configuration
  * Uses warm, cozy colors that complement the Cooking Mama design system
@@ -55,11 +58,11 @@ function getCategoryColors(category: string) {
  * Format time display (e.g., "30 min" or "1 hr 15 min")
  */
 function formatTime(minutes: number): string {
-  if (minutes < 60) {
+  if (minutes < MINUTES_PER_HOUR) {
     return `${minutes} min`;
   }
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
+  const hours = Math.floor(minutes / MINUTES_PER_HOUR);
+  const remainingMinutes = minutes % MINUTES_PER_HOUR;
   if (remainingMinutes === 0) {
     return `${hours} hr`;
   }

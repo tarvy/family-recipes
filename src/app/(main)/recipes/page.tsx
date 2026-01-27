@@ -3,6 +3,21 @@ import { Suspense } from 'react';
 import { RecipeBrowser } from '@/components/recipes/recipe-browser';
 import { getAllRecipes, getCategories } from '@/lib/recipes/loader';
 
+/** Skeleton pill keys for loading state */
+const SKELETON_PILLS = ['pill-1', 'pill-2', 'pill-3', 'pill-4', 'pill-5'] as const;
+
+/** Skeleton card keys for loading state */
+const SKELETON_CARDS = [
+  'card-1',
+  'card-2',
+  'card-3',
+  'card-4',
+  'card-5',
+  'card-6',
+  'card-7',
+  'card-8',
+] as const;
+
 export const metadata = {
   title: 'Recipes | Family Recipes',
   description: 'Browse our collection of family recipes',
@@ -18,14 +33,14 @@ function RecipeBrowserSkeleton() {
       <div className="h-10 animate-pulse rounded-lg bg-pink-light" />
       {/* Category pills skeleton */}
       <div className="flex gap-2">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-8 w-20 animate-pulse rounded-full bg-pink-light" />
+        {SKELETON_PILLS.map((key) => (
+          <div key={key} className="h-8 w-20 animate-pulse rounded-full bg-pink-light" />
         ))}
       </div>
       {/* Grid skeleton */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-          <div key={i} className="h-64 animate-pulse rounded-lg bg-pink-light" />
+        {SKELETON_CARDS.map((key) => (
+          <div key={key} className="h-64 animate-pulse rounded-lg bg-pink-light" />
         ))}
       </div>
     </div>

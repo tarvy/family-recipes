@@ -6,6 +6,9 @@ import { useCallback, useEffect, useState } from 'react';
 /** Debounce delay for search input in milliseconds */
 const SEARCH_DEBOUNCE_MS = 300;
 
+/** SVG stroke width for icons */
+const ICON_STROKE_WIDTH = 2;
+
 interface RecipeFiltersProps {
   categories: string[];
 }
@@ -158,7 +161,7 @@ function SearchIcon({ className }: { className?: string }) {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth={2}
+        strokeWidth={ICON_STROKE_WIDTH}
         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
       />
     </svg>
