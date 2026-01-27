@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Nunito } from 'next/font/google';
+import { ClientProviders } from '@/components/layout';
 import './globals.css';
 
 const nunito = Nunito({
@@ -34,7 +35,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={nunito.className}>{children}</body>
+      <body className={nunito.className}>
+        <ClientProviders>{children}</ClientProviders>
+      </body>
     </html>
   );
 }
