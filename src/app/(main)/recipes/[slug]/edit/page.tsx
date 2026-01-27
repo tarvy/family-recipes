@@ -6,6 +6,7 @@
 
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
+import { MainLayout } from '@/components/layout';
 import {
   createEmptyFormData,
   RecipeForm,
@@ -95,15 +96,17 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const formData = recipeToFormData(recipe);
 
   return (
-    <main className="min-h-screen bg-background px-6 py-10">
-      <div className="mx-auto w-full max-w-4xl">
-        <header className="mb-8">
-          <h1 className="text-3xl font-semibold text-foreground">Edit Recipe</h1>
-          <p className="mt-2 text-muted-foreground">Update {recipe.title}</p>
-        </header>
+    <MainLayout>
+      <div className="px-6 py-6">
+        <div className="mx-auto w-full max-w-4xl">
+          <header className="mb-8">
+            <h1 className="text-3xl font-semibold text-foreground">Edit Recipe</h1>
+            <p className="mt-2 text-muted-foreground">Update {recipe.title}</p>
+          </header>
 
-        <RecipeForm mode="edit" slug={slug} initialData={formData} />
+          <RecipeForm mode="edit" slug={slug} initialData={formData} />
+        </div>
       </div>
-    </main>
+    </MainLayout>
   );
 }

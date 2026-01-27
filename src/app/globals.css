@@ -71,6 +71,15 @@
   --shadow: 0 2px 8px rgba(74, 55, 40, 0.08);
   --shadow-md: 0 4px 12px rgba(74, 55, 40, 0.1);
   --shadow-lg: 0 8px 24px rgba(74, 55, 40, 0.12);
+
+  /* Animation durations */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+
+  /* Easing functions */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @layer base {

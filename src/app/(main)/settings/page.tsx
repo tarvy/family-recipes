@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { PasskeyManager } from '@/components/auth/passkey-manager';
+import { MainLayout } from '@/components/layout';
 import { connectDB } from '@/db/connection';
 import { Passkey } from '@/db/models';
 import { getSessionFromCookies } from '@/lib/auth';
@@ -50,20 +50,19 @@ export default async function SettingsPage() {
   });
 
   return (
-    <main className="min-h-screen bg-background px-6 py-10">
-      <div className="mx-auto w-full max-w-3xl">
-        <div className="mb-8">
-          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
-            ← Back to home
-          </Link>
-          <h1 className="mt-3 text-3xl font-semibold text-foreground">Settings</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Manage your account security and authentication options.
-          </p>
-        </div>
+    <MainLayout>
+      <div className="px-6 py-6">
+        <div className="mx-auto w-full max-w-3xl">
+          <div className="mb-8">
+            <h1 className="text-3xl font-semibold text-foreground">Settings</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Manage your account security and authentication options.
+            </p>
+          </div>
 
-        <PasskeyManager initialPasskeys={passkeys} />
+          <PasskeyManager initialPasskeys={passkeys} />
+        </div>
       </div>
-    </main>
+    </MainLayout>
   );
 }
