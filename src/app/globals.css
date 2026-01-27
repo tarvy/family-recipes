@@ -1,34 +1,100 @@
 @import 'tailwindcss';
 
+/*
+ * Family Recipes Design System
+ * Inspired by: Cooking Mama / Grandma's cozy kitchen
+ *
+ * Color Palette:
+ * - Pink (#FED4D9): Primary - warm, inviting, main brand color
+ * - Yellow (#EFEBBA): Accent - highlights, CTAs, warmth
+ * - Lavender (#AF93B3): Secondary - gentle contrast, decorative
+ * - Cream (#FFFEF9): Background - soft, warm white
+ * - Cocoa (#4A3728): Foreground - warm brown for text
+ *
+ * Typography: Nunito - rounded, friendly, approachable
+ *
+ * Style: Soft, cozy, rounded corners, gentle shadows
+ * Future: Can add scalloped borders, lace patterns, flower accents
+ */
+
 @theme {
-  --color-background: oklch(100% 0 0);
-  --color-foreground: oklch(14.9% 0.021 285.75);
-  --color-card: oklch(100% 0 0);
-  --color-card-foreground: oklch(14.9% 0.021 285.75);
-  --color-popover: oklch(100% 0 0);
-  --color-popover-foreground: oklch(14.9% 0.021 285.75);
-  --color-primary: oklch(20.5% 0.013 285.75);
-  --color-primary-foreground: oklch(98.5% 0 0);
-  --color-secondary: oklch(96.9% 0.003 285.75);
-  --color-secondary-foreground: oklch(20.5% 0.013 285.75);
-  --color-muted: oklch(96.9% 0.003 285.75);
-  --color-muted-foreground: oklch(55.8% 0.009 285.75);
-  --color-accent: oklch(96.9% 0.003 285.75);
-  --color-accent-foreground: oklch(20.5% 0.013 285.75);
-  --color-destructive: oklch(63.7% 0.237 25.33);
-  --color-destructive-foreground: oklch(98.5% 0 0);
-  --color-border: oklch(91.3% 0.004 285.75);
-  --color-input: oklch(91.3% 0.004 285.75);
-  --color-ring: oklch(20.5% 0.013 285.75);
-  --radius: 0.5rem;
+  /* Core brand colors */
+  --color-pink: #FED4D9;
+  --color-pink-dark: #F5B8C0;
+  --color-pink-light: #FFF0F2;
+
+  --color-yellow: #EFEBBA;
+  --color-yellow-dark: #E5DF8A;
+  --color-yellow-light: #F9F8E6;
+
+  --color-lavender: #AF93B3;
+  --color-lavender-dark: #937598;
+  --color-lavender-light: #D4C6D6;
+
+  /* Semantic colors mapped to brand */
+  --color-background: #FFFEF9;
+  --color-foreground: #4A3728;
+
+  --color-card: #FFFFFF;
+  --color-card-foreground: #4A3728;
+
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #4A3728;
+
+  --color-primary: #FED4D9;
+  --color-primary-foreground: #4A3728;
+
+  --color-secondary: #AF93B3;
+  --color-secondary-foreground: #FFFFFF;
+
+  --color-accent: #EFEBBA;
+  --color-accent-foreground: #4A3728;
+
+  --color-muted: #F5F3EE;
+  --color-muted-foreground: #7A6B5C;
+
+  --color-destructive: #E57373;
+  --color-destructive-foreground: #FFFFFF;
+
+  --color-border: #E8E4DC;
+  --color-input: #E8E4DC;
+  --color-ring: #AF93B3;
+
+  /* Rounded, cozy radius */
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-full: 9999px;
+
+  /* Soft shadows */
+  --shadow-sm: 0 1px 2px rgba(74, 55, 40, 0.05);
+  --shadow: 0 2px 8px rgba(74, 55, 40, 0.08);
+  --shadow-md: 0 4px 12px rgba(74, 55, 40, 0.1);
+  --shadow-lg: 0 8px 24px rgba(74, 55, 40, 0.12);
 }
 
 @layer base {
   * {
     border-color: var(--color-border);
   }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+  }
+
+  /* Smooth focus rings */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Utility classes for the design system */
+@layer utilities {
+  /* Decorative border styles (for future scalloped/lace effects) */
+  .border-decorative {
+    border-style: dashed;
+    border-color: var(--color-pink-dark);
   }
 }

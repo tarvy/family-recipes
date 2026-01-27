@@ -3,45 +3,45 @@ import type { RecipePreview } from '@/lib/recipes/loader';
 
 /**
  * Category color configuration
- * Maps category names to Tailwind background and text colors
+ * Uses warm, cozy colors that complement the Cooking Mama design system
  */
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; badge: string }> = {
   entrees: {
-    bg: 'bg-blue-100',
-    text: 'text-blue-800',
-    badge: 'bg-blue-200 text-blue-800',
+    bg: 'bg-pink-light',
+    text: 'text-pink-dark',
+    badge: 'bg-pink text-foreground',
   },
   desserts: {
-    bg: 'bg-pink-100',
-    text: 'text-pink-800',
-    badge: 'bg-pink-200 text-pink-800',
+    bg: 'bg-lavender-light',
+    text: 'text-lavender-dark',
+    badge: 'bg-lavender text-white',
   },
   soups: {
-    bg: 'bg-orange-100',
-    text: 'text-orange-800',
-    badge: 'bg-orange-200 text-orange-800',
+    bg: 'bg-yellow-light',
+    text: 'text-yellow-dark',
+    badge: 'bg-yellow text-foreground',
   },
   sides: {
-    bg: 'bg-green-100',
-    text: 'text-green-800',
-    badge: 'bg-green-200 text-green-800',
+    bg: 'bg-pink-light',
+    text: 'text-pink-dark',
+    badge: 'bg-pink-dark text-white',
   },
   salads: {
-    bg: 'bg-emerald-100',
-    text: 'text-emerald-800',
-    badge: 'bg-emerald-200 text-emerald-800',
+    bg: 'bg-yellow-light',
+    text: 'text-yellow-dark',
+    badge: 'bg-yellow-dark text-foreground',
   },
   breakfast: {
-    bg: 'bg-yellow-100',
-    text: 'text-yellow-800',
-    badge: 'bg-yellow-200 text-yellow-800',
+    bg: 'bg-yellow-light',
+    text: 'text-yellow-dark',
+    badge: 'bg-yellow text-foreground',
   },
 };
 
 const DEFAULT_COLORS = {
-  bg: 'bg-gray-100',
-  text: 'text-gray-800',
-  badge: 'bg-gray-200 text-gray-800',
+  bg: 'bg-muted',
+  text: 'text-muted-foreground',
+  badge: 'bg-muted text-muted-foreground',
 };
 
 /**
@@ -93,14 +93,11 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
   return (
     <Link
       href={`/recipes/${recipe.slug}`}
-      className="group block rounded-lg shadow-sm ring-1 ring-gray-200 transition-all hover:shadow-md hover:ring-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      className="group block overflow-hidden rounded-lg bg-card shadow-sm ring-1 ring-border transition-all hover:shadow-md hover:ring-pink-dark focus:outline-none focus:ring-2 focus:ring-lavender focus:ring-offset-2"
     >
       {/* Colored placeholder header */}
-      <div
-        className={`flex h-32 items-center justify-center rounded-t-lg ${colors.bg}`}
-        aria-hidden="true"
-      >
-        <span className={`text-4xl font-bold opacity-30 ${colors.text}`}>
+      <div className={`flex h-32 items-center justify-center ${colors.bg}`} aria-hidden="true">
+        <span className={`text-4xl font-bold opacity-40 ${colors.text}`}>
           {recipe.title.charAt(0).toUpperCase()}
         </span>
       </div>
@@ -108,7 +105,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
       {/* Card content */}
       <div className="p-4">
         {/* Title */}
-        <h3 className="line-clamp-2 font-semibold text-gray-900 group-hover:text-blue-600">
+        <h3 className="line-clamp-2 font-semibold text-foreground group-hover:text-lavender-dark">
           {recipe.title}
         </h3>
 
@@ -120,7 +117,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         </span>
 
         {/* Meta information */}
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
           {recipe.totalTime !== undefined && (
             <span className="flex items-center gap-1">
               <ClockIcon />

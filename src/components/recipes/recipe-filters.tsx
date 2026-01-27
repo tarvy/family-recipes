@@ -90,13 +90,13 @@ export function RecipeFilters({ categories }: RecipeFiltersProps) {
     <div className="space-y-4">
       {/* Search input */}
       <div className="relative">
-        <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+        <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
           placeholder="Search recipes..."
           value={searchQuery}
           onChange={handleSearchChange}
-          className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-lg border border-input bg-card py-2 pl-10 pr-4 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
         />
       </div>
 
@@ -107,8 +107,8 @@ export function RecipeFilters({ categories }: RecipeFiltersProps) {
           onClick={() => handleCategoryClick('')}
           className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             selectedCategory === ''
-              ? 'bg-gray-900 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-lavender text-white'
+              : 'bg-pink-light text-foreground hover:bg-pink'
           }`}
         >
           All
@@ -120,8 +120,8 @@ export function RecipeFilters({ categories }: RecipeFiltersProps) {
             onClick={() => handleCategoryClick(category)}
             className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
               selectedCategory === category
-                ? 'bg-gray-900 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-lavender text-white'
+                : 'bg-pink-light text-foreground hover:bg-pink'
             }`}
           >
             {category}
@@ -133,7 +133,7 @@ export function RecipeFilters({ categories }: RecipeFiltersProps) {
           <button
             type="button"
             onClick={handleClearFilters}
-            className="ml-2 text-sm text-gray-500 hover:text-gray-700"
+            className="ml-2 text-sm text-muted-foreground hover:text-foreground"
           >
             Clear filters
           </button>

@@ -103,12 +103,12 @@ DELIVERABLES = {
     "PR-010": {
         "name": "Recipe Migration",
         "checks": [
-            ("dir", "recipes/blackstone"),
-            ("dir", "recipes/instant-pot"),
-            ("dir", "recipes/crockpot"),
-            ("dir", "recipes/stovetop"),
-            ("dir", "recipes/oven"),
-            ("dir", "recipes/blender"),
+            ("dir", "recipes/entrees"),
+            ("dir", "recipes/desserts"),
+            ("dir", "recipes/soups"),
+            ("dir", "recipes/sides"),
+            ("dir", "recipes/salads"),
+            ("dir", "recipes/breakfast"),
         ],
     },
     "PR-011": {

@@ -15,17 +15,17 @@ function RecipeBrowserSkeleton() {
   return (
     <div className="space-y-6">
       {/* Search skeleton */}
-      <div className="h-10 animate-pulse rounded-lg bg-gray-200" />
+      <div className="h-10 animate-pulse rounded-lg bg-pink-light" />
       {/* Category pills skeleton */}
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-8 w-20 animate-pulse rounded-full bg-gray-200" />
+          <div key={i} className="h-8 w-20 animate-pulse rounded-full bg-pink-light" />
         ))}
       </div>
       {/* Grid skeleton */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-          <div key={i} className="h-64 animate-pulse rounded-lg bg-gray-200" />
+          <div key={i} className="h-64 animate-pulse rounded-lg bg-pink-light" />
         ))}
       </div>
     </div>
