@@ -8,12 +8,16 @@
  *   npx tsx scripts/convert-paprika.ts [--dry-run]
  */
 
+// biome-ignore-all lint/suspicious/noConsole: CLI script requires console output
+
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { JSDOM } from 'jsdom';
+import { createLogger } from '@/lib/logger';
 
 const SOURCE_DIR = 'exported-pap-recipes/85 recipes/Recipes';
 const RECIPES_DIR = 'recipes';
+const scriptLogger = createLogger('paprika-convert');
 
 // TIME_UNIT_TO_MINUTES is available for future time normalization features
 const _TIME_UNIT_TO_MINUTES: Record<string, number> = {
@@ -631,7 +635,7 @@ interface ConversionResults {
 const SUMMARY_LINE_LENGTH = 50;
 
 /**
- * Prints the conversion summary to the console.
+ * Prints the conversion summary to the logger.
  */
 function printSummary(
   results: ConversionResults,
@@ -639,27 +643,27 @@ function printSummary(
   errors: string[],
   isDryRun: boolean,
 ): void {
-  console.log(`\n${'='.repeat(SUMMARY_LINE_LENGTH)}`);
-  console.log('SUMMARY');
-  console.log('='.repeat(SUMMARY_LINE_LENGTH));
-  console.log(`Total files: ${totalFiles}`);
-  console.log(`Successful: ${results.success}`);
-  console.log(`Failed: ${results.failed}`);
-  console.log('\nBy category:');
+  scriptLogger.info(`${'='.repeat(SUMMARY_LINE_LENGTH)}`);
+  scriptLogger.info('SUMMARY');
+  scriptLogger.info('='.repeat(SUMMARY_LINE_LENGTH));
+  scriptLogger.info(`Total files: ${totalFiles}`);
+  scriptLogger.info(`Successful: ${results.success}`);
+  scriptLogger.info(`Failed: ${results.failed}`);
+  scriptLogger.info('By category:');
 
   for (const [cat, count] of Object.entries(results.byCategory).sort((a, b) => b[1] - a[1])) {
-    console.log(`  ${cat}: ${count}`);
+    scriptLogger.info(`  ${cat}: ${count}`);
   }
 
   if (errors.length > 0) {
-    console.log('\nErrors:');
+    scriptLogger.warn('Errors:');
     for (const err of errors) {
-      console.log(`  - ${err}`);
+      scriptLogger.warn(`  - ${err}`);
     }
   }
 
   if (isDryRun) {
-    console.log('\n[DRY RUN - no files were written]');
+    scriptLogger.info('[DRY RUN - no files were written]');
   }
 }
 
@@ -694,12 +698,11 @@ function convertHtmlFile(
 async function main() {
   const isDryRun = process.argv.includes('--dry-run');
 
-  console.log(`Paprika HTML to Cooklang Converter`);
-  console.log(`Mode: ${isDryRun ? 'DRY RUN' : 'LIVE'}`);
-  console.log('');
+  scriptLogger.info('Paprika HTML to Cooklang Converter');
+  scriptLogger.info(`Mode: ${isDryRun ? 'DRY RUN' : 'LIVE'}`);
 
   const htmlFiles = readdirSync(SOURCE_DIR).filter((f) => f.endsWith('.html'));
-  console.log(`Found ${htmlFiles.length} HTML files to convert\n`);
+  scriptLogger.info(`Found ${htmlFiles.length} HTML files to convert`);
 
   const results: ConversionResults = { success: 0, failed: 0, byCategory: {} };
   const errors: string[] = [];
@@ -709,12 +712,12 @@ async function main() {
   for (const htmlFile of htmlFiles) {
     try {
       const { recipe, category, slug } = convertHtmlFile(htmlFile, isDryRun);
-      console.log(`✓ ${recipe.title} → ${category}/${slug}.cook`);
+      scriptLogger.info(`✓ ${recipe.title} → ${category}/${slug}.cook`);
       results.success++;
       results.byCategory[category] = (results.byCategory[category] || 0) + 1;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.log(`✗ ${htmlFile}: ${message}`);
+      scriptLogger.warn(`✗ ${htmlFile}: ${message}`);
       errors.push(`${htmlFile}: ${message}`);
       results.failed++;
     }
@@ -723,4 +726,6 @@ async function main() {
   printSummary(results, htmlFiles.length, errors, isDryRun);
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  scriptLogger.error('Conversion failed', error instanceof Error ? error : undefined);
+});
