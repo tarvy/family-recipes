@@ -20,7 +20,6 @@
       "biome check --write --no-errors-on-unmatched"
     ]
   },
-  "type": "module",
   "dependencies": {
     "@cooklang/cooklang-ts": "^1.2.7",
     "@modelcontextprotocol/sdk": "^1.25.3",
