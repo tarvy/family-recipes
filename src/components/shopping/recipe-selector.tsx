@@ -7,22 +7,16 @@
  */
 
 import { useState } from 'react';
+import {
+  DEFAULT_MULTIPLIER,
+  MAX_MULTIPLIER,
+  MIN_MULTIPLIER,
+  MULTIPLIER_STEP,
+} from '@/lib/constants/multiplier';
 import type { RecipePreview } from '@/lib/recipes/loader';
 
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
-
-/** Default multiplier for new recipes */
-const DEFAULT_MULTIPLIER = 1;
-
-/** Minimum multiplier value */
-const MIN_MULTIPLIER = 0.5;
-
-/** Maximum multiplier value */
-const MAX_MULTIPLIER = 10;
-
-/** Step size for multiplier adjustment */
-const MULTIPLIER_STEP = 0.5;
 
 interface RecipeSelectorProps {
   /** Available recipes to choose from */

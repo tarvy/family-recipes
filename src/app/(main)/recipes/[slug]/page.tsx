@@ -1,6 +1,7 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
-import { IngredientList } from '@/components/recipes/ingredient-list';
+import { ScalableIngredientList } from '@/components/recipes/scalable-ingredient-list';
 import { StepList } from '@/components/recipes/step-list';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
 import { getRecipeBySlug } from '@/lib/recipes/loader';
@@ -39,10 +40,19 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           <header>
             <h1 className="text-3xl font-semibold text-foreground">{recipe.title}</h1>
 
-            {/* Category badge */}
-            <span className="mt-3 inline-block rounded-full bg-pink px-3 py-1 text-sm font-medium capitalize text-foreground">
-              {recipe.category}
-            </span>
+            {/* Category badge and edit button */}
+            <div className="mt-3 flex items-center gap-3">
+              <span className="rounded-full bg-pink px-3 py-1 text-sm font-medium capitalize text-foreground">
+                {recipe.category}
+              </span>
+              <Link
+                href={`/recipes/${slug}/edit`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1 text-sm font-medium text-muted-foreground hover:border-lavender hover:text-lavender"
+              >
+                <EditIcon className="h-4 w-4" />
+                Edit
+              </Link>
+            </div>
 
             {/* Description */}
             {recipe.description && (
@@ -96,7 +106,10 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           <section className="mt-10">
             <h2 className="text-xl font-semibold text-foreground">Ingredients</h2>
             <div className="mt-4 rounded-lg bg-card p-6 shadow-sm ring-1 ring-border">
-              <IngredientList ingredients={recipe.ingredients} />
+              <ScalableIngredientList
+                ingredients={recipe.ingredients}
+                defaultServings={recipe.servings}
+              />
             </div>
           </section>
 
@@ -192,6 +205,28 @@ function ServingsIcon() {
         strokeLinejoin="round"
         strokeWidth="2"
         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Edit/pencil icon
+ */
+function EditIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
       />
     </svg>
   );
