@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { Button, Input } from '@/components/ui';
 
 /** Debounce delay for search input in milliseconds */
 const SEARCH_DEBOUNCE_MS = 300;
@@ -96,12 +97,12 @@ export function RecipeFilters({ categories }: RecipeFiltersProps) {
       {/* Search input */}
       <div className="relative">
         <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-        <input
+        <Input
           type="text"
           placeholder="Search recipes..."
           value={searchQuery}
           onChange={handleSearchChange}
-          className="w-full rounded-lg border border-input bg-card py-2 pl-10 pr-4 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+          className="py-2 pl-10 pr-4"
         />
       </div>
 
@@ -135,13 +136,9 @@ export function RecipeFilters({ categories }: RecipeFiltersProps) {
 
         {/* Clear filters button */}
         {hasActiveFilters && (
-          <button
-            type="button"
-            onClick={handleClearFilters}
-            className="ml-2 text-sm text-muted-foreground hover:text-foreground"
-          >
+          <Button type="button" variant="ghost" onClick={handleClearFilters} className="ml-2">
             Clear filters
-          </button>
+          </Button>
         )}
       </div>
     </div>

@@ -7,6 +7,7 @@ import {
 } from '@simplewebauthn/browser';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Button, Card } from '@/components/ui';
 
 interface PasskeySummary {
   id: string;
@@ -102,7 +103,7 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
   }
 
   return (
-    <section className="mt-8 rounded-xl border border-border bg-card p-6 shadow-sm">
+    <Card variant="section" className="mt-8">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Passkeys</h2>
@@ -110,14 +111,9 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
             Register a passkey to sign in faster on this device.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleRegister}
-          disabled={!isSupported || isRegistering}
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        <Button type="button" onClick={handleRegister} disabled={!isSupported || isRegistering}>
           {isRegistering ? 'Creating...' : 'Add passkey'}
-        </button>
+        </Button>
       </div>
 
       {!isSupported && (
@@ -175,6 +171,6 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
           </ul>
         )}
       </div>
-    </section>
+    </Card>
   );
 }

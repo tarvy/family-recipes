@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { Button, Input } from '@/components/ui';
 
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
@@ -49,40 +50,37 @@ export function AddItemForm({ onAddItem }: AddItemFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="flex gap-2">
-        <input
+        <Input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Item name"
-          className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+          className="flex-1"
         />
-        <input
+        <Input
           type="text"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           placeholder="Qty (optional)"
-          className="w-28 rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+          className="w-28"
         />
       </div>
       <div className="flex gap-2">
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => {
             setIsExpanded(false);
             setName('');
             setQuantity('');
           }}
-          className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+          className="flex-1"
         >
           Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={!name.trim()}
-          className="flex-1 rounded-lg bg-lavender px-4 py-2 text-sm font-medium text-white hover:bg-lavender/90 disabled:opacity-50"
-        >
+        </Button>
+        <Button type="submit" variant="secondary" disabled={!name.trim()} className="flex-1">
           Add item
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -7,6 +7,7 @@
  */
 
 import { useId } from 'react';
+import { Button, Input } from '@/components/ui';
 
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
@@ -88,26 +89,25 @@ export function IngredientInput({ ingredients, onChange }: IngredientInputProps)
           key={ing.id}
           className="grid grid-cols-[1fr_auto] gap-2 sm:grid-cols-[1fr_80px_80px_40px]"
         >
-          <input
+          <Input
             type="text"
             placeholder="Ingredient name"
             value={ing.name}
             onChange={(e) => handleChange(ing.id, 'name', e.target.value)}
-            className="rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
           />
-          <input
+          <Input
             type="text"
             placeholder="Qty"
             value={ing.quantity}
             onChange={(e) => handleChange(ing.id, 'quantity', e.target.value)}
-            className="hidden rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender sm:block"
+            className="hidden sm:block"
           />
-          <input
+          <Input
             type="text"
             placeholder="Unit"
             value={ing.unit}
             onChange={(e) => handleChange(ing.id, 'unit', e.target.value)}
-            className="hidden rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender sm:block"
+            className="hidden sm:block"
           />
           <button
             type="button"
@@ -121,32 +121,31 @@ export function IngredientInput({ ingredients, onChange }: IngredientInputProps)
 
           {/* Mobile-only quantity/unit row */}
           <div className="col-span-2 grid grid-cols-2 gap-2 sm:hidden">
-            <input
+            <Input
               type="text"
               placeholder="Quantity"
               value={ing.quantity}
               onChange={(e) => handleChange(ing.id, 'quantity', e.target.value)}
-              className="rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
             />
-            <input
+            <Input
               type="text"
               placeholder="Unit"
               value={ing.unit}
               onChange={(e) => handleChange(ing.id, 'unit', e.target.value)}
-              className="rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
             />
           </div>
         </div>
       ))}
 
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={handleAdd}
-        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-lavender hover:bg-lavender-light"
+        className="text-lavender hover:text-lavender hover:bg-lavender-light"
       >
         <PlusIcon />
         Add ingredient
-      </button>
+      </Button>
     </div>
   );
 }

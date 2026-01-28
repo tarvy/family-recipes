@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import { Card, Input } from '@/components/ui';
 import {
   DEFAULT_MULTIPLIER,
   MAX_MULTIPLIER,
@@ -84,14 +85,14 @@ export function RecipeSelector({
         </label>
         <div className="relative mt-1.5">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
+          <Input
             type="text"
             id="recipe-search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsDropdownOpen(true)}
             placeholder="Search recipes..."
-            className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-3 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+            className="py-2 pl-10 pr-3"
           />
         </div>
 
@@ -104,7 +105,7 @@ export function RecipeSelector({
               onClick={() => setIsDropdownOpen(false)}
               aria-hidden="true"
             />
-            <div className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-border bg-card shadow-lg">
+            <Card className="absolute z-20 mt-1 max-h-60 w-full overflow-auto shadow-lg">
               {filteredRecipes.length === 0 ? (
                 <div className="px-4 py-3 text-sm text-muted-foreground">No recipes found</div>
               ) : (
@@ -133,7 +134,7 @@ export function RecipeSelector({
                   })}
                 </ul>
               )}
-            </div>
+            </Card>
           </>
         )}
       </div>
@@ -148,51 +149,50 @@ export function RecipeSelector({
             {selectedRecipeList.map((recipe) => {
               const multiplier = selectedRecipes.get(recipe.slug) ?? DEFAULT_MULTIPLIER;
               return (
-                <li
-                  key={recipe.slug}
-                  className="flex items-center justify-between rounded-lg bg-card p-3 shadow-sm ring-1 ring-border"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium text-foreground">{recipe.title}</div>
-                    <div className="text-sm text-muted-foreground capitalize">
-                      {recipe.category}
+                <li key={recipe.slug}>
+                  <Card className="flex items-center justify-between p-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium text-foreground">{recipe.title}</div>
+                      <div className="text-sm text-muted-foreground capitalize">
+                        {recipe.category}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Servings multiplier controls */}
-                  <div className="ml-4 flex items-center gap-2">
+                    {/* Servings multiplier controls */}
+                    <div className="ml-4 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDecrementServings(recipe.slug)}
+                        disabled={multiplier <= MIN_MULTIPLIER}
+                        className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground hover:bg-pink-light disabled:opacity-50 disabled:hover:bg-transparent"
+                        aria-label="Decrease servings"
+                      >
+                        <MinusIcon className="h-3 w-3" />
+                      </button>
+                      <span className="w-10 text-center text-sm font-medium text-foreground">
+                        {multiplier}×
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleIncrementServings(recipe.slug)}
+                        disabled={multiplier >= MAX_MULTIPLIER}
+                        className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground hover:bg-pink-light disabled:opacity-50 disabled:hover:bg-transparent"
+                        aria-label="Increase servings"
+                      >
+                        <PlusIcon className="h-3 w-3" />
+                      </button>
+                    </div>
+
+                    {/* Remove button */}
                     <button
                       type="button"
-                      onClick={() => handleDecrementServings(recipe.slug)}
-                      disabled={multiplier <= MIN_MULTIPLIER}
-                      className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground hover:bg-pink-light disabled:opacity-50 disabled:hover:bg-transparent"
-                      aria-label="Decrease servings"
+                      onClick={() => onRemoveRecipe(recipe.slug)}
+                      className="ml-3 flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      aria-label={`Remove ${recipe.title}`}
                     >
-                      <MinusIcon className="h-3 w-3" />
+                      <XIcon className="h-4 w-4" />
                     </button>
-                    <span className="w-10 text-center text-sm font-medium text-foreground">
-                      {multiplier}×
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleIncrementServings(recipe.slug)}
-                      disabled={multiplier >= MAX_MULTIPLIER}
-                      className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground hover:bg-pink-light disabled:opacity-50 disabled:hover:bg-transparent"
-                      aria-label="Increase servings"
-                    >
-                      <PlusIcon className="h-3 w-3" />
-                    </button>
-                  </div>
-
-                  {/* Remove button */}
-                  <button
-                    type="button"
-                    onClick={() => onRemoveRecipe(recipe.slug)}
-                    className="ml-3 flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                    aria-label={`Remove ${recipe.title}`}
-                  >
-                    <XIcon className="h-4 w-4" />
-                  </button>
+                  </Card>
                 </li>
               );
             })}

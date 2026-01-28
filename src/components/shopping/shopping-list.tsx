@@ -9,6 +9,7 @@
 
 import { useState } from 'react';
 import { SwipeableItem, SwipeCheckIcon } from '@/components/gestures';
+import { Card } from '@/components/ui';
 import type { AggregatedIngredient, GroceryCategory } from '@/lib/shopping';
 import { CATEGORY_LABELS } from '@/lib/shopping/categories';
 
@@ -67,13 +68,13 @@ export function ShoppingList({
 
   if (totalItems === 0) {
     return (
-      <div className="rounded-lg bg-card p-8 text-center shadow-sm ring-1 ring-border">
+      <Card className="p-8 text-center">
         <CartIcon className="mx-auto h-12 w-12 text-muted-foreground" />
         <h3 className="mt-4 text-lg font-medium text-foreground">Your shopping list is empty</h3>
         <p className="mt-2 text-sm text-muted-foreground">
           Add recipes to generate a shopping list of ingredients.
         </p>
-      </div>
+      </Card>
     );
   }
 
@@ -166,7 +167,7 @@ function CategorySection({
   });
 
   return (
-    <div className="overflow-hidden rounded-lg bg-card shadow-sm ring-1 ring-border">
+    <Card className="overflow-hidden">
       {/* Category header */}
       <button
         type="button"
@@ -200,7 +201,7 @@ function CategorySection({
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 

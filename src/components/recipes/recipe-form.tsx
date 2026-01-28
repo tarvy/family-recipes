@@ -15,6 +15,7 @@ import {
   type IngredientRow,
 } from '@/components/recipes/ingredient-input';
 import { createEmptySteps, StepInput, type StepRow } from '@/components/recipes/step-input';
+import { Button, Input, Select, Textarea } from '@/components/ui';
 
 /** Available recipe categories */
 const CATEGORIES = ['breakfast', 'desserts', 'entrees', 'salads', 'sides', 'soups'] as const;
@@ -246,13 +247,13 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
             <label htmlFor="title" className="block text-sm font-medium text-foreground">
               Title <span className="text-destructive">*</span>
             </label>
-            <input
+            <Input
               type="text"
               id="title"
               value={formData.title}
               onChange={(e) => updateField('title', e.target.value)}
               placeholder="Recipe title"
-              className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+              className="mt-1.5"
             />
           </div>
 
@@ -261,11 +262,11 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
             <label htmlFor="category" className="block text-sm font-medium text-foreground">
               Category <span className="text-destructive">*</span>
             </label>
-            <select
+            <Select
               id="category"
               value={formData.category}
               onChange={(e) => updateField('category', e.target.value)}
-              className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+              className="mt-1.5"
             >
               <option value="">Select a category</option>
               {CATEGORIES.map((cat) => (
@@ -273,7 +274,7 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
                   {cat}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           {/* Description */}
@@ -281,13 +282,13 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
             <label htmlFor="description" className="block text-sm font-medium text-foreground">
               Description
             </label>
-            <textarea
+            <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => updateField('description', e.target.value)}
               placeholder="Brief description of the recipe"
               rows={TEXTAREA_ROWS}
-              className="mt-1.5 w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+              className="mt-1.5"
             />
           </div>
 
@@ -297,42 +298,42 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
               <label htmlFor="servings" className="block text-sm font-medium text-foreground">
                 Servings
               </label>
-              <input
+              <Input
                 type="number"
                 id="servings"
                 value={formData.servings}
                 onChange={(e) => updateField('servings', e.target.value)}
                 min={1}
                 placeholder="4"
-                className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+                className="mt-1.5"
               />
             </div>
             <div>
               <label htmlFor="prepTime" className="block text-sm font-medium text-foreground">
                 Prep (min)
               </label>
-              <input
+              <Input
                 type="number"
                 id="prepTime"
                 value={formData.prepTime}
                 onChange={(e) => updateField('prepTime', e.target.value)}
                 min={0}
                 placeholder="15"
-                className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+                className="mt-1.5"
               />
             </div>
             <div>
               <label htmlFor="cookTime" className="block text-sm font-medium text-foreground">
                 Cook (min)
               </label>
-              <input
+              <Input
                 type="number"
                 id="cookTime"
                 value={formData.cookTime}
                 onChange={(e) => updateField('cookTime', e.target.value)}
                 min={0}
                 placeholder="30"
-                className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+                className="mt-1.5"
               />
             </div>
           </div>
@@ -342,11 +343,11 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
             <label htmlFor="difficulty" className="block text-sm font-medium text-foreground">
               Difficulty
             </label>
-            <select
+            <Select
               id="difficulty"
               value={formData.difficulty}
               onChange={(e) => updateField('difficulty', e.target.value)}
-              className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+              className="mt-1.5"
             >
               <option value="">Select difficulty</option>
               {DIFFICULTIES.map((d) => (
@@ -354,7 +355,7 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
                   {d}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           {/* Cuisine and Course */}
@@ -363,26 +364,26 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
               <label htmlFor="cuisine" className="block text-sm font-medium text-foreground">
                 Cuisine
               </label>
-              <input
+              <Input
                 type="text"
                 id="cuisine"
                 value={formData.cuisine}
                 onChange={(e) => updateField('cuisine', e.target.value)}
                 placeholder="Italian, Mexican, etc."
-                className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+                className="mt-1.5"
               />
             </div>
             <div>
               <label htmlFor="course" className="block text-sm font-medium text-foreground">
                 Course
               </label>
-              <input
+              <Input
                 type="text"
                 id="course"
                 value={formData.course}
                 onChange={(e) => updateField('course', e.target.value)}
                 placeholder="Main, Appetizer, etc."
-                className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+                className="mt-1.5"
               />
             </div>
           </div>
@@ -392,13 +393,13 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
             <label htmlFor="tags" className="block text-sm font-medium text-foreground">
               Tags
             </label>
-            <input
+            <Input
               type="text"
               id="tags"
               value={formData.tags}
               onChange={(e) => updateField('tags', e.target.value)}
               placeholder="quick, healthy, vegetarian (comma-separated)"
-              className="mt-1.5 w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+              className="mt-1.5"
             />
           </div>
 
@@ -408,20 +409,20 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
             <div className="mt-1.5 space-y-2">
               {formData.cookware.map((cw) => (
                 <div key={cw.id} className="flex gap-2">
-                  <input
+                  <Input
                     type="text"
                     placeholder="Equipment name"
                     value={cw.name}
                     onChange={(e) => handleCookwareChange(cw.id, 'name', e.target.value)}
-                    className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+                    className="flex-1"
                   />
-                  <input
+                  <Input
                     type="number"
                     placeholder="Qty"
                     value={cw.quantity}
                     onChange={(e) => handleCookwareChange(cw.id, 'quantity', e.target.value)}
                     min={1}
-                    className="w-20 rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
+                    className="w-20"
                   />
                   <button
                     type="button"
@@ -476,20 +477,12 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
       {/* Submit button */}
       <div className="sticky bottom-0 border-t border-border bg-background py-4">
         <div className="flex justify-end gap-4">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-          >
+          <Button type="button" variant="ghost" onClick={() => router.back()}>
             Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-lg bg-lavender px-6 py-2 text-sm font-medium text-white hover:bg-lavender/90 disabled:opacity-50"
-          >
+          </Button>
+          <Button type="submit" variant="secondary" disabled={isSubmitting} className="px-6">
             {isSubmitting ? 'Saving...' : mode === 'create' ? 'Create Recipe' : 'Save Changes'}
-          </button>
+          </Button>
         </div>
       </div>
     </form>

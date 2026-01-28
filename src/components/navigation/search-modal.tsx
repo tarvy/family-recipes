@@ -9,6 +9,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Input } from '@/components/ui';
 import { NAV_Z_INDEX } from '@/lib/constants/navigation';
 import { useNavigation } from './header-context';
 
@@ -98,14 +99,14 @@ export function SearchModal() {
           </label>
           <div className="relative">
             <SearchIcon className="absolute left-4 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground" />
-            <input
+            <Input
               ref={inputRef}
               id="search-input"
               type="text"
               value={searchQuery}
               onChange={handleInputChange}
               placeholder="Search recipes..."
-              className="w-full rounded-xl border-2 border-border bg-card py-4 pl-14 pr-4 text-xl text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none"
+              className="rounded-xl border-2 border-border py-4 pl-14 pr-4 text-xl focus:ring-0"
             />
           </div>
           <p className="mt-4 text-center text-sm text-muted-foreground">

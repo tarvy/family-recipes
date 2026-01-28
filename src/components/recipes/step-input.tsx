@@ -6,6 +6,8 @@
  * Allows adding/removing step textareas for recipe instructions.
  */
 
+import { Button, Textarea } from '@/components/ui';
+
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
 
@@ -68,12 +70,11 @@ export function StepInput({ steps, onChange }: StepInputProps) {
             {index + 1}
           </div>
           <div className="flex-1">
-            <textarea
+            <Textarea
               placeholder={`Step ${index + 1} instructions...`}
               value={step.text}
               onChange={(e) => handleChange(step.id, e.target.value)}
               rows={TEXTAREA_ROWS}
-              className="w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender"
             />
           </div>
           <button
@@ -88,14 +89,15 @@ export function StepInput({ steps, onChange }: StepInputProps) {
         </div>
       ))}
 
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={handleAdd}
-        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-lavender hover:bg-lavender-light"
+        className="text-lavender hover:text-lavender hover:bg-lavender-light"
       >
         <PlusIcon />
         Add step
-      </button>
+      </Button>
     </div>
   );
 }
