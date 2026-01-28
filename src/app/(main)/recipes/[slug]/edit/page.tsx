@@ -1,18 +1,16 @@
 /**
  * Edit recipe page
  *
- * Requires authentication. Loads existing recipe data for editing.
+ * Authentication handled by (main) layout. Loads existing recipe data for editing.
  */
 
-import { cookies } from 'next/headers';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import {
   createEmptyFormData,
   RecipeForm,
   type RecipeFormData,
 } from '@/components/recipes/recipe-form';
-import { getSessionFromCookies } from '@/lib/auth/session';
 import { getRecipeBySlug, type RecipeDetail } from '@/lib/recipes/loader';
 
 interface EditRecipePageProps {
@@ -79,14 +77,6 @@ function recipeToFormData(recipe: RecipeDetail): RecipeFormData {
 
 export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const { slug } = await params;
-
-  const cookieStore = await cookies();
-  const user = await getSessionFromCookies(cookieStore);
-
-  if (!user) {
-    redirect(`/login?returnTo=/recipes/${slug}/edit`);
-  }
-
   const recipe = await getRecipeBySlug(slug);
 
   if (!recipe) {

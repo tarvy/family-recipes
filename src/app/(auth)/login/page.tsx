@@ -122,7 +122,7 @@ function LoginForm() {
         throw new Error(errorPayload?.error || 'Passkey sign-in failed.');
       }
 
-      router.push('/');
+      router.push('/recipes');
       router.refresh();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Passkey sign-in failed.';
