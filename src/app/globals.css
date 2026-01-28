@@ -8,7 +8,8 @@
  * - Pink (#FED4D9): Primary - warm, inviting, main brand color
  * - Yellow (#EFEBBA): Accent - highlights, CTAs, warmth
  * - Lavender (#AF93B3): Secondary - gentle contrast, decorative
- * - Cream (#FFFEF9): Background - soft, warm white
+ * - Gingham Butter (#F8F1D4): Background - tablecloth-inspired warmth
+ * - Cream (#FFFEF9): Light surfaces and highlights
  * - Cocoa (#4A3728): Foreground - warm brown for text
  *
  * Typography: Nunito - rounded, friendly, approachable
@@ -31,24 +32,28 @@
   --color-lavender-dark: #937598;
   --color-lavender-light: #D4C6D6;
 
+  --color-gingham: #F8F1D4;
+  --color-cream: #FFFEF9;
+  --color-cocoa: #4A3728;
+
   /* Semantic colors mapped to brand */
-  --color-background: #FFFEF9;
-  --color-foreground: #4A3728;
+  --color-background: var(--color-gingham);
+  --color-foreground: var(--color-cocoa);
 
   --color-card: #FFFFFF;
-  --color-card-foreground: #4A3728;
+  --color-card-foreground: var(--color-cocoa);
 
   --color-popover: #FFFFFF;
-  --color-popover-foreground: #4A3728;
+  --color-popover-foreground: var(--color-cocoa);
 
-  --color-primary: #FED4D9;
-  --color-primary-foreground: #4A3728;
+  --color-primary: var(--color-pink);
+  --color-primary-foreground: var(--color-cocoa);
 
-  --color-secondary: #AF93B3;
+  --color-secondary: var(--color-lavender);
   --color-secondary-foreground: #FFFFFF;
 
-  --color-accent: #EFEBBA;
-  --color-accent-foreground: #4A3728;
+  --color-accent: var(--color-yellow);
+  --color-accent-foreground: var(--color-cocoa);
 
   --color-muted: #F5F3EE;
   --color-muted-foreground: #7A6B5C;
@@ -58,7 +63,7 @@
 
   --color-border: #E8E4DC;
   --color-input: #E8E4DC;
-  --color-ring: #AF93B3;
+  --color-ring: var(--color-lavender);
 
   /* Rounded, cozy radius */
   --radius: 0.75rem;
@@ -81,6 +86,8 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Global base styles and utilities */
 
 @layer base {
   * {

@@ -14,6 +14,9 @@ import { NAV_LINKS, NavLinkItem } from './nav-links';
 
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
+/** Icon sizes in pixels */
+const ICON_SIZE_SM_PX = 20;
+const ICON_SIZE_MD_PX = 24;
 
 /**
  * Main header component
@@ -42,7 +45,7 @@ export function Header() {
             className="rounded-lg p-2 text-foreground hover:bg-pink-dark/20 md:hidden"
             aria-label="Open navigation menu"
           >
-            <HamburgerIcon className="h-6 w-6" />
+            <HamburgerIcon className="h-6 w-6" size={ICON_SIZE_MD_PX} />
           </button>
 
           {/* Logo */}
@@ -65,7 +68,7 @@ export function Header() {
           className="rounded-lg p-2 text-foreground hover:bg-pink-dark/20"
           aria-label="Open search"
         >
-          <SearchIcon className="h-5 w-5" />
+          <SearchIcon className="h-5 w-5" size={ICON_SIZE_SM_PX} />
         </button>
       </div>
     </header>
@@ -75,10 +78,18 @@ export function Header() {
 /**
  * Hamburger menu icon
  */
-function HamburgerIcon({ className }: { className?: string }) {
+function HamburgerIcon({
+  className,
+  size = ICON_SIZE_MD_PX,
+}: {
+  className?: string;
+  size?: number;
+}) {
   return (
     <svg
       className={className}
+      width={size}
+      height={size}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -97,10 +108,12 @@ function HamburgerIcon({ className }: { className?: string }) {
 /**
  * Search icon
  */
-function SearchIcon({ className }: { className?: string }) {
+function SearchIcon({ className, size = ICON_SIZE_SM_PX }: { className?: string; size?: number }) {
   return (
     <svg
       className={className}
+      width={size}
+      height={size}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"

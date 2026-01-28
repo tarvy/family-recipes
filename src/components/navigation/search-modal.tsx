@@ -14,6 +14,8 @@ import { useNavigation } from './header-context';
 
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
+/** Default icon size in pixels */
+const ICON_SIZE_PX = 24;
 
 /** Debounce delay for search input in milliseconds */
 const _SEARCH_DEBOUNCE_MS = 300;
@@ -24,8 +26,14 @@ const _SEARCH_DEBOUNCE_MS = 300;
 export function SearchModal() {
   const { isSearchOpen, closeSearch } = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
+  const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Only render portal after client-side mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Focus input when modal opens
   useEffect(() => {
@@ -59,16 +67,14 @@ export function SearchModal() {
     setSearchQuery(event.target.value);
   }
 
-  // Don't render on server
-  if (typeof window === 'undefined') {
+  // Don't render until mounted on client AND search is open
+  if (!(mounted && isSearchOpen)) {
     return null;
   }
 
   return createPortal(
     <div
-      className={`fixed inset-0 bg-background transition-opacity ${
-        isSearchOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
-      }`}
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity"
       style={{
         zIndex: NAV_Z_INDEX.searchModal,
         transitionDuration: 'var(--duration-fast, 150ms)',
@@ -119,6 +125,8 @@ function SearchIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
+      width={ICON_SIZE_PX}
+      height={ICON_SIZE_PX}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -141,6 +149,8 @@ function CloseIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
+      width={ICON_SIZE_PX}
+      height={ICON_SIZE_PX}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"

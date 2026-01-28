@@ -7,7 +7,7 @@
  * Includes overlay backdrop and touch-to-close functionality.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { NAV_Z_INDEX } from '@/lib/constants/navigation';
 import { useNavigation } from './header-context';
@@ -24,8 +24,14 @@ const DRAWER_WIDTH_PX = 280;
  */
 export function NavDrawer() {
   const { isDrawerOpen, closeDrawer } = useNavigation();
+  const [mounted, setMounted] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const firstFocusableRef = useRef<HTMLButtonElement>(null);
+
+  // Only render portal after client-side mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Focus trap and focus management
   useEffect(() => {
@@ -51,8 +57,8 @@ export function NavDrawer() {
     };
   }, [isDrawerOpen, closeDrawer]);
 
-  // Don't render on server
-  if (typeof window === 'undefined') {
+  // Don't render until mounted on client AND drawer is open
+  if (!(mounted && isDrawerOpen)) {
     return null;
   }
 

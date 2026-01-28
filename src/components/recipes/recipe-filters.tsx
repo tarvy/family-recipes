@@ -8,6 +8,8 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 /** SVG stroke width for icons */
 const ICON_STROKE_WIDTH = 2;
+/** Search icon size in pixels */
+const SEARCH_ICON_SIZE_PX = 20;
 
 interface RecipeFiltersProps {
   categories: string[];
@@ -153,6 +155,8 @@ function SearchIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
+      width={SEARCH_ICON_SIZE_PX}
+      height={SEARCH_ICON_SIZE_PX}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"

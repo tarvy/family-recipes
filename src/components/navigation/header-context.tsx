@@ -91,21 +91,42 @@ export function NavigationProvider({ children }: NavigationProviderProps) {
   const openSearch = useCallback(() => setIsSearchOpen(true), []);
   const closeSearch = useCallback(() => setIsSearchOpen(false), []);
 
-  // Close drawer when escape key is pressed
+  // Keyboard shortcuts: Cmd+K/Ctrl+K for search, Escape to close modals
   useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        if (isSearchOpen) {
-          closeSearch();
-        } else if (isDrawerOpen) {
-          closeDrawer();
-        }
+    function handleSearchShortcut(event: KeyboardEvent): boolean {
+      const isSearchShortcut = (event.metaKey || event.ctrlKey) && event.key === 'k';
+      if (!isSearchShortcut) {
+        return false;
       }
+
+      event.preventDefault();
+      const toggleAction = isSearchOpen ? closeSearch : openSearch;
+      toggleAction();
+      return true;
+    }
+
+    function handleEscapeKey(event: KeyboardEvent): void {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      if (isSearchOpen) {
+        closeSearch();
+      } else if (isDrawerOpen) {
+        closeDrawer();
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (handleSearchShortcut(event)) {
+        return;
+      }
+      handleEscapeKey(event);
     }
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isDrawerOpen, isSearchOpen, closeDrawer, closeSearch]);
+  }, [isDrawerOpen, isSearchOpen, openSearch, closeSearch, closeDrawer]);
 
   // Prevent body scroll when drawer or search is open
   useEffect(() => {
