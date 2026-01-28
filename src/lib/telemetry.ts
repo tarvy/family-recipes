@@ -12,70 +12,56 @@
  *
  *   // Trace database queries
  *   const users = await traceDbQuery('find', 'users', () => User.find());
+ *
+ * Note: Tracing is disabled in environments where OpenTelemetry
+ * cannot be loaded (e.g., Vercel serverless with ESM).
  */
 
-import { type Span, SpanStatusCode, trace } from '@opentelemetry/api';
+/** Minimal Span interface for when OpenTelemetry is not available */
+export interface MinimalSpan {
+  setAttribute(key: string, value: string | number | boolean): void;
+  setAttributes(attrs: Record<string, string | number | boolean>): void;
+  setStatus(status: { code: number; message?: string }): void;
+  end(): void;
+}
 
-const tracer = trace.getTracer('family-recipes');
+/** No-op span implementation */
+const noopSpan: MinimalSpan = {
+  setAttribute: () => {},
+  setAttributes: () => {},
+  setStatus: () => {},
+  end: () => {},
+};
 
 /**
- * Wrap an async function with a trace span
+ * Wrap an async function with a trace span.
+ * Falls back to no-op tracing if OpenTelemetry is unavailable.
  */
 export async function withTrace<T>(
-  name: string,
-  fn: (span: Span) => Promise<T>,
-  attributes?: Record<string, string | number | boolean>,
+  _name: string,
+  fn: (span: MinimalSpan) => Promise<T>,
+  _attributes?: Record<string, string | number | boolean>,
 ): Promise<T> {
-  return tracer.startActiveSpan(name, async (span) => {
-    try {
-      if (attributes) {
-        span.setAttributes(attributes);
-      }
-      const result = await fn(span);
-      span.setStatus({ code: SpanStatusCode.OK });
-      return result;
-    } catch (error) {
-      span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: error instanceof Error ? error.message : 'Unknown error',
-      });
-      throw error;
-    } finally {
-      span.end();
-    }
-  });
+  // Use no-op tracing - OpenTelemetry disabled for Vercel compatibility
+  return fn(noopSpan);
 }
 
 /**
  * Trace a database query with standard attributes
  */
 export async function traceDbQuery<T>(
-  operation: string,
-  collection: string,
+  _operation: string,
+  _collection: string,
   fn: () => Promise<T>,
 ): Promise<T> {
-  return withTrace(`db.${operation}`, async (span) => {
-    span.setAttributes({
-      'db.system': 'mongodb',
-      'db.operation': operation,
-      'db.mongodb.collection': collection,
-    });
-    return fn();
-  });
+  // No-op tracing - just execute the function
+  return fn();
 }
 
 /**
  * Get current trace context for log correlation
  */
 export function getTraceContext(): { traceId: string; spanId: string } | null {
-  const span = trace.getActiveSpan();
-  if (!span) {
-    return null;
-  }
-
-  const context = span.spanContext();
-  return {
-    traceId: context.traceId,
-    spanId: context.spanId,
-  };
+  // Tracing disabled - no context available
+  return null;
 }

@@ -5,14 +5,13 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
-import type { Span } from '@opentelemetry/api';
 import {
   HTTP_BAD_REQUEST,
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
 import { logger } from '@/lib/logger';
-import { withTrace } from '@/lib/telemetry';
+import { type MinimalSpan, withTrace } from '@/lib/telemetry';
 import { createMcpServer } from '@/mcp/server';
 
 export const runtime = 'nodejs';
@@ -149,7 +148,7 @@ function methodNotAllowed(): Response {
   return Response.json({ error: 'method_not_allowed' }, { status: HTTP_METHOD_NOT_ALLOWED });
 }
 
-function validateMcpAuth(request: Request, span: Span): Response | null {
+function validateMcpAuth(request: Request, span: MinimalSpan): Response | null {
   const apiKey = request.headers.get(MCP_API_KEY_HEADER);
   const expectedKey = process.env.MCP_API_KEY;
 
@@ -173,7 +172,7 @@ function validateMcpAuth(request: Request, span: Span): Response | null {
 
 async function parseRequestBody(
   request: Request,
-  span: Span,
+  span: MinimalSpan,
 ): Promise<{ body: unknown } | { response: Response }> {
   try {
     const body = await request.json();
