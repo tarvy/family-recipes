@@ -47,20 +47,16 @@ export interface SendEmailResult {
 }
 
 /**
- * Get the sender email address from the app URL domain
+ * Default sender for Resend free tier
+ */
+const RESEND_FREE_TIER_SENDER = 'onboarding@resend.dev';
+
+/**
+ * Get the sender email address.
+ * Uses RESEND_FROM_EMAIL env var if set, otherwise falls back to Resend free tier sender.
  */
 function getSenderEmail(): string {
-  const appUrl = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000';
-  try {
-    const url = new URL(appUrl);
-    // Resend free tier requires using onboarding@resend.dev as sender
-    // For production, use your verified domain
-    const domain = url.hostname === 'localhost' ? 'resend.dev' : url.hostname;
-    const localPart = domain === 'resend.dev' ? 'onboarding' : 'noreply';
-    return `${localPart}@${domain}`;
-  } catch {
-    return 'onboarding@resend.dev';
-  }
+  return process.env['RESEND_FROM_EMAIL'] || RESEND_FREE_TIER_SENDER;
 }
 
 /**
