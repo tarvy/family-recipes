@@ -26,6 +26,15 @@ declare global {
       GRAFANA_API_KEY?: string;
       LOG_LEVEL?: 'debug' | 'info' | 'warn' | 'error';
 
+      // OpenTelemetry (standard OTEL env vars)
+      OTEL_EXPORTER_OTLP_ENDPOINT?: string;
+      OTEL_EXPORTER_OTLP_HEADERS?: string;
+      OTEL_SERVICE_NAME?: string;
+
+      // Tracing control
+      NEXT_OTEL_VERBOSE?: string;
+      NEXT_OTEL_FETCH_DISABLED?: string;
+
       // File Storage
       BLOB_READ_WRITE_TOKEN?: string;
 
