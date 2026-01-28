@@ -61,6 +61,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run lint:fix` | Fix auto-fixable lint issues |
 | `npm run format` | Format code with Biome |
 | `npm run typecheck` | Run TypeScript type checking |
+| `npm run allowlist -- <command>` | Manage allowlisted emails (list/add/remove) |
 | `npm run progress` | Check project progress (Python) |
 
 ---
@@ -95,6 +96,19 @@ curl -sS -X POST -H "Cookie: session=<token>" -H "Content-Type: application/json
 ```
 
 ### Ad-hoc Read-only DB Query (Mongoose)
+
+For repeatable local admin tasks, prefer the allowlist CLI (loads `.env.local` with `@next/env`):
+
+```bash
+# List allowlist entries
+npm run allowlist -- list
+
+# Add a family member
+npm run allowlist -- add --email person@example.com --role family
+
+# Remove an entry
+npm run allowlist -- remove --email person@example.com
+```
 
 Use this pattern sparingly and avoid printing secrets:
 
