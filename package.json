@@ -22,6 +22,7 @@
   "type": "module",
   "dependencies": {
     "@cooklang/cooklang-ts": "^1.2.7",
+    "@modelcontextprotocol/sdk": "^1.25.3",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.211.0",
     "@opentelemetry/resources": "^2.5.0",
@@ -36,7 +37,8 @@
     "pino": "^10.3.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "resend": "^6.8.0"
+    "resend": "^6.8.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.12",
