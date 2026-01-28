@@ -6,11 +6,7 @@
 
 import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
-import {
-  createEmptyFormData,
-  RecipeForm,
-  type RecipeFormData,
-} from '@/components/recipes/recipe-form';
+import { RecipeForm, type RecipeFormData } from '@/components/recipes/recipe-form';
 import { getRecipeBySlug, type RecipeDetail } from '@/lib/recipes/loader';
 
 interface EditRecipePageProps {
@@ -43,10 +39,7 @@ function generateId(prefix: string): string {
  * Convert RecipeDetail to RecipeFormData
  */
 function recipeToFormData(recipe: RecipeDetail): RecipeFormData {
-  const base = createEmptyFormData();
-
   return {
-    ...base,
     title: recipe.title,
     category: recipe.category,
     description: recipe.description ?? '',
