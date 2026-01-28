@@ -36,12 +36,19 @@
   --color-cream: #FFFEF9;
   --color-cocoa: #4A3728;
 
-  /* Semantic colors mapped to brand */
+  /*
+   * Surface hierarchy (background → card → nested)
+   *
+   * Layer 1 — Page:   bg-background    #FBF6E3  gingham base
+   * Layer 2 — Card:   bg-card          #FFFFFF  primary content surface
+   * Layer 3 — Inset:  bg-card-nested   #F9F8F4  section within a card or form
+   */
   --color-background: var(--color-gingham);
   --color-foreground: var(--color-cocoa);
 
   --color-card: #FFFFFF;
   --color-card-foreground: var(--color-cocoa);
+  --color-card-nested: #F9F8F4;
 
   --color-popover: #FFFFFF;
   --color-popover-foreground: var(--color-cocoa);

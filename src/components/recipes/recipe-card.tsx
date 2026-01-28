@@ -148,7 +148,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     <>
       <Link
         href={`/recipes/${recipe.slug}`}
-        className="group block overflow-hidden rounded-lg bg-card shadow-sm ring-1 ring-border transition-all hover:shadow-md hover:ring-pink-dark focus:outline-none focus:ring-2 focus:ring-lavender focus:ring-offset-2"
+        className="group flex flex-col overflow-hidden rounded-lg bg-card shadow-sm ring-1 ring-border transition-all hover:shadow-md hover:ring-pink-dark focus:outline-none focus:ring-2 focus:ring-lavender focus:ring-offset-2"
         {...longPressHandlers}
       >
         {/* Colored placeholder header */}
@@ -159,21 +159,24 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         </div>
 
         {/* Card content */}
-        <div className="p-4">
+        <div className="flex flex-1 flex-col p-4">
           {/* Title */}
-          <h3 className="line-clamp-2 font-semibold text-foreground group-hover:text-lavender-dark">
+          <h3
+            className="line-clamp-2 font-semibold text-foreground group-hover:text-lavender-dark"
+            title={recipe.title}
+          >
             {recipe.title}
           </h3>
 
           {/* Category badge */}
           <span
-            className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${colors.badge}`}
+            className={`mt-2 self-start rounded-full px-2.5 py-0.5 text-xs font-medium ${colors.badge}`}
           >
             {formatCategory(recipe.category)}
           </span>
 
           {/* Meta information */}
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+          <div className="mt-auto flex flex-wrap gap-x-4 gap-y-1 pt-3 text-sm text-muted-foreground">
             {recipe.totalTime !== undefined && (
               <span className="flex items-center gap-1">
                 <ClockIcon />
