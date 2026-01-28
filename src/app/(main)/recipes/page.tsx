@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { Suspense } from 'react';
+import { MainLayout } from '@/components/layout';
 import { RecipeBrowser } from '@/components/recipes/recipe-browser';
 import { getAllRecipes, getCategories } from '@/lib/recipes/loader';
 
@@ -52,22 +52,21 @@ export default async function RecipesPage() {
   const categories = getCategories();
 
   return (
-    <main className="min-h-screen bg-background px-6 py-10">
-      <div className="mx-auto w-full max-w-6xl">
-        <div className="mb-8">
-          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
-            ← Back to home
-          </Link>
-          <h1 className="mt-3 text-3xl font-semibold text-foreground">Recipes</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Browse {recipes.length} family recipes
-          </p>
-        </div>
+    <MainLayout>
+      <div className="px-6 py-6">
+        <div className="mx-auto w-full max-w-6xl">
+          <div className="mb-8">
+            <h1 className="text-3xl font-semibold text-foreground">Recipes</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Browse {recipes.length} family recipes
+            </p>
+          </div>
 
-        <Suspense fallback={<RecipeBrowserSkeleton />}>
-          <RecipeBrowser recipes={recipes} categories={categories} />
-        </Suspense>
+          <Suspense fallback={<RecipeBrowserSkeleton />}>
+            <RecipeBrowser recipes={recipes} categories={categories} />
+          </Suspense>
+        </div>
       </div>
-    </main>
+    </MainLayout>
   );
 }

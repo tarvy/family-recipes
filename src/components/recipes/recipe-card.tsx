@@ -1,4 +1,23 @@
+'use client';
+
+/**
+ * Recipe Card Component
+ *
+ * Displays a recipe preview with category colors, time, and ingredient count.
+ * Supports long-press/right-click for context menu on mobile/desktop.
+ */
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import {
+  AddToCartIcon,
+  ContextMenu,
+  type ContextMenuItem,
+  EditIcon,
+  type LongPressPosition,
+  useLongPress,
+} from '@/components/gestures';
 import type { RecipePreview } from '@/lib/recipes/loader';
 
 /** Minutes per hour for time conversion */
@@ -89,51 +108,93 @@ interface RecipeCardProps {
  * - Time information (prep, cook, or total)
  * - Ingredient count
  * - Hover and focus states for accessibility
+ * - Long-press/right-click context menu
  */
 export function RecipeCard({ recipe }: RecipeCardProps) {
+  const router = useRouter();
   const colors = getCategoryColors(recipe.category);
+  const [contextMenuOpen, setContextMenuOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<LongPressPosition>({ x: 0, y: 0 });
+
+  const handleLongPress = useCallback((position: LongPressPosition) => {
+    setMenuPosition(position);
+    setContextMenuOpen(true);
+  }, []);
+
+  const longPressHandlers = useLongPress({
+    onLongPress: handleLongPress,
+  });
+
+  const contextMenuItems: ContextMenuItem[] = [
+    {
+      id: 'edit',
+      label: 'Edit Recipe',
+      icon: <EditIcon />,
+      onClick: () => {
+        router.push(`/recipes/${recipe.slug}/edit`);
+      },
+    },
+    {
+      id: 'add-to-list',
+      label: 'Add to Shopping List',
+      icon: <AddToCartIcon />,
+      onClick: () => {
+        router.push(`/shopping-list?add=${recipe.slug}`);
+      },
+    },
+  ];
 
   return (
-    <Link
-      href={`/recipes/${recipe.slug}`}
-      className="group block overflow-hidden rounded-lg bg-card shadow-sm ring-1 ring-border transition-all hover:shadow-md hover:ring-pink-dark focus:outline-none focus:ring-2 focus:ring-lavender focus:ring-offset-2"
-    >
-      {/* Colored placeholder header */}
-      <div className={`flex h-32 items-center justify-center ${colors.bg}`} aria-hidden="true">
-        <span className={`text-4xl font-bold opacity-40 ${colors.text}`}>
-          {recipe.title.charAt(0).toUpperCase()}
-        </span>
-      </div>
-
-      {/* Card content */}
-      <div className="p-4">
-        {/* Title */}
-        <h3 className="line-clamp-2 font-semibold text-foreground group-hover:text-lavender-dark">
-          {recipe.title}
-        </h3>
-
-        {/* Category badge */}
-        <span
-          className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${colors.badge}`}
-        >
-          {formatCategory(recipe.category)}
-        </span>
-
-        {/* Meta information */}
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-          {recipe.totalTime !== undefined && (
-            <span className="flex items-center gap-1">
-              <ClockIcon />
-              {formatTime(recipe.totalTime)}
-            </span>
-          )}
-          <span className="flex items-center gap-1">
-            <IngredientsIcon />
-            {recipe.ingredientCount} ingredient{recipe.ingredientCount !== 1 ? 's' : ''}
+    <>
+      <Link
+        href={`/recipes/${recipe.slug}`}
+        className="group block overflow-hidden rounded-lg bg-card shadow-sm ring-1 ring-border transition-all hover:shadow-md hover:ring-pink-dark focus:outline-none focus:ring-2 focus:ring-lavender focus:ring-offset-2"
+        {...longPressHandlers}
+      >
+        {/* Colored placeholder header */}
+        <div className={`flex h-32 items-center justify-center ${colors.bg}`} aria-hidden="true">
+          <span className={`text-4xl font-bold opacity-40 ${colors.text}`}>
+            {recipe.title.charAt(0).toUpperCase()}
           </span>
         </div>
-      </div>
-    </Link>
+
+        {/* Card content */}
+        <div className="p-4">
+          {/* Title */}
+          <h3 className="line-clamp-2 font-semibold text-foreground group-hover:text-lavender-dark">
+            {recipe.title}
+          </h3>
+
+          {/* Category badge */}
+          <span
+            className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${colors.badge}`}
+          >
+            {formatCategory(recipe.category)}
+          </span>
+
+          {/* Meta information */}
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            {recipe.totalTime !== undefined && (
+              <span className="flex items-center gap-1">
+                <ClockIcon />
+                {formatTime(recipe.totalTime)}
+              </span>
+            )}
+            <span className="flex items-center gap-1">
+              <IngredientsIcon />
+              {recipe.ingredientCount} ingredient{recipe.ingredientCount !== 1 ? 's' : ''}
+            </span>
+          </div>
+        </div>
+      </Link>
+
+      <ContextMenu
+        items={contextMenuItems}
+        position={menuPosition}
+        isOpen={contextMenuOpen}
+        onClose={() => setContextMenuOpen(false)}
+      />
+    </>
   );
 }
 

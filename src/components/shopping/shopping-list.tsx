@@ -4,10 +4,11 @@
  * Shopping list display component
  *
  * Renders shopping items organized by grocery category with
- * checkboxes, progress indicators, and collapse/expand functionality.
+ * checkboxes, progress indicators, collapse/expand, and swipe gestures.
  */
 
 import { useState } from 'react';
+import { SwipeableItem, SwipeCheckIcon } from '@/components/gestures';
 import type { AggregatedIngredient, GroceryCategory } from '@/lib/shopping';
 import { CATEGORY_LABELS } from '@/lib/shopping/categories';
 
@@ -188,7 +189,7 @@ function CategorySection({
 
       {/* Items list */}
       {!isCollapsed && (
-        <ul className="divide-y divide-border">
+        <ul>
           {sortedItems.map((item) => (
             <ShoppingItem
               key={item.id}
@@ -210,32 +211,45 @@ interface ShoppingItemProps {
 }
 
 /**
- * Individual shopping list item
+ * Individual shopping list item with swipe-to-check gesture
  */
 function ShoppingItem({ item, isChecked, onToggle }: ShoppingItemProps) {
+  const checkAction = {
+    id: 'check',
+    bgColor: 'bg-lavender',
+    icon: <SwipeCheckIcon className="h-6 w-6" />,
+    label: isChecked ? 'Uncheck item' : 'Check item',
+  };
+
   return (
-    <li className="flex items-center gap-3 px-4 py-3">
-      <button
-        type="button"
-        onClick={onToggle}
-        className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition-colors ${
-          isChecked
-            ? 'border-lavender bg-lavender text-white'
-            : 'border-muted-foreground hover:border-lavender'
-        }`}
-        aria-label={isChecked ? `Uncheck ${item.name}` : `Check ${item.name}`}
-      >
-        {isChecked && <CheckIcon className="h-3 w-3" />}
-      </button>
-      <div
-        className={`flex-1 ${isChecked ? 'text-muted-foreground line-through' : 'text-foreground'}`}
-      >
-        <span className="capitalize">{item.name}</span>
-        {item.displayQuantity && (
-          <span className="ml-2 text-sm text-muted-foreground">({item.displayQuantity})</span>
-        )}
-      </div>
-    </li>
+    <SwipeableItem
+      rightAction={checkAction}
+      onSwipeRight={onToggle}
+      className="border-b border-border last:border-b-0"
+    >
+      <li className="flex items-center gap-3 px-4 py-3">
+        <button
+          type="button"
+          onClick={onToggle}
+          className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border-2 transition-colors ${
+            isChecked
+              ? 'border-lavender bg-lavender text-white'
+              : 'border-muted-foreground hover:border-lavender'
+          }`}
+          aria-label={isChecked ? `Uncheck ${item.name}` : `Check ${item.name}`}
+        >
+          {isChecked && <CheckIcon className="h-3 w-3" />}
+        </button>
+        <div
+          className={`flex-1 ${isChecked ? 'text-muted-foreground line-through' : 'text-foreground'}`}
+        >
+          <span className="capitalize">{item.name}</span>
+          {item.displayQuantity && (
+            <span className="ml-2 text-sm text-muted-foreground">({item.displayQuantity})</span>
+          )}
+        </div>
+      </li>
+    </SwipeableItem>
   );
 }
 

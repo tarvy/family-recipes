@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { Suspense } from 'react';
+import { MainLayout } from '@/components/layout';
 import { getAllRecipes } from '@/lib/recipes/loader';
 import { ShoppingListClient } from './shopping-list-client';
 
@@ -42,22 +42,21 @@ async function ShoppingListContent() {
 
 export default function ShoppingListPage() {
   return (
-    <main className="min-h-screen bg-background px-6 py-10">
-      <div className="mx-auto w-full max-w-3xl">
-        <div className="mb-8">
-          <Link href="/recipes" className="text-sm text-muted-foreground hover:text-foreground">
-            ← Back to recipes
-          </Link>
-          <h1 className="mt-3 text-3xl font-semibold text-foreground">Shopping List</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Select recipes to create a shopping list with aggregated ingredients
-          </p>
-        </div>
+    <MainLayout>
+      <div className="px-6 py-6">
+        <div className="mx-auto w-full max-w-3xl">
+          <div className="mb-8">
+            <h1 className="text-3xl font-semibold text-foreground">Shopping List</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Select recipes to create a shopping list with aggregated ingredients
+            </p>
+          </div>
 
-        <Suspense fallback={<ShoppingListSkeleton />}>
-          <ShoppingListContent />
-        </Suspense>
+          <Suspense fallback={<ShoppingListSkeleton />}>
+            <ShoppingListContent />
+          </Suspense>
+        </div>
       </div>
-    </main>
+    </MainLayout>
   );
 }
