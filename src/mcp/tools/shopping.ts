@@ -39,7 +39,7 @@ const shoppingListSchema = z.object({
   id: z.string(),
   name: z.string(),
   items: z.array(aggregatedIngredientSchema),
-  itemsByCategory: z.record(z.array(aggregatedIngredientSchema)),
+  itemsByCategory: z.record(z.string(), z.array(aggregatedIngredientSchema)),
   categoriesWithItems: z.array(z.string()),
   recipeCount: z.number(),
   itemCount: z.number(),
@@ -95,7 +95,7 @@ export function registerShoppingTools(server: McpServer): void {
         name: z.string().optional().describe('Optional shopping list name'),
         recipeSlugs: z.array(z.string()).min(1).describe('Recipe slugs to include'),
         servingsMultipliers: z
-          .record(z.number().min(SERVINGS_MULTIPLIER_MIN))
+          .record(z.string(), z.number().min(SERVINGS_MULTIPLIER_MIN))
           .optional()
           .describe('Optional servings multiplier by recipe slug'),
         userEmail: z.string().optional().describe('Optional user email (defaults to OWNER_EMAIL)'),
