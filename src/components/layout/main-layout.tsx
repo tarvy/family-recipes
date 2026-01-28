@@ -38,10 +38,7 @@ export function MainLayout({ children, className = '' }: MainLayoutProps) {
       <SearchModal />
 
       {/* Main content with header offset */}
-      <main
-        className={`min-h-screen bg-background ${className}`}
-        style={{ paddingTop: HEADER_HEIGHT_PX }}
-      >
+      <main className={`min-h-screen ${className}`} style={{ paddingTop: HEADER_HEIGHT_PX }}>
         {children}
       </main>
     </>
