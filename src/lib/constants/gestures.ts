@@ -30,3 +30,24 @@ export const TAP_DURATION_MS = 200;
 
 /** Maximum distance moved during a tap (px) */
 export const TAP_DISTANCE_PX = 10;
+
+/** Offset for pull-to-refresh indicator position (px) */
+export const PTR_INDICATOR_OFFSET_PX = 40;
+
+/** Full rotation angle for refresh arrow (degrees) */
+export const PTR_ROTATION_DEGREES = 180;
+
+/** Padding offset for context menu positioning (px) */
+export const CONTEXT_MENU_PADDING_PX = 16;
+
+/** Velocity multiplier for swipe momentum */
+export const SWIPE_VELOCITY_MULTIPLIER = 1.5;
+
+/** Divisor for calculating swipe midpoint */
+export const SWIPE_MIDPOINT_DIVISOR = 2;
+
+/** Resistance factor for pull gestures (0-1) */
+export const PULL_RESISTANCE_FACTOR = 0.5;
+
+/** Debounce threshold for swipe direction detection (px) */
+export const SWIPE_DEBOUNCE_PX = 10;

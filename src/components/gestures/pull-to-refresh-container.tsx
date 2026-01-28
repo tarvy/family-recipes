@@ -7,7 +7,11 @@
  */
 
 import { type ReactNode, useRef } from 'react';
-import { PTR_THRESHOLD_PX } from '@/lib/constants/gestures';
+import {
+  PTR_INDICATOR_OFFSET_PX,
+  PTR_ROTATION_DEGREES,
+  PTR_THRESHOLD_PX,
+} from '@/lib/constants/gestures';
 import { usePullToRefresh } from './use-pull-to-refresh';
 
 /** Icon stroke width for spinner */
@@ -51,7 +55,7 @@ export function PullToRefreshContainer({
         <div
           className="pointer-events-none absolute left-0 right-0 flex justify-center"
           style={{
-            top: pullDistance - 40,
+            top: pullDistance - PTR_INDICATOR_OFFSET_PX,
             opacity: progress,
             transition: isRefreshing ? 'none' : 'opacity 0.2s ease-out',
           }}
@@ -63,7 +67,7 @@ export function PullToRefreshContainer({
               <RefreshArrow
                 className="h-6 w-6 text-lavender"
                 style={{
-                  transform: `rotate(${progress * 180}deg)`,
+                  transform: `rotate(${progress * PTR_ROTATION_DEGREES}deg)`,
                   transition: 'transform 0.1s ease-out',
                 }}
               />

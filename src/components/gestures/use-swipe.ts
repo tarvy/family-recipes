@@ -7,7 +7,11 @@
  */
 
 import { type RefObject, type TouchEvent, useCallback, useRef } from 'react';
-import { SWIPE_THRESHOLD_PX, SWIPE_VELOCITY_THRESHOLD } from '@/lib/constants/gestures';
+import {
+  SWIPE_DEBOUNCE_PX,
+  SWIPE_THRESHOLD_PX,
+  SWIPE_VELOCITY_THRESHOLD,
+} from '@/lib/constants/gestures';
 
 export interface UseSwipeOptions {
   /** Callback when user swipes left */
@@ -83,8 +87,8 @@ export function useSwipe<T extends HTMLElement>(
         const absDeltaX = Math.abs(deltaX);
         const absDeltaY = Math.abs(deltaY);
 
-        // Need at least 10px movement to determine direction
-        if (absDeltaX > 10 || absDeltaY > 10) {
+        // Need at least some movement to determine direction
+        if (absDeltaX > SWIPE_DEBOUNCE_PX || absDeltaY > SWIPE_DEBOUNCE_PX) {
           touchState.current.isHorizontal = absDeltaX > absDeltaY;
         }
       }

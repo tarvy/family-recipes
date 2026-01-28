@@ -58,7 +58,7 @@ export function ContextMenu({ items, position, isOpen, onClose }: ContextMenuPro
       return position;
     }
 
-    const estimatedHeight = items.length * MENU_ITEM_HEIGHT_PX + 16;
+    const estimatedHeight = items.length * MENU_ITEM_HEIGHT_PX + VIEWPORT_PADDING_PX;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 

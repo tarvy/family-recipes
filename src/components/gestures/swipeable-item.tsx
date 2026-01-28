@@ -8,7 +8,11 @@
  */
 
 import { type ReactNode, useCallback, useRef, useState } from 'react';
-import { SWIPE_THRESHOLD_PX } from '@/lib/constants/gestures';
+import {
+  SWIPE_MIDPOINT_DIVISOR,
+  SWIPE_THRESHOLD_PX,
+  SWIPE_VELOCITY_MULTIPLIER,
+} from '@/lib/constants/gestures';
 import { useSwipe } from './use-swipe';
 
 /** Icon stroke width for action icons */
@@ -60,7 +64,7 @@ export function SwipeableItem({
 
   const handleSwipeMove = useCallback((offset: number) => {
     // Limit swipe distance
-    const maxOffset = SWIPE_THRESHOLD_PX * 1.5;
+    const maxOffset = SWIPE_THRESHOLD_PX * SWIPE_VELOCITY_MULTIPLIER;
     const clampedOffset = Math.max(-maxOffset, Math.min(maxOffset, offset));
     setOffsetX(clampedOffset);
   }, []);
@@ -111,7 +115,7 @@ export function SwipeableItem({
           style={{ width: Math.abs(Math.max(0, offsetX)) }}
           aria-hidden="true"
         >
-          {offsetX > SWIPE_THRESHOLD_PX / 2 && (
+          {offsetX > SWIPE_THRESHOLD_PX / SWIPE_MIDPOINT_DIVISOR && (
             <span className="text-white">{rightAction.icon}</span>
           )}
         </div>
@@ -124,7 +128,7 @@ export function SwipeableItem({
           style={{ width: Math.abs(Math.min(0, offsetX)) }}
           aria-hidden="true"
         >
-          {offsetX < -SWIPE_THRESHOLD_PX / 2 && (
+          {offsetX < -SWIPE_THRESHOLD_PX / SWIPE_MIDPOINT_DIVISOR && (
             <span className="text-white">{leftAction.icon}</span>
           )}
         </div>

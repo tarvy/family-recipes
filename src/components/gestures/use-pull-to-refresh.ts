@@ -7,7 +7,11 @@
  */
 
 import { type RefObject, type TouchEvent, useCallback, useRef, useState } from 'react';
-import { PTR_MAX_PULL_PX, PTR_THRESHOLD_PX } from '@/lib/constants/gestures';
+import {
+  PTR_MAX_PULL_PX,
+  PTR_THRESHOLD_PX,
+  PULL_RESISTANCE_FACTOR,
+} from '@/lib/constants/gestures';
 
 export interface UsePullToRefreshOptions {
   /** Callback when refresh is triggered (should return a promise) */
@@ -107,7 +111,7 @@ export function usePullToRefresh<T extends HTMLElement>(
       }
 
       // Apply resistance as pull increases
-      const resistance = 1 - Math.min(deltaY / maxPull, 1) * 0.5;
+      const resistance = 1 - Math.min(deltaY / maxPull, 1) * PULL_RESISTANCE_FACTOR;
       const pullDistance = Math.min(deltaY * resistance, maxPull);
 
       touchState.current.currentY = touch.clientY;

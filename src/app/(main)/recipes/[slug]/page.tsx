@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { IngredientList } from '@/components/recipes/ingredient-list';
 import { StepList } from '@/components/recipes/step-list';
+import { MINUTES_PER_HOUR } from '@/lib/constants/time';
 import { getRecipeBySlug } from '@/lib/recipes/loader';
 
 interface RecipeDetailPageProps {
@@ -140,9 +141,6 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     </MainLayout>
   );
 }
-
-/** Minutes per hour for time conversion */
-const MINUTES_PER_HOUR = 60;
 
 /**
  * Format time display (e.g., "30 min" or "1 hr 15 min")

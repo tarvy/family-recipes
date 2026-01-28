@@ -31,6 +31,12 @@ const ATTR = {
   ERROR_MESSAGE: 'error.message',
 } as const;
 
+/** Numeric status codes matching SpanStatusCode enum */
+const STATUS_CODE = {
+  OK: 1,
+  ERROR: 2,
+} as const;
+
 /** Get the tracer instance */
 function getTracer() {
   return trace.getTracer(SERVICE_NAME);
@@ -56,10 +62,13 @@ function toMinimalSpan(span: Span): MinimalSpan {
     setAttribute: (key, value) => span.setAttribute(key, value),
     setAttributes: (attrs) => span.setAttributes(attrs),
     setStatus: ({ code, message }) => {
-      // Map numeric code to SpanStatusCode
-      // 0 = UNSET, 1 = OK, 2 = ERROR
+      // Map numeric code to SpanStatusCode enum
       const statusCode =
-        code === 2 ? SpanStatusCode.ERROR : code === 1 ? SpanStatusCode.OK : SpanStatusCode.UNSET;
+        code === STATUS_CODE.ERROR
+          ? SpanStatusCode.ERROR
+          : code === STATUS_CODE.OK
+            ? SpanStatusCode.OK
+            : SpanStatusCode.UNSET;
       span.setStatus(message ? { code: statusCode, message } : { code: statusCode });
     },
     end: () => span.end(),
