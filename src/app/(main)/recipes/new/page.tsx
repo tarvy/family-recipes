@@ -1,14 +1,11 @@
 /**
  * Create new recipe page
  *
- * Requires authentication. Redirects to login if not authenticated.
+ * Authentication handled by (main) layout.
  */
 
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { RecipeForm } from '@/components/recipes/recipe-form';
-import { getSessionFromCookies } from '@/lib/auth/session';
 
 export const metadata = {
   title: 'Create Recipe | Family Recipes',
@@ -16,13 +13,6 @@ export const metadata = {
 };
 
 export default async function CreateRecipePage() {
-  const cookieStore = await cookies();
-  const user = await getSessionFromCookies(cookieStore);
-
-  if (!user) {
-    redirect('/login?returnTo=/recipes/new');
-  }
-
   return (
     <MainLayout>
       <div className="px-6 py-6">

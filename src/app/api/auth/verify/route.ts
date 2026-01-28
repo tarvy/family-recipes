@@ -78,7 +78,7 @@ export async function GET(request: Request): Promise<Response> {
         email: user.email,
       });
 
-      return NextResponse.redirect(buildRedirectUrl('/'));
+      return NextResponse.redirect(buildRedirectUrl('/recipes'));
     } catch (error) {
       logger.api.error('Auth verify endpoint error', error instanceof Error ? error : undefined);
       return NextResponse.redirect(buildRedirectUrl('/login', 'server_error'));

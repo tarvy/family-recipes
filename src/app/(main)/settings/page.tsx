@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { PasskeyManager } from '@/components/auth/passkey-manager';
 import { MainLayout } from '@/components/layout';
 import { connectDB } from '@/db/connection';
@@ -17,10 +16,12 @@ interface PasskeySummary {
 }
 
 export default async function SettingsPage() {
+  // Layout guarantees authentication - fetch user for data access
   const user = await getSessionFromCookies(await cookies());
 
+  // Explicit guard: layout should redirect unauthenticated users, but fail clearly if not
   if (!user) {
-    redirect('/login');
+    throw new Error('User not authenticated - layout redirect failed');
   }
 
   const passkeys = await withTrace('page.settings.passkeys', async (span) => {
