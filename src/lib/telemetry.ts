@@ -1,6 +1,12 @@
 /**
  * Telemetry helpers for tracing operations
  *
+ * OpenTelemetry is currently DISABLED due to ESM compatibility issues
+ * with @vercel/otel on Vercel's serverless functions.
+ *
+ * These functions are no-ops that preserve the API for when
+ * tracing is re-enabled.
+ *
  * Usage:
  *   import { withTrace, traceDbQuery } from '@/lib/telemetry';
  *
@@ -12,39 +18,11 @@
  *
  *   // Trace database queries
  *   const users = await traceDbQuery('find', 'users', () => User.find());
- *
- * Note: Tracing is automatically enabled via @vercel/otel when
- * instrumentation.ts is loaded by Next.js.
  */
-
-import type { Span } from '@opentelemetry/api';
-import { context, SpanStatusCode, trace } from '@opentelemetry/api';
-
-/** Service name for tracer */
-const SERVICE_NAME = 'family-recipes';
-
-/** Standard attribute keys */
-const ATTR = {
-  DB_OPERATION: 'db.operation',
-  DB_COLLECTION: 'db.collection',
-  ERROR: 'error',
-  ERROR_MESSAGE: 'error.message',
-} as const;
-
-/** Numeric status codes matching SpanStatusCode enum */
-const STATUS_CODE = {
-  OK: 1,
-  ERROR: 2,
-} as const;
-
-/** Get the tracer instance */
-function getTracer() {
-  return trace.getTracer(SERVICE_NAME);
-}
 
 /**
  * Minimal Span interface for compatibility with existing code.
- * Maps to OpenTelemetry Span methods.
+ * Currently a no-op stub.
  */
 export interface MinimalSpan {
   setAttribute(key: string, value: string | number | boolean): void;
@@ -53,113 +31,60 @@ export interface MinimalSpan {
   end(): void;
 }
 
-/**
- * Adapter to convert OpenTelemetry Span to MinimalSpan interface.
- * This preserves API compatibility with existing code.
- */
-function toMinimalSpan(span: Span): MinimalSpan {
-  return {
-    setAttribute: (key, value) => span.setAttribute(key, value),
-    setAttributes: (attrs) => span.setAttributes(attrs),
-    setStatus: ({ code, message }) => {
-      // Map numeric code to SpanStatusCode enum
-      const statusCode =
-        code === STATUS_CODE.ERROR
-          ? SpanStatusCode.ERROR
-          : code === STATUS_CODE.OK
-            ? SpanStatusCode.OK
-            : SpanStatusCode.UNSET;
-      span.setStatus(message ? { code: statusCode, message } : { code: statusCode });
-    },
-    end: () => span.end(),
-  };
-}
+/** No-op span implementation */
+const noopSpan: MinimalSpan = {
+  setAttribute: () => {},
+  setAttributes: () => {},
+  setStatus: () => {},
+  end: () => {},
+};
 
 /**
  * Wrap an async function with a trace span.
+ * Currently a no-op passthrough.
  *
  * @param name - Span name (e.g., 'auth.session.create')
  * @param fn - Async function to trace
- * @param attributes - Optional initial attributes
+ * @param _attributes - Optional initial attributes (ignored)
  */
 export async function withTrace<T>(
-  name: string,
+  _name: string,
   fn: (span: MinimalSpan) => Promise<T>,
-  attributes?: Record<string, string | number | boolean>,
+  _attributes?: Record<string, string | number | boolean>,
 ): Promise<T> {
-  const tracer = getTracer();
-
-  return tracer.startActiveSpan(name, async (span) => {
-    try {
-      if (attributes) {
-        span.setAttributes(attributes);
-      }
-      const result = await fn(toMinimalSpan(span));
-      span.setStatus({ code: SpanStatusCode.OK });
-      return result;
-    } catch (error) {
-      span.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: error instanceof Error ? error.message : 'Unknown error',
-      });
-      span.setAttribute(ATTR.ERROR, true);
-      if (error instanceof Error) {
-        span.setAttribute(ATTR.ERROR_MESSAGE, error.message);
-      }
-      throw error;
-    } finally {
-      span.end();
-    }
-  });
+  return fn(noopSpan);
 }
 
 /**
  * Trace a database query with standard attributes.
+ * Currently a no-op passthrough.
  *
- * @param operation - DB operation (find, create, update, delete)
- * @param collection - Collection name
+ * @param _operation - DB operation (find, create, update, delete)
+ * @param _collection - Collection name
  * @param fn - Query function
  */
 export async function traceDbQuery<T>(
-  operation: string,
-  collection: string,
+  _operation: string,
+  _collection: string,
   fn: () => Promise<T>,
 ): Promise<T> {
-  return withTrace(`db.${operation}`, async (span) => {
-    span.setAttribute(ATTR.DB_OPERATION, operation);
-    span.setAttribute(ATTR.DB_COLLECTION, collection);
-    return fn();
-  });
+  return fn();
 }
 
 /**
  * Get current trace context for log correlation.
+ * Currently returns null (tracing disabled).
  *
- * @returns Trace and span IDs if available, null otherwise
+ * @returns null (tracing disabled)
  */
 export function getTraceContext(): { traceId: string; spanId: string } | null {
-  const span = trace.getActiveSpan();
-  if (!span) {
-    return null;
-  }
-
-  const ctx = span.spanContext();
-
-  // Check for valid trace context (not all zeros)
-  if (ctx.traceId === '00000000000000000000000000000000') {
-    return null;
-  }
-
-  return {
-    traceId: ctx.traceId,
-    spanId: ctx.spanId,
-  };
+  return null;
 }
 
 /**
  * Get the current active context for context propagation.
- * Useful for passing context to worker threads or external calls.
+ * Currently returns undefined (tracing disabled).
  */
-export function getActiveContext() {
-  return context.active();
+export function getActiveContext(): undefined {
+  return undefined;
 }
