@@ -2,11 +2,10 @@
  * Recipe API routes for individual recipes
  *
  * GET /api/recipes/[slug] - Get recipe details (no auth)
- * PUT /api/recipes/[slug] - Update recipe (auth required)
+ * PUT /api/recipes/[slug] - Update recipe with raw Cooklang content (auth required)
  */
 
 import { cookies } from 'next/headers';
-import type { IRecipe } from '@/db/types';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import {
   HTTP_BAD_REQUEST,
@@ -14,9 +13,10 @@ import {
   HTTP_NOT_FOUND,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
+import { extractMetadataFromContent, generateSlugFromTitle } from '@/lib/cooklang/metadata';
 import { logger } from '@/lib/logger';
-import { getRecipeBySlug } from '@/lib/recipes/loader';
-import { deleteRecipeFile, writeRecipe } from '@/lib/recipes/writer';
+import { getRawCooklangContent, getRecipeBySlug } from '@/lib/recipes/loader';
+import { deleteRecipeFile, writeRawCooklangContent } from '@/lib/recipes/writer';
 import { withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
@@ -25,19 +25,10 @@ export const runtime = 'nodejs';
 const VALID_CATEGORIES = ['breakfast', 'desserts', 'entrees', 'salads', 'sides', 'soups'];
 
 interface UpdateRecipeRequest {
-  title: string;
+  /** Raw Cooklang content including metadata */
+  content: string;
+  /** Target category directory */
   category: string;
-  description?: string;
-  servings?: number;
-  prepTime?: number;
-  cookTime?: number;
-  difficulty?: string;
-  cuisine?: string;
-  course?: string;
-  tags?: string[];
-  ingredients: Array<{ name: string; quantity?: string; unit?: string }>;
-  cookware?: Array<{ name: string; quantity?: number }>;
-  steps: Array<{ text: string }>;
 }
 
 interface RouteParams {
@@ -75,39 +66,7 @@ export async function GET(_request: Request, { params }: RouteParams): Promise<R
 }
 
 /**
- * Generate URL-safe slug from title
- */
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
-/**
- * Check if an ingredient object is valid
- */
-function isValidIngredient(ing: unknown): boolean {
-  return (
-    !!ing && typeof ing === 'object' && typeof (ing as Record<string, unknown>)['name'] === 'string'
-  );
-}
-
-/**
- * Check if a step object is valid
- */
-function isValidStep(step: unknown): boolean {
-  return (
-    !!step &&
-    typeof step === 'object' &&
-    typeof (step as Record<string, unknown>)['text'] === 'string'
-  );
-}
-
-/**
- * Validate the request body
+ * Validate the request body for Cooklang-first format
  */
 function validateRequest(
   body: unknown,
@@ -118,86 +77,40 @@ function validateRequest(
 
   const data = body as Record<string, unknown>;
 
-  if (typeof data['title'] !== 'string' || !data['title'].trim()) {
-    return { valid: false, error: 'Title is required' };
+  // Check for raw Cooklang content format
+  if (typeof data['content'] !== 'string' || !data['content'].trim()) {
+    return { valid: false, error: 'Recipe content is required' };
   }
 
   if (typeof data['category'] !== 'string' || !VALID_CATEGORIES.includes(data['category'])) {
     return { valid: false, error: 'Valid category is required' };
   }
 
-  if (!Array.isArray(data['ingredients']) || data['ingredients'].length === 0) {
-    return { valid: false, error: 'At least one ingredient is required' };
+  // Parse content to validate it has required fields
+  const metadata = extractMetadataFromContent(data['content']);
+
+  if (!metadata.title?.trim()) {
+    return { valid: false, error: 'Recipe content must include a title (>> title: Your Title)' };
   }
 
-  if (!Array.isArray(data['steps']) || data['steps'].length === 0) {
-    return { valid: false, error: 'At least one step is required' };
+  // Check that there's actual recipe content (not just metadata)
+  const lines = data['content'].split('\n');
+  const hasContent = lines.some((line) => {
+    const trimmed = line.trim();
+    return trimmed && !trimmed.startsWith('>>');
+  });
+
+  if (!hasContent) {
+    return { valid: false, error: 'Recipe must include at least one step' };
   }
 
-  const ingredientsValid = data['ingredients'].every(isValidIngredient);
-  if (!ingredientsValid) {
-    return { valid: false, error: 'Each ingredient must have a name' };
-  }
-
-  const stepsValid = data['steps'].every(isValidStep);
-  if (!stepsValid) {
-    return { valid: false, error: 'Each step must have text' };
-  }
-
-  return { valid: true, data: data as unknown as UpdateRecipeRequest };
-}
-
-/**
- * Apply optional fields to recipe object
- */
-function applyOptionalFields(recipe: IRecipe, data: UpdateRecipeRequest): void {
-  if (data.description) {
-    recipe.description = data.description;
-  }
-  if (data.servings !== undefined) {
-    recipe.servings = data.servings;
-  }
-  if (data.prepTime !== undefined) {
-    recipe.prepTime = data.prepTime;
-  }
-  if (data.cookTime !== undefined) {
-    recipe.cookTime = data.cookTime;
-  }
-  if (data.prepTime !== undefined && data.cookTime !== undefined) {
-    recipe.totalTime = data.prepTime + data.cookTime;
-  }
-  if (data.difficulty) {
-    recipe.difficulty = data.difficulty;
-  }
-  if (data.cuisine) {
-    recipe.cuisine = data.cuisine;
-  }
-  if (data.course) {
-    recipe.course = data.course;
-  }
-}
-
-/**
- * Build recipe object from request data
- */
-function buildRecipe(data: UpdateRecipeRequest, slug: string): IRecipe {
-  const now = new Date();
-  const recipe: IRecipe = {
-    filePath: `${data.category}/${slug}.cook`,
-    gitCommitHash: 'pending',
-    title: data.title.trim(),
-    slug,
-    ingredients: data.ingredients,
-    cookware: data.cookware ?? [],
-    steps: data.steps,
-    tags: data.tags ?? [],
-    photoUrls: [],
-    createdAt: now,
-    updatedAt: now,
+  return {
+    valid: true,
+    data: {
+      content: data['content'],
+      category: data['category'],
+    },
   };
-
-  applyOptionalFields(recipe, data);
-  return recipe;
 }
 
 interface ExistingRecipeInfo {
@@ -225,6 +138,11 @@ async function handleRecipeRelocation(
   }
 }
 
+/**
+ * PUT /api/recipes/[slug]
+ *
+ * Update recipe with raw Cooklang content. Auth required.
+ */
 export async function PUT(request: Request, { params }: RouteParams): Promise<Response> {
   return withTrace('api.recipes.update', async (span) => {
     const { slug: originalSlug } = await params;
@@ -241,7 +159,8 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
     span.setAttribute('user_id', user.id);
 
     try {
-      const existingRecipe = await getRecipeBySlug(originalSlug);
+      // Check if recipe exists by trying to get raw content
+      const existingRecipe = await getRawCooklangContent(originalSlug);
       if (!existingRecipe) {
         span.setAttribute('error', 'not_found');
         return Response.json({ error: 'Recipe not found' }, { status: HTTP_NOT_FOUND });
@@ -255,21 +174,25 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
         return Response.json({ error: validation.error }, { status: HTTP_BAD_REQUEST });
       }
 
-      const data = validation.data;
-      const newSlug = generateSlug(data.title);
+      const { content, category } = validation.data;
+
+      // Extract title from content to generate new slug
+      const metadata = extractMetadataFromContent(content);
+      const newSlug = generateSlugFromTitle(metadata.title);
 
       span.setAttribute('new_slug', newSlug);
-      span.setAttribute('category', data.category);
+      span.setAttribute('category', category);
 
-      const recipe = buildRecipe(data, newSlug);
+      // Handle file relocation if slug or category changed
+      await handleRecipeRelocation(originalSlug, newSlug, category, existingRecipe);
 
-      await handleRecipeRelocation(originalSlug, newSlug, data.category, existingRecipe);
-      await writeRecipe(recipe, data.category);
+      // Write raw content directly to file
+      await writeRawCooklangContent(content, category, newSlug);
 
-      logger.recipes.info('Recipe updated', {
+      logger.recipes.info('Recipe updated (Cooklang-first)', {
         originalSlug,
         newSlug,
-        category: data.category,
+        category,
         userId: user.id,
       });
 
