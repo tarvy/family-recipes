@@ -10,6 +10,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui';
+import { DECIMAL_RADIX } from '@/lib/cooklang/constants';
 import {
   buildCooklangContent,
   type CooklangMetadata,
@@ -51,21 +52,21 @@ function formMetadataToCooklang(meta: RecipeMetadata): CooklangMetadata {
   const result: CooklangMetadata = { title: meta.title };
 
   if (meta.servings) {
-    const servings = Number.parseInt(meta.servings, 10);
+    const servings = Number.parseInt(meta.servings, DECIMAL_RADIX);
     if (!Number.isNaN(servings)) {
       result.servings = servings;
     }
   }
 
   if (meta.prepTime) {
-    const prepTime = Number.parseInt(meta.prepTime, 10);
+    const prepTime = Number.parseInt(meta.prepTime, DECIMAL_RADIX);
     if (!Number.isNaN(prepTime)) {
       result.prepTime = prepTime;
     }
   }
 
   if (meta.cookTime) {
-    const cookTime = Number.parseInt(meta.cookTime, 10);
+    const cookTime = Number.parseInt(meta.cookTime, DECIMAL_RADIX);
     if (!Number.isNaN(cookTime)) {
       result.cookTime = cookTime;
     }

@@ -5,7 +5,15 @@
  * Used by the Cooklang-first editor to sync metadata fields with content.
  */
 
-import { METADATA_KEYS, TIME_UNIT_TO_MINUTES } from './constants';
+import { DECIMAL_RADIX, METADATA_KEYS, TIME_UNIT_TO_MINUTES } from './constants';
+
+/** Regex match group indices for time parsing */
+const TIME_VALUE_GROUP = 1;
+const TIME_UNIT_GROUP = 2;
+
+/** Regex match group indices for metadata line parsing */
+const METADATA_KEY_GROUP = 1;
+const METADATA_VALUE_GROUP = 2;
 
 /** Metadata fields extracted from Cooklang content */
 export interface CooklangMetadata {
@@ -36,12 +44,12 @@ const METADATA_LINE_REGEX = /^>>\s*([^:]+):\s*(.*)$/;
  */
 function parseTimeToMinutes(timeStr: string): number | undefined {
   const match = timeStr.match(/^(\d+(?:\.\d+)?)\s*(\w+)?$/);
-  if (!match?.[1]) {
+  if (!match?.[TIME_VALUE_GROUP]) {
     return undefined;
   }
 
-  const value = Number.parseFloat(match[1]);
-  const unit = match[2]?.toLowerCase() ?? 'minutes';
+  const value = Number.parseFloat(match[TIME_VALUE_GROUP]);
+  const unit = match[TIME_UNIT_GROUP]?.toLowerCase() ?? 'minutes';
   const multiplier = TIME_UNIT_TO_MINUTES[unit] ?? 1;
 
   return Math.round(value * multiplier);
@@ -52,12 +60,12 @@ function parseTimeToMinutes(timeStr: string): number | undefined {
  */
 function parseMetadataLine(line: string): { key: string; value: string } | null {
   const match = line.match(METADATA_LINE_REGEX);
-  if (!match?.[1] || match[2] === undefined) {
+  if (!match?.[METADATA_KEY_GROUP] || match[METADATA_VALUE_GROUP] === undefined) {
     return null;
   }
   return {
-    key: match[1].trim().toLowerCase(),
-    value: match[2].trim(),
+    key: match[METADATA_KEY_GROUP].trim().toLowerCase(),
+    value: match[METADATA_VALUE_GROUP].trim(),
   };
 }
 
@@ -87,7 +95,7 @@ export function extractMetadataFromContent(content: string): CooklangMetadata {
         metadata.description = value;
         break;
       case METADATA_KEYS.SERVINGS: {
-        const servings = Number.parseInt(value, 10);
+        const servings = Number.parseInt(value, DECIMAL_RADIX);
         if (!Number.isNaN(servings)) {
           metadata.servings = servings;
         }
