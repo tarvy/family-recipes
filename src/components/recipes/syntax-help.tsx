@@ -9,6 +9,12 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
+/** SVG stroke width for chevron icon */
+const CHEVRON_STROKE_WIDTH = 2;
+
+/** Example ingredient syntax for tip section */
+const EXAMPLE_INGREDIENT = '@flour{2%cups}';
+
 interface SyntaxHelpProps {
   className?: string;
 }
@@ -74,10 +80,8 @@ export function SyntaxHelp({ className }: SyntaxHelpProps) {
             <p className="text-xs text-muted-foreground">
               <strong>Tip:</strong> Ingredients and cookware are written inline with your
               instructions. For example: &ldquo;Add{' '}
-              <code className="text-lavender">
-                @flour{'{'}2%cups{'}'}
-              </code>{' '}
-              to the <code className="text-lavender">#bowl{'{}'}</code>.&rdquo;
+              <code className="text-lavender">{EXAMPLE_INGREDIENT}</code> to the{' '}
+              <code className="text-lavender">#bowl{'{}'}</code>.&rdquo;
             </p>
           </div>
         </div>
@@ -122,7 +126,12 @@ function ChevronIcon({ isOpen }: { isOpen: boolean }) {
       viewBox="0 0 24 24"
       aria-hidden="true"
     >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={CHEVRON_STROKE_WIDTH}
+        d="M19 9l-7 7-7-7"
+      />
     </svg>
   );
 }
