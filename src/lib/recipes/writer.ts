@@ -87,3 +87,33 @@ export async function recipeFileExists(slug: string, category: string): Promise<
 export function getRecipeFilePath(slug: string, category: string): string {
   return path.join(process.cwd(), RECIPES_DIRECTORY, category, `${slug}.cook`);
 }
+
+/**
+ * Write raw Cooklang content to a .cook file
+ *
+ * This preserves the exact content without any transformation,
+ * supporting the Cooklang-first editing approach.
+ *
+ * @param content - Raw Cooklang content to write
+ * @param category - The category directory (e.g., 'entrees', 'desserts')
+ * @param slug - The recipe slug (filename without extension)
+ */
+export async function writeRawCooklangContent(
+  content: string,
+  category: string,
+  slug: string,
+): Promise<void> {
+  const categoryDir = path.join(process.cwd(), RECIPES_DIRECTORY, category);
+
+  // Ensure category directory exists
+  await fs.mkdir(categoryDir, { recursive: true });
+
+  const filePath = path.join(categoryDir, `${slug}.cook`);
+
+  // Ensure content ends with newline
+  const normalizedContent = content.endsWith('\n') ? content : `${content}\n`;
+
+  await fs.writeFile(filePath, normalizedContent, 'utf-8');
+
+  logger.recipes.info('Raw Cooklang content written', { slug, category, filePath });
+}

@@ -333,3 +333,61 @@ async function tryParseRecipeFile(
     return null;
   }
 }
+
+/**
+ * Raw Cooklang content with category info for editing
+ */
+export interface RawRecipeContent {
+  /** Raw .cook file content */
+  content: string;
+  /** Category directory the recipe is in */
+  category: string;
+  /** Recipe slug */
+  slug: string;
+}
+
+/**
+ * Load raw Cooklang content by slug
+ *
+ * Returns the exact file content without transformation,
+ * supporting the Cooklang-first editing approach.
+ *
+ * @param slug - URL-safe recipe identifier
+ * @returns Raw content and category, or null if not found
+ */
+export async function getRawCooklangContent(slug: string): Promise<RawRecipeContent | null> {
+  return withTrace('recipes.getRawCooklangContent', async (span) => {
+    span.setAttribute('slug', slug);
+
+    const files = await scanCooklangFiles(RECIPES_DIRECTORY);
+
+    for (const file of files) {
+      // Check if filename matches slug
+      const filename = file.relativePath.split('/').pop() ?? '';
+      const fileSlug = filename.replace(/\.cook$/, '');
+
+      if (fileSlug !== slug) {
+        continue;
+      }
+
+      try {
+        const content = await fs.readFile(file.absolutePath, 'utf-8');
+        const category = extractCategory(file.relativePath);
+
+        logger.recipes.info('Loaded raw Cooklang content', { slug, category });
+
+        return { content, category, slug };
+      } catch (error) {
+        logger.recipes.error(
+          'Error reading recipe file',
+          error instanceof Error ? error : undefined,
+          { file: file.relativePath },
+        );
+        return null;
+      }
+    }
+
+    logger.recipes.warn('Recipe not found for raw content', { slug });
+    return null;
+  });
+}
