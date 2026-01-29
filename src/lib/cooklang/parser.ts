@@ -44,13 +44,18 @@ export type ParseOutput = ParseResult | ParseError;
 
 /**
  * Generate a URL-safe slug from a filename or title
+ *
+ * Uses the same logic as generateSlugFromTitle in metadata.ts to ensure
+ * consistent slugs between parsing and API operations.
  */
 function generateSlug(input: string): string {
   return input
     .toLowerCase()
     .replace(/\.cook$/, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 /**
