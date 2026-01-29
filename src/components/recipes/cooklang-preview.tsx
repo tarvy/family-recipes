@@ -26,92 +26,134 @@ interface CooklangPreviewProps {
   className?: string;
 }
 
+/** Regex pattern for Cooklang ingredients */
+const INGREDIENT_REGEX = /@([^@#~{}\n]+?)(?:\{([^}]*)\})?(?=\s|$|[.,;!?])/g;
+
+/** Regex match group indices for ingredient pattern */
+const MATCH_GROUP_NAME = 1;
+const MATCH_GROUP_DETAILS = 2;
+
+/**
+ * Parse quantity and unit from ingredient details string
+ * Handles formats: "2%cups", "2", or empty
+ */
+function parseIngredientDetails(details: string | undefined): {
+  quantity: string | null;
+  unit: string | null;
+} {
+  if (!details) {
+    return { quantity: null, unit: null };
+  }
+
+  if (details.includes('%')) {
+    const [q, u] = details.split('%');
+    return { quantity: q?.trim() || null, unit: u?.trim() || null };
+  }
+
+  if (details.trim()) {
+    return { quantity: details.trim(), unit: null };
+  }
+
+  return { quantity: null, unit: null };
+}
+
+/**
+ * Create an IIngredient from parsed regex match
+ */
+function createIngredient(name: string, details: string | undefined): IIngredient {
+  const parsed = parseIngredientDetails(details);
+  const ingredient: IIngredient = { name };
+
+  if (parsed.quantity !== null) {
+    ingredient.quantity = parsed.quantity;
+  }
+  if (parsed.unit !== null) {
+    ingredient.unit = parsed.unit;
+  }
+
+  return ingredient;
+}
+
+/**
+ * Extract all ingredients from a paragraph of Cooklang text
+ */
+function extractIngredientsFromParagraph(paragraph: string): IIngredient[] {
+  const stepIngredients: IIngredient[] = [];
+  const regex = new RegExp(INGREDIENT_REGEX.source, 'g');
+  let match: RegExpExecArray | null;
+
+  // biome-ignore lint/suspicious/noAssignInExpressions: Standard regex iteration pattern
+  while ((match = regex.exec(paragraph)) !== null) {
+    const name = match[MATCH_GROUP_NAME];
+    if (!name) {
+      continue;
+    }
+    const ingredient = createIngredient(name.trim(), match[MATCH_GROUP_DETAILS]);
+    stepIngredients.push(ingredient);
+  }
+
+  return stepIngredients;
+}
+
+/**
+ * Format timer text for display
+ */
+function formatTimerText(name: string | undefined, time: string): string {
+  if (time.includes('%')) {
+    const [duration, unit] = time.split('%');
+    return name ? `${name} (${duration} ${unit})` : `${duration} ${unit}`;
+  }
+  return name ? `${name} (${time})` : time;
+}
+
+/**
+ * Remove Cooklang markers from text for clean display
+ */
+function cleanCooklangText(paragraph: string): string {
+  return paragraph
+    .replace(/@([^@#~{}\n]+?)(?:\{[^}]*\})?/g, (_, name) => name.trim())
+    .replace(/#([^@#~{}\n]+?)(?:\{[^}]*\})?/g, (_, name) => name.trim())
+    .replace(/~(?:([^{]+))?\{([^}]*)\}/g, (_, name, time) => formatTimerText(name, time));
+}
+
 /**
  * Simple Cooklang parser for preview purposes
  *
  * This is a lightweight client-side parser for live preview.
  * It extracts ingredients and renders steps from Cooklang content.
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Parser complexity is inherent to parsing logic
 function parseForPreview(content: string): ParsedRecipe {
   const ingredients: IIngredient[] = [];
   const steps: IStep[] = [];
   const seenIngredients = new Set<string>();
 
-  // Split content into paragraphs (steps)
   const paragraphs = content
     .split(/\n\n+/)
     .map((p) => p.trim())
     .filter((p) => p && !p.startsWith('>>'));
 
-  // Regex patterns for Cooklang syntax
-  const ingredientRegex = /@([^@#~{}\n]+?)(?:\{([^}]*)\})?(?=\s|$|[.,;!?])/g;
-
   for (const paragraph of paragraphs) {
-    // Extract ingredients from this step
-    const stepIngredients: IIngredient[] = [];
-    let match: RegExpExecArray | null;
+    const stepIngredients = extractIngredientsFromParagraph(paragraph);
 
-    // Reset regex state
-    ingredientRegex.lastIndex = 0;
-
-    // biome-ignore lint/suspicious/noAssignInExpressions: Standard regex iteration pattern
-    while ((match = ingredientRegex.exec(paragraph)) !== null) {
-      if (!match[1]) {
-        continue;
-      }
-      const name = match[1].trim();
-      const details = match[2];
-
-      let quantity: string | undefined;
-      let unit: string | undefined;
-
-      if (details) {
-        if (details.includes('%')) {
-          const [q, u] = details.split('%');
-          quantity = q?.trim();
-          unit = u?.trim();
-        } else if (details.trim()) {
-          quantity = details.trim();
-        }
-      }
-
-      const ingredient: IIngredient = { name };
-      if (quantity) {
-        ingredient.quantity = quantity;
-      }
-      if (unit) {
-        ingredient.unit = unit;
-      }
-
-      stepIngredients.push(ingredient);
-
-      // Add to global list if not seen
-      if (!seenIngredients.has(name.toLowerCase())) {
-        seenIngredients.add(name.toLowerCase());
+    // Add unique ingredients to global list
+    for (const ingredient of stepIngredients) {
+      const key = ingredient.name.toLowerCase();
+      if (!seenIngredients.has(key)) {
+        seenIngredients.add(key);
         ingredients.push(ingredient);
       }
     }
 
-    // Create step with clean text (remove Cooklang markers for display)
-    const cleanText = paragraph
-      .replace(/@([^@#~{}\n]+?)(?:\{[^}]*\})?/g, (_, name) => name.trim())
-      .replace(/#([^@#~{}\n]+?)(?:\{[^}]*\})?/g, (_, name) => name.trim())
-      .replace(/~(?:([^{]+))?\{([^}]*)\}/g, (_, name, time) => {
-        if (time.includes('%')) {
-          const [duration, unit] = time.split('%');
-          return name ? `${name} (${duration} ${unit})` : `${duration} ${unit}`;
-        }
-        return name ? `${name} (${time})` : time;
-      });
-
-    if (cleanText.trim()) {
-      const step: IStep = { text: cleanText.trim() };
-      if (stepIngredients.length > 0) {
-        step.ingredients = stepIngredients;
-      }
-      steps.push(step);
+    const cleanText = cleanCooklangText(paragraph).trim();
+    if (!cleanText) {
+      continue;
     }
+
+    const step: IStep = { text: cleanText };
+    if (stepIngredients.length > 0) {
+      step.ingredients = stepIngredients;
+    }
+    steps.push(step);
   }
 
   return { ingredients, steps };
