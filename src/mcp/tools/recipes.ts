@@ -7,8 +7,16 @@ import * as z from 'zod';
 import { connectDB } from '@/db/connection';
 import { findRecipesByIngredient, searchRecipes } from '@/db/models/recipe.model';
 import type { IRecipeDocument } from '@/db/types';
+import { parseCooklang } from '@/lib/cooklang/parser';
 import { logger } from '@/lib/logger';
-import { getAllRecipes, getRecipeBySlug, type RecipePreview } from '@/lib/recipes/loader';
+import {
+  getAllRecipes,
+  getCategories,
+  getRawCooklangContent,
+  getRecipeBySlug,
+  type RecipePreview,
+} from '@/lib/recipes/loader';
+import { deleteRecipeFile, writeRawCooklangContent } from '@/lib/recipes/writer';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
 import { buildToolResult } from '@/mcp/tools/utils';
 
@@ -121,6 +129,76 @@ function filterRecipePreviews(previews: RecipePreview[], category?: string): Rec
     return previews;
   }
   return previews.filter((preview) => preview.category === category);
+}
+
+interface RecipeWriteError {
+  [x: string]: unknown;
+  success: false;
+  error: string;
+}
+
+function validateCategory(category: string): RecipeWriteError | null {
+  const validCategories = getCategories();
+  if (!validCategories.includes(category)) {
+    return {
+      success: false,
+      error: `Invalid category. Valid categories: ${validCategories.join(', ')}`,
+    };
+  }
+  return null;
+}
+
+async function parseAndValidateContent(
+  content: string,
+  category: string,
+  slug: string,
+): Promise<{ slug: string } | RecipeWriteError> {
+  const parseResult = await parseCooklang(content, {
+    filePath: `${category}/${slug}.cook`,
+    gitCommitHash: 'mcp',
+  });
+
+  if (!parseResult.success) {
+    return {
+      success: false,
+      error: `Invalid Cooklang content: ${parseResult.error}`,
+    };
+  }
+
+  return { slug: parseResult.recipe.slug };
+}
+
+async function checkSlugCollision(
+  newSlug: string,
+  currentSlug?: string,
+): Promise<RecipeWriteError | null> {
+  if (currentSlug && newSlug === currentSlug) {
+    return null;
+  }
+  const collision = await getRawCooklangContent(newSlug);
+  if (collision) {
+    return {
+      success: false,
+      error: `Recipe with slug "${newSlug}" already exists`,
+    };
+  }
+  return null;
+}
+
+async function handleRecipeFileMove(
+  oldSlug: string,
+  newSlug: string,
+  oldCategory: string,
+  newCategory: string,
+): Promise<void> {
+  const needsFileMove = newSlug !== oldSlug || newCategory !== oldCategory;
+  if (needsFileMove) {
+    await deleteRecipeFile(oldSlug, oldCategory);
+    logger.mcp.info('MCP recipe_update deleted old file', {
+      oldSlug,
+      oldCategory,
+    });
+  }
 }
 
 export function registerRecipeTools(server: McpServer): void {
@@ -308,6 +386,141 @@ export function registerRecipeTools(server: McpServer): void {
         });
 
         return buildToolResult(response);
+      });
+    },
+  );
+
+  server.registerTool(
+    'recipe_categories',
+    {
+      title: 'List recipe categories',
+      description: 'Get the list of valid recipe categories.',
+      inputSchema: {},
+      outputSchema: {
+        categories: z.array(z.string()),
+      },
+    },
+    async () => {
+      return withTrace('mcp.tool.recipe_categories', async (span) => {
+        const categories = getCategories();
+        span.setAttribute('category_count', categories.length);
+
+        logger.mcp.info('MCP recipe_categories executed', {
+          count: categories.length,
+        });
+
+        return buildToolResult({ categories });
+      });
+    },
+  );
+
+  server.registerTool(
+    'recipe_create',
+    {
+      title: 'Create recipe',
+      description: 'Create a new recipe from Cooklang content.',
+      inputSchema: {
+        content: z.string().describe('Raw Cooklang content'),
+        category: z.string().describe('Recipe category (e.g., "entrees", "desserts")'),
+      },
+      outputSchema: {
+        success: z.boolean(),
+        slug: z.string().optional(),
+        error: z.string().optional(),
+      },
+    },
+    async ({ content, category }) => {
+      return withTrace('mcp.tool.recipe_create', async (span) => {
+        span.setAttribute('category', category);
+
+        const categoryError = validateCategory(category);
+        if (categoryError) {
+          logger.mcp.warn('MCP recipe_create invalid category', { category });
+          return buildToolResult(categoryError);
+        }
+
+        const parseResult = await parseAndValidateContent(content, category, 'new-recipe');
+        if ('error' in parseResult) {
+          logger.mcp.warn('MCP recipe_create parse failed', { error: parseResult.error });
+          return buildToolResult(parseResult);
+        }
+
+        const { slug } = parseResult;
+        span.setAttribute('slug', slug);
+
+        const collisionError = await checkSlugCollision(slug);
+        if (collisionError) {
+          logger.mcp.warn('MCP recipe_create slug collision', { slug });
+          return buildToolResult(collisionError);
+        }
+
+        await writeRawCooklangContent(content, category, slug);
+        logger.mcp.info('MCP recipe_create executed', { slug, category });
+
+        return buildToolResult({ success: true, slug });
+      });
+    },
+  );
+
+  server.registerTool(
+    'recipe_update',
+    {
+      title: 'Update recipe',
+      description: 'Update an existing recipe with new Cooklang content.',
+      inputSchema: {
+        slug: z.string().describe('Current recipe slug'),
+        content: z.string().describe('New Cooklang content'),
+        category: z.string().describe('Target category'),
+      },
+      outputSchema: {
+        success: z.boolean(),
+        slug: z.string().optional(),
+        error: z.string().optional(),
+      },
+    },
+    async ({ slug, content, category }) => {
+      return withTrace('mcp.tool.recipe_update', async (span) => {
+        span.setAttribute('slug', slug);
+        span.setAttribute('category', category);
+
+        const existing = await getRawCooklangContent(slug);
+        if (!existing) {
+          logger.mcp.warn('MCP recipe_update not found', { slug });
+          return buildToolResult({ success: false, error: `Recipe with slug "${slug}" not found` });
+        }
+
+        const categoryError = validateCategory(category);
+        if (categoryError) {
+          logger.mcp.warn('MCP recipe_update invalid category', { category });
+          return buildToolResult(categoryError);
+        }
+
+        const parseResult = await parseAndValidateContent(content, category, slug);
+        if ('error' in parseResult) {
+          logger.mcp.warn('MCP recipe_update parse failed', { error: parseResult.error });
+          return buildToolResult(parseResult);
+        }
+
+        const newSlug = parseResult.slug;
+        span.setAttribute('new_slug', newSlug);
+
+        const collisionError = await checkSlugCollision(newSlug, slug);
+        if (collisionError) {
+          logger.mcp.warn('MCP recipe_update slug collision', { newSlug });
+          return buildToolResult(collisionError);
+        }
+
+        await handleRecipeFileMove(slug, newSlug, existing.category, category);
+        await writeRawCooklangContent(content, category, newSlug);
+
+        logger.mcp.info('MCP recipe_update executed', {
+          oldSlug: slug,
+          newSlug,
+          oldCategory: existing.category,
+          newCategory: category,
+        });
+
+        return buildToolResult({ success: true, slug: newSlug });
       });
     },
   );

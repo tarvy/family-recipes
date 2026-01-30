@@ -111,6 +111,13 @@ Recipes are organized by category in folders:
 - Recipe slugs are URL-friendly versions of titles (e.g., "lemon-chicken-and-orzo-soup")
 - Times are in minutes when returned from the API
 - Ingredient quantities may be fractions (0.5, 0.25) or whole numbers
+
+## Writing Recipes
+
+- Use \`recipe_categories\` to get valid category names before creating recipes
+- Use \`recipe_create\` to create new recipes (requires \`recipes:write\` scope)
+- Use \`recipe_update\` to modify existing recipes (requires \`recipes:write\` scope)
+- Input is raw Cooklang content - the AI should generate valid Cooklang format
 `;
 
 export function createMcpServer(): McpServer {

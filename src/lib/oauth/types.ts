@@ -42,6 +42,7 @@ export const REFRESH_TOKEN_LENGTH = 32;
 
 export const OAUTH_SCOPES = {
   'recipes:read': 'Read recipes, search, and lookup ingredients',
+  'recipes:write': 'Create and modify recipes',
   'shopping:read': 'View shopping lists',
   'shopping:write': 'Create and modify shopping lists',
 } as const;
@@ -55,6 +56,9 @@ export const TOOL_SCOPES: Record<string, OAuthScope[]> = {
   recipe_list: ['recipes:read'],
   recipe_get: ['recipes:read'],
   recipe_search: ['recipes:read'],
+  recipe_categories: ['recipes:read'],
+  recipe_create: ['recipes:write'],
+  recipe_update: ['recipes:write'],
   ingredient_lookup: ['recipes:read'],
   shopping_list_get: ['shopping:read'],
   shopping_list_create: ['shopping:write'],
