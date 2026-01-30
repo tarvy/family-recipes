@@ -21,9 +21,5 @@ terraform {
       source  = "vercel/vercel"
       version = "~> 1.11"
     }
-    grafana = {
-      source  = "grafana/grafana"
-      version = "~> 2.14"
-    }
   }
 }

@@ -59,10 +59,6 @@ jobs:
       TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
       TF_VAR_vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
       TF_VAR_vercel_team_id: ${{ secrets.VERCEL_TEAM_ID }}
-      # Grafana
-      TF_VAR_grafana_url: ${{ secrets.GRAFANA_URL }}
-      TF_VAR_grafana_auth: ${{ secrets.GRAFANA_API_KEY }}
-      TF_VAR_grafana_cloud_stack_slug: ${{ secrets.GRAFANA_CLOUD_STACK_SLUG }}
 
     steps:
       - name: Checkout
@@ -133,10 +129,6 @@ jobs:
       TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
       TF_VAR_vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
       TF_VAR_vercel_team_id: ${{ secrets.VERCEL_TEAM_ID }}
-      # Grafana
-      TF_VAR_grafana_url: ${{ secrets.GRAFANA_URL }}
-      TF_VAR_grafana_auth: ${{ secrets.GRAFANA_API_KEY }}
-      TF_VAR_grafana_cloud_stack_slug: ${{ secrets.GRAFANA_CLOUD_STACK_SLUG }}
 
     steps:
       - name: Checkout

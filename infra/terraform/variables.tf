@@ -92,23 +92,3 @@ variable "vercel_project_id" {
   description = "Existing Vercel project ID"
   type        = string
 }
-
-# -----------------------------------------------------------------------------
-# Grafana Cloud
-# -----------------------------------------------------------------------------
-
-variable "grafana_url" {
-  description = "Grafana Cloud instance URL"
-  type        = string
-}
-
-variable "grafana_auth" {
-  description = "Grafana Cloud API key with admin access"
-  type        = string
-  sensitive   = true
-}
-
-variable "grafana_cloud_stack_slug" {
-  description = "Grafana Cloud stack slug"
-  type        = string
-}

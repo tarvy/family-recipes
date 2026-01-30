@@ -30,12 +30,3 @@ output "vercel_project_id" {
   description = "Vercel project ID"
   value       = module.vercel.project_id
 }
-
-# -----------------------------------------------------------------------------
-# Grafana
-# -----------------------------------------------------------------------------
-
-output "grafana_dashboard_url" {
-  description = "URL to the Grafana dashboard"
-  value       = module.grafana.dashboard_url
-}

@@ -40,12 +40,3 @@ vercel_team_id = null
 
 # Get from Vercel: Project Settings > General
 vercel_project_id = ""
-
-# -----------------------------------------------------------------------------
-# Grafana Cloud
-# -----------------------------------------------------------------------------
-
-# Get from Grafana Cloud: Stack details
-grafana_url              = "https://your-stack.grafana.net"
-grafana_auth             = ""  # Service account token with Admin role
-grafana_cloud_stack_slug = ""

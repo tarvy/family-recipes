@@ -17,6 +17,3 @@ mongodb_db_username  = "family_recipes_app_20260126"
 # - mongodb_db_password
 # - vercel_api_token
 # - vercel_project_id
-# - grafana_url
-# - grafana_auth
-# - grafana_cloud_stack_slug

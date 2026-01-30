@@ -4,7 +4,6 @@
  * This module orchestrates:
  * - MongoDB Atlas cluster and database configuration
  * - Vercel project environment variables
- * - Grafana dashboards and data sources
  */
 
 # -----------------------------------------------------------------------------
@@ -19,11 +18,6 @@ provider "mongodbatlas" {
 provider "vercel" {
   api_token = var.vercel_api_token
   team      = var.vercel_team_id
-}
-
-provider "grafana" {
-  url  = var.grafana_url
-  auth = var.grafana_auth
 }
 
 # -----------------------------------------------------------------------------
@@ -55,15 +49,4 @@ module "vercel" {
   environment = var.environment
   mongodb_uri = module.mongodb_atlas.connection_string
   mongodb_db  = "family_recipes"
-}
-
-# -----------------------------------------------------------------------------
-# Grafana Module
-# -----------------------------------------------------------------------------
-
-module "grafana" {
-  source = "./modules/grafana"
-
-  stack_slug  = var.grafana_cloud_stack_slug
-  environment = var.environment
 }
