@@ -24,7 +24,7 @@ import {
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_NOT_FOUND,
 } from '@/lib/constants/http-status';
-import { logger } from '@/lib/logger';
+import { logger, withRequestContext } from '@/lib/logger';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
@@ -36,29 +36,31 @@ interface AuthenticateRequestBody {
 const AUTH_PATH = '/api/auth/passkey/authenticate';
 
 export async function POST(request: Request): Promise<Response> {
-  return withTrace('api.auth.passkey.authenticate', async (span) => {
-    logger.api.info('Passkey authentication requested', { path: AUTH_PATH });
+  return withRequestContext(request, () =>
+    withTrace('api.auth.passkey.authenticate', async (span) => {
+      logger.api.info('Passkey authentication requested', { path: AUTH_PATH });
 
-    let body: AuthenticateRequestBody = {};
-    try {
-      body = (await request.json()) as AuthenticateRequestBody;
-    } catch {
-      body = {};
-    }
-
-    const cookieStore = await cookies();
-
-    if (body.response) {
-      if (!isAuthenticationResponse(body.response)) {
-        span.setAttribute('error', 'invalid_payload');
-        return Response.json({ error: 'invalid_payload' }, { status: HTTP_BAD_REQUEST });
+      let body: AuthenticateRequestBody = {};
+      try {
+        body = (await request.json()) as AuthenticateRequestBody;
+      } catch {
+        body = {};
       }
 
-      return handleVerification(body.response, cookieStore);
-    }
+      const cookieStore = await cookies();
 
-    return handleOptions(cookieStore);
-  });
+      if (body.response) {
+        if (!isAuthenticationResponse(body.response)) {
+          span.setAttribute('error', 'invalid_payload');
+          return Response.json({ error: 'invalid_payload' }, { status: HTTP_BAD_REQUEST });
+        }
+
+        return handleVerification(body.response, cookieStore);
+      }
+
+      return handleOptions(cookieStore);
+    }),
+  );
 }
 
 async function handleOptions(cookieStore: Awaited<ReturnType<typeof cookies>>): Promise<Response> {

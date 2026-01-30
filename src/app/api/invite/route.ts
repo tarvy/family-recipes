@@ -14,7 +14,7 @@ import {
   normalizeEmail,
 } from '@/lib/auth/allowlist';
 import { HTTP_BAD_REQUEST, HTTP_FORBIDDEN, HTTP_UNAUTHORIZED } from '@/lib/constants/http-status';
-import { logger } from '@/lib/logger';
+import { logger, withRequestContext } from '@/lib/logger';
 import { withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
@@ -35,46 +35,48 @@ const FRIEND_ROLE: AllowedEmailRole = 'friend';
 const INVITABLE_ROLES: AllowedEmailRole[] = [FAMILY_ROLE, FRIEND_ROLE];
 
 export async function POST(request: Request): Promise<Response> {
-  return withTrace('api.invite.create', async (span) => {
-    const cookieStore = await cookies();
-    const user = await getSessionFromCookies(cookieStore);
+  return withRequestContext(request, () =>
+    withTrace('api.invite.create', async (span) => {
+      const cookieStore = await cookies();
+      const user = await getSessionFromCookies(cookieStore);
 
-    if (!user) {
-      span.setAttribute('error', 'unauthorized');
-      return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
-    }
+      if (!user) {
+        span.setAttribute('error', 'unauthorized');
+        return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
+      }
 
-    if (!(user.role === OWNER_ROLE || user.role === FAMILY_ROLE)) {
-      span.setAttribute('error', 'forbidden');
-      return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
-    }
+      if (!(user.role === OWNER_ROLE || user.role === FAMILY_ROLE)) {
+        span.setAttribute('error', 'forbidden');
+        return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
+      }
 
-    await ensureOwnerAllowlist();
+      await ensureOwnerAllowlist();
 
-    const payload = await parseInvitePayload(request, span);
-    if ('response' in payload) {
-      return payload.response;
-    }
+      const payload = await parseInvitePayload(request, span);
+      if ('response' in payload) {
+        return payload.response;
+      }
 
-    if (!canInvite(user.role, payload.role)) {
-      span.setAttribute('error', 'forbidden_role');
-      return Response.json({ error: 'forbidden_role' }, { status: HTTP_FORBIDDEN });
-    }
+      if (!canInvite(user.role, payload.role)) {
+        span.setAttribute('error', 'forbidden_role');
+        return Response.json({ error: 'forbidden_role' }, { status: HTTP_FORBIDDEN });
+      }
 
-    const entry = await addAllowedEmail({
-      email: payload.email,
-      role: payload.role,
-      invitedBy: user.id,
-    });
+      const entry = await addAllowedEmail({
+        email: payload.email,
+        role: payload.role,
+        invitedBy: user.id,
+      });
 
-    logger.auth.info('Invite created', {
-      email: payload.email,
-      role: payload.role,
-      invitedBy: user.id,
-    });
+      logger.auth.info('Invite created', {
+        email: payload.email,
+        role: payload.role,
+        invitedBy: user.id,
+      });
 
-    return Response.json({ entry });
-  });
+      return Response.json({ entry });
+    }),
+  );
 }
 
 function canInvite(inviterRole: AllowedEmailRole, inviteRole: AllowedEmailRole): boolean {

@@ -1,11 +1,10 @@
 /**
  * Telemetry helpers for tracing operations
  *
- * OpenTelemetry is currently DISABLED due to ESM compatibility issues
- * with @vercel/otel on Vercel's serverless functions.
+ * Tracing is intentionally DISABLED.
  *
- * These functions are no-ops that preserve the API for when
- * tracing is re-enabled.
+ * These functions are no-ops that preserve the API for when tracing is
+ * re-enabled in a future PR.
  *
  * Usage:
  *   import { withTrace, traceDbQuery } from '@/lib/telemetry';

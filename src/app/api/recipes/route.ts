@@ -16,7 +16,7 @@ import {
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
 import { extractMetadataFromContent, generateSlugFromTitle } from '@/lib/cooklang/metadata';
-import { logger } from '@/lib/logger';
+import { logger, withRequestContext } from '@/lib/logger';
 import { recipeFileExists, writeRawCooklangContent } from '@/lib/recipes/writer';
 import { withTrace } from '@/lib/telemetry';
 
@@ -80,63 +80,73 @@ function validateRequest(
   };
 }
 
+async function createRecipe(
+  request: Request,
+  userId: string,
+  span: { setAttribute: (key: string, value: string) => void },
+): Promise<Response> {
+  const body = await request.json();
+  const validation = validateRequest(body);
+
+  if (!validation.valid) {
+    span.setAttribute('error', 'validation_failed');
+    return Response.json({ error: validation.error }, { status: HTTP_BAD_REQUEST });
+  }
+
+  const { content, category } = validation.data;
+
+  // Extract title from content to generate slug
+  const metadata = extractMetadataFromContent(content);
+  const slug = generateSlugFromTitle(metadata.title);
+
+  span.setAttribute('slug', slug);
+  span.setAttribute('category', category);
+
+  // Check if recipe already exists
+  const exists = await recipeFileExists(slug, category);
+  if (exists) {
+    span.setAttribute('error', 'conflict');
+    return Response.json(
+      { error: 'A recipe with this title already exists in this category' },
+      { status: HTTP_CONFLICT },
+    );
+  }
+
+  // Write raw content directly to file
+  await writeRawCooklangContent(content, category, slug);
+
+  logger.recipes.info('Recipe created (Cooklang-first)', {
+    slug,
+    category,
+    userId,
+  });
+
+  return Response.json({ success: true, slug });
+}
+
 export async function POST(request: Request): Promise<Response> {
-  return withTrace('api.recipes.create', async (span) => {
-    const cookieStore = await cookies();
-    const user = await getSessionFromCookies(cookieStore);
+  return withRequestContext(request, () =>
+    withTrace('api.recipes.create', async (span) => {
+      const cookieStore = await cookies();
+      const user = await getSessionFromCookies(cookieStore);
 
-    if (!user) {
-      span.setAttribute('error', 'unauthorized');
-      return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
-    }
-
-    span.setAttribute('user_id', user.id);
-
-    try {
-      const body = await request.json();
-      const validation = validateRequest(body);
-
-      if (!validation.valid) {
-        span.setAttribute('error', 'validation_failed');
-        return Response.json({ error: validation.error }, { status: HTTP_BAD_REQUEST });
+      if (!user) {
+        span.setAttribute('error', 'unauthorized');
+        return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
       }
 
-      const { content, category } = validation.data;
+      span.setAttribute('user_id', user.id);
 
-      // Extract title from content to generate slug
-      const metadata = extractMetadataFromContent(content);
-      const slug = generateSlugFromTitle(metadata.title);
-
-      span.setAttribute('slug', slug);
-      span.setAttribute('category', category);
-
-      // Check if recipe already exists
-      const exists = await recipeFileExists(slug, category);
-      if (exists) {
-        span.setAttribute('error', 'conflict');
+      try {
+        return await createRecipe(request, user.id, span);
+      } catch (error) {
+        logger.recipes.error('Failed to create recipe', error instanceof Error ? error : undefined);
+        span.setAttribute('error', error instanceof Error ? error.message : 'unknown');
         return Response.json(
-          { error: 'A recipe with this title already exists in this category' },
-          { status: HTTP_CONFLICT },
+          { error: 'Failed to create recipe' },
+          { status: HTTP_INTERNAL_SERVER_ERROR },
         );
       }
-
-      // Write raw content directly to file
-      await writeRawCooklangContent(content, category, slug);
-
-      logger.recipes.info('Recipe created (Cooklang-first)', {
-        slug,
-        category,
-        userId: user.id,
-      });
-
-      return Response.json({ success: true, slug });
-    } catch (error) {
-      logger.recipes.error('Failed to create recipe', error instanceof Error ? error : undefined);
-      span.setAttribute('error', error instanceof Error ? error.message : 'unknown');
-      return Response.json(
-        { error: 'Failed to create recipe' },
-        { status: HTTP_INTERNAL_SERVER_ERROR },
-      );
-    }
-  });
+    }),
+  );
 }
