@@ -4,6 +4,54 @@ This repository is designed for AI-agent maintainability. All AI agents (Claude 
 
 ---
 
+## MANDATORY: Work Tracking Gate
+
+**This is non-negotiable. There are no exceptions. Do not reason around this.**
+
+Before writing, modifying, or deleting any code in this repository, you MUST:
+
+1. **Verify a `work/PR-XXX/` directory exists** for the work you are about to do
+2. **Read the `requirements.md`** in that directory - confirm it has defined acceptance criteria
+3. **Read the `design.md`** in that directory - confirm a technical approach exists
+4. **Find your phase in `progress.md`** - this is your mandate
+
+If any of these are missing or incomplete: **STOP. Do not proceed.**
+
+### You Do Not Decide What Is "Small"
+
+Agents are forbidden from unilaterally deciding that a task is:
+- "Too small to track"
+- "Just a quick fix"
+- "Simple enough to skip process"
+- "Obvious and doesn't need documentation"
+
+You do not have the authority to waive this process. Only the user does.
+
+### When You Think Process Might Not Apply
+
+If you believe a task might not require full tracking, you MUST:
+
+1. **Stop before any implementation**
+2. **Ask the user explicitly:**
+   > "This request would normally require work tracking (work/PR-XXX/). Should I:
+   > 1. Create the tracking documents (recommended)
+   > 2. You explicitly waive tracking for this task"
+3. **Wait for a clear answer**
+4. **If the user waives tracking**, note this in your response and proceed
+5. **If unclear**, default to creating tracking
+
+### Why This Exists
+
+AI agents are prone to:
+- Optimizing for speed over process
+- Rationalizing shortcuts as "efficiency"
+- Underestimating scope and complexity
+- Losing context across sessions
+
+This process exists to prevent those failure modes. Follow it.
+
+---
+
 ## Required Tenants
 
 ### 1. Observability First
@@ -83,10 +131,15 @@ See `work/README.md` for full details.
 ## Behaviors
 
 ### Before Starting Work
+
+**First, satisfy the Work Tracking Gate (see above).** Nothing below matters if tracking isn't in place.
+
+Once tracking is confirmed:
 1. Read `docs/ARCHITECTURE.md` to understand system design
 2. Check `.progress.json` or run `python scripts/progress.py` to see current state
-3. Identify which PR your work falls under (see plan file)
+3. Identify which PR your work falls under
 4. Read the PR's `work/PR-XXX/requirements.md` and `work/PR-XXX/design.md`
+5. Find your assigned phase in `progress.md` before touching any code
 
 ### During Development
 1. Follow existing patterns in the codebase
@@ -178,7 +231,7 @@ Fix violations before merge. See `docs/LINTING.md` for details.
 2. **No console.log** - Use `src/lib/logger.ts`
 3. **No magic numbers** - Define named constants
 4. **No deep nesting** - Extract functions, use early returns
-5. **No duplicate code** - Extract shared utilities
+6. **No duplicate code** - Extract shared utilities
 6. **No orphaned documentation** - Delete or link all docs
 7. **No skipping tests** - Fix failing tests, don't skip them
 8. **No force push to main** - Use PRs and proper git workflow
