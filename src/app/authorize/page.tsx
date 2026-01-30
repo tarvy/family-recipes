@@ -129,10 +129,11 @@ function ConsentForm() {
 
       // Handle successful response with redirect URL
       if (result.redirect_url) {
+        const redirectUrl = result.redirect_url;
         setState('success');
         // Small delay to show success message before redirect
         setTimeout(() => {
-          window.location.href = result.redirect_url;
+          window.location.href = redirectUrl;
         }, SUCCESS_REDIRECT_DELAY_MS);
         return;
       }
