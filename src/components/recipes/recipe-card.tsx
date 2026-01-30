@@ -177,12 +177,23 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
           {/* Meta information */}
           <div className="mt-auto flex flex-wrap gap-x-4 gap-y-1 pt-3 text-sm text-muted-foreground">
-            {recipe.totalTime !== undefined && (
+            {recipe.prepTime !== undefined && recipe.cookTime !== undefined ? (
+              <>
+                <span className="flex items-center gap-1">
+                  <ClockIcon />
+                  Prep {formatTime(recipe.prepTime)}
+                </span>
+                <span className="flex items-center gap-1">
+                  <ClockIcon />
+                  Cook {formatTime(recipe.cookTime)}
+                </span>
+              </>
+            ) : recipe.totalTime !== undefined ? (
               <span className="flex items-center gap-1">
                 <ClockIcon />
-                {formatTime(recipe.totalTime)}
+                Total {formatTime(recipe.totalTime)}
               </span>
-            )}
+            ) : null}
             <span className="flex items-center gap-1">
               <IngredientsIcon />
               {recipe.ingredientCount} ingredient{recipe.ingredientCount !== 1 ? 's' : ''}
