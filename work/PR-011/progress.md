@@ -279,6 +279,17 @@ Not applicable - phases are sequential.
 - [ ] User approval of scope
 - [ ] Begin Phase 1: Recipe Loader
 
+### Session 2 - 2026-01-30
+
+**Agent**: Codex
+**Duration**: Short update
+
+**Completed**:
+- [x] Adjusted recipe card time display to show prep/cook separately when both are present
+
+**Issues Encountered**:
+- None
+
 ---
 
 ## Cleanup Checklist
