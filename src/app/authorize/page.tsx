@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { OAUTH_SCOPES, type OAuthScope } from '@/lib/oauth';
 
-type ConsentState = 'loading' | 'ready' | 'submitting' | 'error';
+type ConsentState = 'loading' | 'ready' | 'submitting' | 'success' | 'error';
 
 interface ConsentParams {
   clientId: string;
@@ -30,6 +30,9 @@ const SCOPE_ICONS: Record<OAuthScope, string> = {
 
 /** SVG icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
+
+/** Delay before redirect after successful authorization (ms) */
+const SUCCESS_REDIRECT_DELAY_MS = 500;
 
 function isValidScope(scope: string): scope is OAuthScope {
   return scope in OAUTH_SCOPES;
@@ -113,16 +116,28 @@ function ConsentForm() {
         method: 'POST',
         credentials: 'include',
         body: formData,
+        headers: {
+          Accept: 'application/json',
+        },
       });
 
-      // The endpoint returns a redirect, so we follow it
-      if (response.redirected) {
-        window.location.href = response.url;
+      const result = (await response.json()) as {
+        redirect_url?: string;
+        error?: string;
+        error_description?: string;
+      };
+
+      // Handle successful response with redirect URL
+      if (result.redirect_url) {
+        setState('success');
+        // Small delay to show success message before redirect
+        setTimeout(() => {
+          window.location.href = result.redirect_url;
+        }, SUCCESS_REDIRECT_DELAY_MS);
         return;
       }
 
       // Handle error response
-      const result = (await response.json()) as { error?: string; error_description?: string };
       setError(result.error_description ?? result.error ?? 'Authorization failed');
       setState('error');
     } catch {
@@ -137,6 +152,33 @@ function ConsentForm() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Verifying authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (state === 'success') {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+            <svg
+              className="w-12 h-12 text-green-600 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={ICON_STROKE_WIDTH}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <h2 className="text-lg font-semibold text-green-700 mb-2">Connected Successfully</h2>
+            <p className="text-green-600">You can close this window.</p>
+          </div>
         </div>
       </div>
     );

@@ -82,6 +82,7 @@ function buildErrorRedirect(
   error: string,
   description: string,
   state?: string,
+  returnJson = false,
 ): Response {
   const url = new URL(redirectUri);
   url.searchParams.set('error', error);
@@ -89,14 +90,27 @@ function buildErrorRedirect(
   if (state) {
     url.searchParams.set('state', state);
   }
+  // Return JSON for fetch requests to avoid CORS issues with cross-origin redirects
+  if (returnJson) {
+    return Response.json({ redirect_url: url.toString() }, { headers: CORS_HEADERS });
+  }
   return Response.redirect(url.toString(), HTTP_FOUND);
 }
 
-function buildSuccessRedirect(redirectUri: string, code: string, state?: string): Response {
+function buildSuccessRedirect(
+  redirectUri: string,
+  code: string,
+  state?: string,
+  returnJson = false,
+): Response {
   const url = new URL(redirectUri);
   url.searchParams.set('code', code);
   if (state) {
     url.searchParams.set('state', state);
+  }
+  // Return JSON for fetch requests to avoid CORS issues with cross-origin redirects
+  if (returnJson) {
+    return Response.json({ redirect_url: url.toString() }, { headers: CORS_HEADERS });
   }
   return Response.redirect(url.toString(), HTTP_FOUND);
 }
@@ -344,6 +358,7 @@ async function issueAuthorizationCode(
   form: ConsentFormData,
   userId: string,
   span: MinimalSpan,
+  returnJson = false,
 ): Promise<Response> {
   const code = generateAuthorizationCode();
   const expiresAt = new Date(Date.now() + CODE_TTL_SECONDS * MS_PER_SECOND);
@@ -367,7 +382,25 @@ async function issueAuthorizationCode(
   span.setAttribute('client_id', form.clientId);
   span.setAttribute('user_id', userId);
 
-  return buildSuccessRedirect(form.redirectUri, code, form.state ?? undefined);
+  return buildSuccessRedirect(form.redirectUri, code, form.state ?? undefined, returnJson);
+}
+
+/**
+ * Check if the request is from a fetch/XHR call that wants JSON response.
+ * This helps avoid CORS issues with cross-origin redirects.
+ */
+function isFetchRequest(request: Request): boolean {
+  // Check Sec-Fetch-Dest header (modern browsers)
+  const fetchDest = request.headers.get('Sec-Fetch-Dest');
+  if (fetchDest === 'empty') {
+    return true;
+  }
+  // Check Accept header for JSON preference
+  const accept = request.headers.get('Accept');
+  if (accept?.includes('application/json')) {
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -378,6 +411,9 @@ async function issueAuthorizationCode(
 export async function POST(request: Request): Promise<Response> {
   return withTrace('oauth.authorize.post', async (span) => {
     span.setAttribute('path', '/api/oauth/authorize');
+
+    // Check if this is a fetch request that needs JSON response
+    const returnJson = isFetchRequest(request);
 
     // Validate user session
     const sessionResult = await validateUserSession(request, span);
@@ -411,11 +447,12 @@ export async function POST(request: Request): Promise<Response> {
         'access_denied',
         'User denied the authorization request',
         formResult.state ?? undefined,
+        returnJson,
       );
     }
 
     // Issue authorization code
-    return issueAuthorizationCode(formResult, sessionResult.user.id, span);
+    return issueAuthorizationCode(formResult, sessionResult.user.id, span, returnJson);
   });
 }
 
