@@ -40,11 +40,11 @@ export function generateSecureToken(length: number): string {
   // Use nanoid-compatible alphabet for URL-safe tokens
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
   const bytes = crypto.randomBytes(length);
-  let result = '';
+  const chars: string[] = [];
 
   for (const byte of bytes) {
-    result += alphabet[byte % alphabet.length];
+    chars.push(alphabet[byte % alphabet.length]);
   }
 
-  return result;
+  return chars.join('');
 }
