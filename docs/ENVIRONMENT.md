@@ -71,40 +71,16 @@ API key for sending magic link emails.
 
 ---
 
-### Observability
+### Logging
 
-#### `GRAFANA_OTLP_ENDPOINT`
-Grafana Cloud OTLP endpoint for traces, metrics, and logs.
+#### `LOG_LEVEL`
+Controls the minimum log level for structured output.
 
-**How to obtain:**
-1. Create free account at [grafana.com](https://grafana.com)
-2. Go to your Grafana Cloud stack
-3. Navigate to Connections > OpenTelemetry
-4. Copy the OTLP endpoint URL
+**Values:** `debug`, `info`, `warn`, `error`
 
-**Format:**
-```
-https://otlp-gateway-prod-us-central-0.grafana.net/otlp
-```
-
-#### `GRAFANA_INSTANCE_ID`
-Your Grafana Cloud instance ID (numeric).
-
-**How to obtain:**
-Found in your Grafana Cloud stack details page.
-
-#### `GRAFANA_API_KEY`
-API key with write access for metrics, logs, and traces.
-
-**How to obtain:**
-1. Go to your Grafana Cloud stack
-2. Navigate to Security > API Keys
-3. Create new key with:
-   - Role: `MetricsPublisher`, `LogsWriter`, `TracesWriter`
-   - Or use "Admin" for simplicity in personal projects
-
-**Note:** This app key is for OTLP ingestion. Terraform uses a separate Grafana
-service account API token stored as the GitHub Secret `GRAFANA_API_KEY`.
+**Default:**
+- `debug` in development
+- `info` in production
 
 ---
 
@@ -191,11 +167,6 @@ These are used by Terraform in CI/CD pipelines for infrastructure management. Se
 | `VERCEL_TOKEN` | `vercel_api_token` | Vercel API token |
 | `VERCEL_PROJECT_ID` | `vercel_project_id` | Vercel project ID |
 | `VERCEL_TEAM_ID` | `vercel_team_id` | Vercel team ID (optional) |
-| `GRAFANA_URL` | `grafana_url` | Grafana Cloud instance URL |
-| `GRAFANA_API_KEY` | `grafana_auth` | Grafana API key (admin access) |
-| `GRAFANA_CLOUD_STACK_SLUG` | `grafana_cloud_stack_slug` | Grafana stack slug |
-
-**Note:** The Terraform workflow requires `GRAFANA_URL` and `GRAFANA_CLOUD_STACK_SLUG` which are separate from the app runtime variables (`GRAFANA_OTLP_ENDPOINT`, `GRAFANA_INSTANCE_ID`).
 
 ### Terraform Cloud (Remote State)
 
@@ -238,5 +209,4 @@ All production credentials should be set in Vercel dashboard:
 - Never commit `.env.local` or any file with actual credentials
 - Rotate `JWT_SECRET` if compromised (invalidates all sessions)
 - Use minimal scopes for GitHub tokens
-- Grafana API keys should have write-only access (no read needed)
 - MongoDB credentials should use dedicated database user, not Atlas admin

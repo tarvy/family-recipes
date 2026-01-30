@@ -171,9 +171,6 @@ Required environment variables for Terraform:
 - `TF_VAR_mongodb_db_password`
 - `TF_VAR_vercel_api_token`
 - `TF_VAR_vercel_project_id`
-- `TF_VAR_grafana_url`
-- `TF_VAR_grafana_auth`
-- `TF_VAR_grafana_cloud_stack_slug`
 
 ### Terraform Cloud Remote State
 
@@ -294,16 +291,6 @@ For deployments to work, these secrets must be configured:
 | `MONGODB_ATLAS_PRIVATE_KEY` | Atlas API private key |
 | `MONGODB_ATLAS_ORG_ID` | Atlas organization ID |
 | `MONGODB_DB_PASSWORD` | Database password |
-| `GRAFANA_OTLP_ENDPOINT` | Grafana Cloud OTLP endpoint (for app traces) |
-| `GRAFANA_INSTANCE_ID` | Grafana Cloud instance ID |
-| `GRAFANA_API_KEY` | Grafana service account API key (Terraform only) |
-
-**Additional secrets for Terraform** (if using infra/terraform/):
-
-| Secret | Purpose |
-|--------|---------|
-| `GRAFANA_URL` | Grafana Cloud instance URL (for Terraform provider) |
-| `GRAFANA_CLOUD_STACK_SLUG` | Grafana stack slug |
 
 ---
 

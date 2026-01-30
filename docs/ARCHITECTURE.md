@@ -31,7 +31,13 @@ All infrastructure is managed via Terraform in `infra/terraform/`:
 |----------|----------|---------|
 | MongoDB Atlas | `mongodb/mongodbatlas` | Database cluster, users, IP access |
 | Vercel | `vercel/vercel` | Environment variables |
-| Grafana | `grafana/grafana` | Dashboards, alerts |
+
+## Observability
+
+The runtime uses structured logging (Pino) to stdout, with Vercel Logs as the
+primary debugging surface. Distributed tracing is intentionally disabled for
+now; end-to-end observability can be reintroduced later if the project’s scale
+ever warrants the added complexity.
 
 ## Data Flow
 

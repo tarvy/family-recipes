@@ -8,15 +8,15 @@ Personal recipe management application using Cooklang format with mobile-first d
 - Mobile-responsive web interface
 - Shopping list synthesis
 - MCP server for AI agent integration
-- Full observability with OpenTelemetry
+- Structured logging via Vercel logs
 
 ## Tech Stack
 
 - **Frontend**: Next.js 15 + React + shadcn/ui + Tailwind CSS
 - **Database**: MongoDB Atlas + Mongoose
 - **Auth**: Magic links + Passkeys
-- **Observability**: OpenTelemetry + Grafana Cloud
-- **Infrastructure**: Terraform (Atlas, Vercel, Grafana)
+- **Observability**: Pino + Vercel Logs
+- **Infrastructure**: Terraform (Atlas, Vercel)
 - **Linting**: Biome + Thai-lint
 
 ## Getting Started

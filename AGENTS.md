@@ -118,7 +118,7 @@ See `work/README.md` for full details.
 | [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) | All credentials, API keys, external service setup |
 | [`docs/LINTING.md`](docs/LINTING.md) | Biome + Thai-lint configuration and usage |
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Local development setup, workflow, CI/CD |
-| [`docs/OBSERVABILITY.md`](docs/OBSERVABILITY.md) | OpenTelemetry, Grafana, logging patterns |
+| [`docs/OBSERVABILITY.md`](docs/OBSERVABILITY.md) | Logging patterns, Vercel logs, telemetry no-ops |
 
 ### Planned (created with their PRs)
 
