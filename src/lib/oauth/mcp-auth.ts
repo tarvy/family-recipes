@@ -6,6 +6,13 @@
 
 import { getToolScopes, hasRequiredScopes, verifyAccessToken } from './';
 
+/** Bearer auth prefix and its length */
+const BEARER_PREFIX = 'Bearer ';
+const BEARER_PREFIX_LENGTH = 7;
+
+/** JSON-RPC error code for auth failures */
+const JSONRPC_AUTH_ERROR_CODE = -32000;
+
 /**
  * Authenticated user context from OAuth token.
  */
@@ -27,10 +34,10 @@ export type McpAuthResult =
  */
 function extractBearerToken(request: Request): string | null {
   const authHeader = request.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
+  if (!authHeader?.startsWith(BEARER_PREFIX)) {
     return null;
   }
-  return authHeader.slice(7);
+  return authHeader.slice(BEARER_PREFIX_LENGTH);
 }
 
 /**
@@ -105,7 +112,7 @@ export function buildAuthError(message: string, id: unknown = null): object {
     jsonrpc: '2.0',
     id,
     error: {
-      code: -32000,
+      code: JSONRPC_AUTH_ERROR_CODE,
       message,
     },
   };

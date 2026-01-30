@@ -8,6 +8,12 @@ import type { Types } from 'mongoose';
 // Constants
 // -----------------------------------------------------------------------------
 
+/** Time unit constants for TTL calculations */
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+const REFRESH_TOKEN_TTL_DAYS = 30;
+
 /** Access token lifetime in seconds (1 hour) */
 export const ACCESS_TOKEN_TTL_SECONDS = 3600;
 
@@ -15,7 +21,8 @@ export const ACCESS_TOKEN_TTL_SECONDS = 3600;
 export const CODE_TTL_SECONDS = 600;
 
 /** Refresh token lifetime in seconds (30 days) */
-export const REFRESH_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
+export const REFRESH_TOKEN_TTL_SECONDS =
+  REFRESH_TOKEN_TTL_DAYS * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 
 /** Client ID length */
 export const CLIENT_ID_LENGTH = 21;
