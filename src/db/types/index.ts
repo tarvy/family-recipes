@@ -188,3 +188,43 @@ export interface IShoppingList {
 }
 
 export interface IShoppingListDocument extends IShoppingList, Document {}
+
+// -----------------------------------------------------------------------------
+// OAuth 2.1
+// -----------------------------------------------------------------------------
+
+export interface IOAuthClient {
+  clientId: string;
+  clientSecretHash?: string | null;
+  name: string;
+  redirectUris: string[];
+  createdAt: Date;
+}
+
+export interface IOAuthClientDocument extends IOAuthClient, Document {}
+
+export interface IOAuthCode {
+  code: string;
+  clientId: string;
+  userId: Types.ObjectId;
+  redirectUri: string;
+  scope: string;
+  codeChallenge: string;
+  expiresAt: Date;
+  usedAt?: Date | null;
+  createdAt: Date;
+}
+
+export interface IOAuthCodeDocument extends IOAuthCode, Document {}
+
+export interface IOAuthRefreshToken {
+  tokenHash: string;
+  clientId: string;
+  userId: Types.ObjectId;
+  scope: string;
+  expiresAt: Date;
+  revokedAt?: Date | null;
+  createdAt: Date;
+}
+
+export interface IOAuthRefreshTokenDocument extends IOAuthRefreshToken, Document {}

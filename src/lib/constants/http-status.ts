@@ -5,6 +5,12 @@
  * Using named constants improves code readability and maintainability.
  */
 
+/** 200 OK - The request was successful */
+export const HTTP_OK = 200;
+
+/** 201 Created - The request was successful and a new resource was created */
+export const HTTP_CREATED = 201;
+
 /** 400 Bad Request - The request was malformed or invalid */
 export const HTTP_BAD_REQUEST = 400;
 

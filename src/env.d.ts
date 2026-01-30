@@ -20,10 +20,7 @@ declare global {
       OWNER_EMAIL?: string;
       RESEND_API_KEY?: string;
 
-      // Observability
-      GRAFANA_OTLP_ENDPOINT?: string;
-      GRAFANA_INSTANCE_ID?: string;
-      GRAFANA_API_KEY?: string;
+      // Logging
       LOG_LEVEL?: 'debug' | 'info' | 'warn' | 'error';
 
       // OpenTelemetry (standard OTEL env vars)
@@ -38,8 +35,9 @@ declare global {
       // File Storage
       BLOB_READ_WRITE_TOKEN?: string;
 
-      // MCP Server
-      MCP_API_KEY?: string;
+      // MCP Server & OAuth
+      OAUTH_ISSUER?: string;
+      OAUTH_REGISTRATION_SECRET?: string;
 
       // External Tools
       VERCEL_TOKEN?: string;

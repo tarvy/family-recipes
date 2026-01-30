@@ -47,8 +47,9 @@ function LoginForm() {
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [passkeySupported, setPasskeySupported] = useState(false);
 
-  // Check for error from redirect
+  // Check for error and return_to from redirect
   const urlError = searchParams.get('error');
+  const returnTo = searchParams.get('return_to');
 
   useEffect(() => {
     if (urlError) {
@@ -122,7 +123,9 @@ function LoginForm() {
         throw new Error(errorPayload?.error || 'Passkey sign-in failed.');
       }
 
-      router.push('/recipes');
+      // Redirect to return_to if provided, otherwise default to /recipes
+      const destination = returnTo ?? '/recipes';
+      router.push(destination);
       router.refresh();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Passkey sign-in failed.';

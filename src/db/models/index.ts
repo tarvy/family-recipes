@@ -18,6 +18,12 @@ export type {
   IIngredient,
   IMagicLink,
   IMagicLinkDocument,
+  IOAuthClient,
+  IOAuthClientDocument,
+  IOAuthCode,
+  IOAuthCodeDocument,
+  IOAuthRefreshToken,
+  IOAuthRefreshTokenDocument,
   IPasskey,
   IPasskeyDocument,
   IRecipe,
@@ -42,6 +48,9 @@ export type {
 } from '../types';
 export { AllowedEmail } from './allowed-email.model';
 export { MagicLink } from './magic-link.model';
+export { OAuthClient } from './oauth-client.model';
+export { OAuthCode } from './oauth-code.model';
+export { OAuthRefreshToken } from './oauth-token.model';
 export { Passkey } from './passkey.model';
 export { findRecipesByIngredient, Recipe, searchRecipes } from './recipe.model';
 export { RecipeFavorite } from './recipe-favorite.model';

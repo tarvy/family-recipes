@@ -1,5 +1,5 @@
 /**
- * MCP server route.
+ * MCP server route with OAuth 2.1 authentication.
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
@@ -7,21 +7,30 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import {
   HTTP_BAD_REQUEST,
+  HTTP_FORBIDDEN,
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
 import { logger } from '@/lib/logger';
+import {
+  buildAuthError,
+  isAuthorizedForTool,
+  type McpAuthContext,
+  verifyMcpAuth,
+} from '@/lib/oauth';
 import { type MinimalSpan, withTrace } from '@/lib/telemetry';
 import { createMcpServer } from '@/mcp/server';
 
 export const runtime = 'nodejs';
 
-const MCP_API_KEY_HEADER = 'x-api-key';
 const MCP_PATH = '/mcp';
 const HTTP_OK = 200;
 const HTTP_METHOD_NOT_ALLOWED = 405;
 const JSON_RPC_VERSION = '2.0';
 const JSON_RPC_ERROR_CODE = -32000;
+
+/** Methods that don't require authentication */
+const UNAUTHENTICATED_METHODS = new Set(['initialize', 'ping', 'notifications/initialized']);
 
 interface RequestShim {
   method: string;
@@ -41,6 +50,16 @@ interface ResponseShim {
   json: (payload: unknown) => void;
   status: (code: number) => ResponseShim;
   on: (event: 'close', handler: () => void) => void;
+}
+
+interface JsonRpcRequest {
+  jsonrpc: string;
+  id?: unknown;
+  method?: string;
+  params?: {
+    name?: string;
+    [key: string]: unknown;
+  };
 }
 
 function normalizeHeaderValue(value: string | string[] | number): string {
@@ -133,10 +152,10 @@ function createResponseShim(): { res: ResponseShim; response: Promise<Response> 
   return { res, response: responsePromise };
 }
 
-function buildJsonRpcError(message: string) {
+function buildJsonRpcError(message: string, id: unknown = null) {
   return {
     jsonrpc: JSON_RPC_VERSION,
-    id: null,
+    id,
     error: {
       code: JSON_RPC_ERROR_CODE,
       message,
@@ -148,23 +167,105 @@ function methodNotAllowed(): Response {
   return Response.json({ error: 'method_not_allowed' }, { status: HTTP_METHOD_NOT_ALLOWED });
 }
 
-function validateMcpAuth(request: Request, span: MinimalSpan): Response | null {
-  const apiKey = request.headers.get(MCP_API_KEY_HEADER);
-  const expectedKey = process.env.MCP_API_KEY;
-
-  if (!expectedKey) {
-    logger.mcp.error('MCP_API_KEY is not configured');
-    span.setAttribute('error', 'missing_api_key');
-    return Response.json(
-      { error: 'MCP API key is not configured' },
-      { status: HTTP_INTERNAL_SERVER_ERROR },
-    );
+/**
+ * Determine if a JSON-RPC request requires authentication.
+ */
+function requiresAuth(body: unknown): boolean {
+  if (!body || typeof body !== 'object') {
+    return true;
   }
 
-  if (!apiKey || apiKey !== expectedKey) {
-    logger.mcp.warn('Unauthorized MCP request', { path: MCP_PATH });
-    span.setAttribute('error', 'unauthorized');
-    return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
+  const rpcRequest = body as JsonRpcRequest;
+  const method = rpcRequest.method;
+
+  if (!method) {
+    return true;
+  }
+
+  return !UNAUTHENTICATED_METHODS.has(method);
+}
+
+/**
+ * Get the tool name from a tools/call request.
+ */
+function getToolName(body: unknown): string | null {
+  if (!body || typeof body !== 'object') {
+    return null;
+  }
+
+  const rpcRequest = body as JsonRpcRequest;
+  if (rpcRequest.method !== 'tools/call') {
+    return null;
+  }
+
+  return rpcRequest.params?.name ?? null;
+}
+
+/**
+ * Validate OAuth authentication for MCP request.
+ */
+function validateMcpOAuth(
+  request: Request,
+  body: unknown,
+  span: MinimalSpan,
+): { error: Response | null; context: McpAuthContext | null } {
+  const needsAuth = requiresAuth(body);
+  const authResult = verifyMcpAuth(request, { required: needsAuth });
+
+  if (!authResult.authenticated) {
+    if (needsAuth) {
+      logger.mcp.warn('Unauthorized MCP request', {
+        path: MCP_PATH,
+        error: authResult.error,
+      });
+      span.setAttribute('error', 'unauthorized');
+
+      const rpcRequest = body as JsonRpcRequest | undefined;
+      return {
+        error: Response.json(buildAuthError(authResult.error, rpcRequest?.id), {
+          status: HTTP_UNAUTHORIZED,
+        }),
+        context: null,
+      };
+    }
+    // Auth not required and not provided - that's fine
+    return { error: null, context: null };
+  }
+
+  span.setAttribute('client_id', authResult.context.clientId);
+  span.setAttribute('user_id', authResult.context.userId);
+
+  return { error: null, context: authResult.context };
+}
+
+/**
+ * Validate tool authorization based on scopes.
+ */
+function validateToolAuth(
+  body: unknown,
+  context: McpAuthContext | null,
+  span: MinimalSpan,
+): Response | null {
+  const toolName = getToolName(body);
+  if (!toolName) {
+    // Not a tool call, no additional auth needed
+    return null;
+  }
+
+  span.setAttribute('tool', toolName);
+
+  if (!isAuthorizedForTool(context, toolName)) {
+    logger.mcp.warn('Insufficient scopes for tool', {
+      tool: toolName,
+      clientId: context?.clientId,
+    });
+    span.setAttribute('error', 'forbidden');
+
+    const rpcRequest = body as JsonRpcRequest | undefined;
+    return Response.json(
+      buildAuthError(`Insufficient scopes for tool: ${toolName}`, rpcRequest?.id),
+      { status: HTTP_FORBIDDEN },
+    );
   }
 
   return null;
@@ -220,17 +321,28 @@ async function handleMcpRequest(request: Request): Promise<Response> {
     span.setAttribute('method', request.method);
 
     try {
-      const authResponse = validateMcpAuth(request, span);
-      if (authResponse) {
-        return authResponse;
-      }
-
-      logger.mcp.info('MCP request received', { path: MCP_PATH });
-
+      // Parse body first (needed for auth decisions)
       const parsedBody = await parseRequestBody(request, span);
       if ('response' in parsedBody) {
         return parsedBody.response;
       }
+
+      // Validate OAuth authentication
+      const { error: authError, context } = validateMcpOAuth(request, parsedBody.body, span);
+      if (authError) {
+        return authError;
+      }
+
+      // Validate tool authorization if it's a tool call
+      const toolAuthError = validateToolAuth(parsedBody.body, context, span);
+      if (toolAuthError) {
+        return toolAuthError;
+      }
+
+      logger.mcp.info('MCP request received', {
+        path: MCP_PATH,
+        clientId: context?.clientId,
+      });
 
       return executeMcpTransport(request, parsedBody.body);
     } catch (error) {

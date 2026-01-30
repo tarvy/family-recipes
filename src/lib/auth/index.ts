@@ -21,6 +21,7 @@ export {
   createSession,
   deleteSession,
   getSessionFromCookies,
+  getSessionFromRequest,
   SESSION_COOKIE_NAME,
   SESSION_COOKIE_OPTIONS,
   validateSession,

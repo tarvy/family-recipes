@@ -199,3 +199,26 @@ export async function getSessionFromCookies(
   const result = await validateSession(token);
   return result.valid && result.user ? result.user : null;
 }
+
+/**
+ * Get the session token from a Request object.
+ *
+ * Use in API routes with the Request object:
+ *   const token = getSessionFromRequest(request);
+ */
+export function getSessionFromRequest(request: Request): string | null {
+  const cookieHeader = request.headers.get('cookie');
+  if (!cookieHeader) {
+    return null;
+  }
+
+  const cookies = cookieHeader.split(';').map((c) => c.trim());
+  for (const cookie of cookies) {
+    const [name, ...valueParts] = cookie.split('=');
+    if (name === SESSION_COOKIE_NAME) {
+      return valueParts.join('=') || null;
+    }
+  }
+
+  return null;
+}
