@@ -23,7 +23,15 @@ import { withTrace } from '@/lib/telemetry';
 export const runtime = 'nodejs';
 
 /** Valid recipe categories */
-const VALID_CATEGORIES = ['breakfast', 'desserts', 'entrees', 'salads', 'sides', 'soups'];
+const VALID_CATEGORIES = [
+  'breakfast',
+  'cocktails',
+  'desserts',
+  'entrees',
+  'salads',
+  'sides',
+  'soups',
+];
 
 interface CreateRecipeRequest {
   /** Raw Cooklang content including metadata */

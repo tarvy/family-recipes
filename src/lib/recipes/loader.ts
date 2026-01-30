@@ -183,7 +183,7 @@ export async function getAllRecipes(): Promise<RecipePreview[]> {
  * @returns Array of category names sorted alphabetically
  */
 export function getCategories(): string[] {
-  return ['breakfast', 'desserts', 'entrees', 'salads', 'sides', 'soups'];
+  return ['breakfast', 'cocktails', 'desserts', 'entrees', 'salads', 'sides', 'soups'];
 }
 
 /**

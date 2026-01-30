@@ -428,6 +428,11 @@ export function registerRecipeTools(server: McpServer): void {
         slug: z.string().optional(),
         error: z.string().optional(),
       },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+      },
     },
     async ({ content, category }) => {
       return withTrace('mcp.tool.recipe_create', async (span) => {
@@ -476,6 +481,11 @@ export function registerRecipeTools(server: McpServer): void {
         success: z.boolean(),
         slug: z.string().optional(),
         error: z.string().optional(),
+      },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
       },
     },
     async ({ slug, content, category }) => {

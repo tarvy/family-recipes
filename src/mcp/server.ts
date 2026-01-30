@@ -91,12 +91,13 @@ and cook for ~{5%minutes} per side until golden brown.
 ## Recipe Organization
 
 Recipes are organized by category in folders:
+- \`breakfast/\` - Breakfast items
+- \`cocktails/\` - Cocktails and drinks
+- \`desserts/\` - Desserts
 - \`entrees/\` - Main dishes
+- \`salads/\` - Salads
 - \`sides/\` - Side dishes
 - \`soups/\` - Soups and stews
-- \`salads/\` - Salads
-- \`desserts/\` - Desserts
-- \`breakfast/\` - Breakfast items
 
 ## Working with Recipes
 
