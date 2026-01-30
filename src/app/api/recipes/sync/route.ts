@@ -21,8 +21,9 @@ import {
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
+import { toError, toErrorMessage } from '@/lib/errors';
 import { type SyncOptions, syncRecipes } from '@/lib/git-recipes';
-import { logger } from '@/lib/logger';
+import { logger, withRequestContext } from '@/lib/logger';
 import { withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
@@ -134,8 +135,8 @@ async function executeSyncAndRespond(options: SyncOptions): Promise<Response> {
  * Handle sync error
  */
 function handleSyncError(error: unknown): Response {
-  const message = error instanceof Error ? error.message : 'Sync failed';
-  logger.recipes.error('Recipe sync endpoint failed', error instanceof Error ? error : undefined);
+  const message = toErrorMessage(error) === 'unknown' ? 'Sync failed' : toErrorMessage(error);
+  logger.recipes.error('Recipe sync endpoint failed', toError(error));
   return Response.json({ error: 'sync_failed', message }, { status: HTTP_INTERNAL_SERVER_ERROR });
 }
 
@@ -147,40 +148,42 @@ function buildSyncOptions(body: SyncRequestBody, mode: 'full' | 'incremental'): 
 }
 
 export async function POST(request: Request): Promise<Response> {
-  return withTrace('api.recipes.sync', async (span) => {
-    const authResult = await checkAuth(request);
-    span.setAttribute('auth_method', authResult.method);
+  return withRequestContext(request, () =>
+    withTrace('api.recipes.sync', async (span) => {
+      const authResult = await checkAuth(request);
+      span.setAttribute('auth_method', authResult.method);
 
-    if (!authResult.authorized) {
-      span.setAttribute('error', authResult.method === 'none' ? 'unauthorized' : 'forbidden');
-      return authResult.errorResponse;
-    }
+      if (!authResult.authorized) {
+        span.setAttribute('error', authResult.method === 'none' ? 'unauthorized' : 'forbidden');
+        return authResult.errorResponse;
+      }
 
-    const body = await parseRequestBody(request);
-    const mode = determineSyncMode(body, new URL(request.url));
+      const body = await parseRequestBody(request);
+      const mode = determineSyncMode(body, new URL(request.url));
 
-    if (!mode) {
-      span.setAttribute('error', 'invalid_mode');
-      return Response.json(
-        { error: 'invalid_mode', message: 'Mode must be "full" or "incremental"' },
-        { status: HTTP_BAD_REQUEST },
-      );
-    }
+      if (!mode) {
+        span.setAttribute('error', 'invalid_mode');
+        return Response.json(
+          { error: 'invalid_mode', message: 'Mode must be "full" or "incremental"' },
+          { status: HTTP_BAD_REQUEST },
+        );
+      }
 
-    const options = buildSyncOptions(body, mode);
-    span.setAttribute('sync_mode', mode);
-    span.setAttribute('dry_run', options.dryRun ?? false);
-    logger.recipes.info('Starting recipe sync', {
-      mode,
-      dryRun: options.dryRun,
-      authMethod: authResult.method,
-    });
+      const options = buildSyncOptions(body, mode);
+      span.setAttribute('sync_mode', mode);
+      span.setAttribute('dry_run', options.dryRun ?? false);
+      logger.recipes.info('Starting recipe sync', {
+        mode,
+        dryRun: options.dryRun,
+        authMethod: authResult.method,
+      });
 
-    try {
-      return await executeSyncAndRespond(options);
-    } catch (error) {
-      span.setAttribute('error', error instanceof Error ? error.message : 'Sync failed');
-      return handleSyncError(error);
-    }
-  });
+      try {
+        return await executeSyncAndRespond(options);
+      } catch (error) {
+        span.setAttribute('error', toErrorMessage(error));
+        return handleSyncError(error);
+      }
+    }),
+  );
 }

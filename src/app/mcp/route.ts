@@ -2,8 +2,7 @@
  * MCP server route with OAuth 2.1 authentication.
  */
 
-import type { IncomingMessage, ServerResponse } from 'node:http';
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import {
   HTTP_BAD_REQUEST,
@@ -24,33 +23,12 @@ import { createMcpServer } from '@/mcp/server';
 export const runtime = 'nodejs';
 
 const MCP_PATH = '/mcp';
-const HTTP_OK = 200;
 const HTTP_METHOD_NOT_ALLOWED = 405;
 const JSON_RPC_VERSION = '2.0';
 const JSON_RPC_ERROR_CODE = -32000;
 
 /** Methods that don't require authentication */
 const UNAUTHENTICATED_METHODS = new Set(['initialize', 'ping', 'notifications/initialized']);
-
-interface RequestShim {
-  method: string;
-  url?: string;
-  headers: Record<string, string>;
-  body?: unknown;
-  on: (event: string, handler: () => void) => void;
-}
-
-interface ResponseShim {
-  statusCode: number;
-  setHeader: (name: string, value: string | string[] | number) => void;
-  getHeader: (name: string) => string | undefined;
-  writeHead: (statusCode: number, headers?: Record<string, string | string[] | number>) => void;
-  write: (chunk: string | Uint8Array) => void;
-  end: (chunk?: string | Uint8Array) => void;
-  json: (payload: unknown) => void;
-  status: (code: number) => ResponseShim;
-  on: (event: 'close', handler: () => void) => void;
-}
 
 interface JsonRpcRequest {
   jsonrpc: string;
@@ -60,96 +38,6 @@ interface JsonRpcRequest {
     name?: string;
     [key: string]: unknown;
   };
-}
-
-function normalizeHeaderValue(value: string | string[] | number): string {
-  if (Array.isArray(value)) {
-    return value.join(',');
-  }
-  return String(value);
-}
-
-function createRequestShim(request: Request, body: unknown): RequestShim {
-  return {
-    method: request.method,
-    url: MCP_PATH,
-    headers: Object.fromEntries(request.headers.entries()),
-    body,
-    on: () => undefined,
-  };
-}
-
-function createResponseShim(): { res: ResponseShim; response: Promise<Response> } {
-  let currentStatusCode = HTTP_OK;
-  const headers = new Headers();
-  const chunks: string[] = [];
-  let ended = false;
-  const closeHandlers: Array<() => void> = [];
-
-  let resolveResponse: (response: Response) => void = () => undefined;
-  const responsePromise = new Promise<Response>((resolve) => {
-    resolveResponse = resolve;
-  });
-
-  const finalize = () => {
-    if (ended) {
-      return;
-    }
-    ended = true;
-    for (const handler of closeHandlers) {
-      handler();
-    }
-    const body = chunks.length > 0 ? chunks.join('') : null;
-    resolveResponse(new Response(body, { status: currentStatusCode, headers }));
-  };
-
-  const res: ResponseShim = {
-    get statusCode() {
-      return currentStatusCode;
-    },
-    set statusCode(code: number) {
-      currentStatusCode = code;
-    },
-    setHeader: (name, value) => {
-      headers.set(name, normalizeHeaderValue(value));
-    },
-    getHeader: (name) => headers.get(name) ?? undefined,
-    writeHead: (code, headerMap) => {
-      res.statusCode = code;
-      if (headerMap) {
-        for (const [key, value] of Object.entries(headerMap)) {
-          headers.set(key, normalizeHeaderValue(value));
-        }
-      }
-    },
-    write: (chunk) => {
-      if (typeof chunk === 'string') {
-        chunks.push(chunk);
-        return;
-      }
-      chunks.push(Buffer.from(chunk).toString('utf-8'));
-    },
-    end: (chunk) => {
-      if (chunk) {
-        res.write(chunk);
-      }
-      finalize();
-    },
-    json: (payload) => {
-      headers.set('content-type', 'application/json');
-      chunks.push(JSON.stringify(payload));
-      finalize();
-    },
-    status: (code) => {
-      res.statusCode = code;
-      return res;
-    },
-    on: (_event, handler) => {
-      closeHandlers.push(handler);
-    },
-  };
-
-  return { res, response: responsePromise };
 }
 
 function buildJsonRpcError(message: string, id: unknown = null) {
@@ -292,27 +180,16 @@ async function parseRequestBody(
 }
 
 async function executeMcpTransport(request: Request, body: unknown): Promise<Response> {
-  const transport = new StreamableHTTPServerTransport({
+  const transport = new WebStandardStreamableHTTPServerTransport({
     enableJsonResponse: true,
   });
 
   const server = createMcpServer();
-  const { res, response } = createResponseShim();
-  const req = createRequestShim(request, body);
-
-  res.on('close', () => {
-    transport.close();
-  });
 
   // SDK transport typing uses optional callbacks which conflict with exactOptionalPropertyTypes.
   await server.connect(transport as unknown as Transport);
-  await transport.handleRequest(
-    req as unknown as IncomingMessage,
-    res as unknown as ServerResponse,
-    body,
-  );
 
-  return response;
+  return transport.handleRequest(request, { parsedBody: body });
 }
 
 async function handleMcpRequest(request: Request): Promise<Response> {

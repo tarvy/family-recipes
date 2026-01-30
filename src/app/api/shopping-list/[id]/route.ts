@@ -14,7 +14,8 @@ import {
   HTTP_NOT_FOUND,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
-import { logger } from '@/lib/logger';
+import { toError, toErrorMessage } from '@/lib/errors';
+import { logger, withRequestContext } from '@/lib/logger';
 import {
   addManualItem,
   clearCheckedItems,
@@ -38,43 +39,42 @@ interface RouteContext {
  *
  * Get a shopping list by ID.
  */
-export async function GET(_request: Request, context: RouteContext): Promise<Response> {
-  return withTrace('api.shopping-list.get', async (span) => {
-    const cookieStore = await cookies();
-    const user = await getSessionFromCookies(cookieStore);
+export async function GET(request: Request, context: RouteContext): Promise<Response> {
+  return withRequestContext(request, () =>
+    withTrace('api.shopping-list.get', async (span) => {
+      const cookieStore = await cookies();
+      const user = await getSessionFromCookies(cookieStore);
 
-    if (!user) {
-      span.setAttribute('error', 'unauthorized');
-      return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
-    }
-
-    const { id } = await context.params;
-    span.setAttribute('list_id', id);
-
-    try {
-      const result = await getShoppingList(id);
-
-      if (!result) {
-        span.setAttribute('error', 'not_found');
-        return Response.json({ error: 'Shopping list not found' }, { status: HTTP_NOT_FOUND });
+      if (!user) {
+        span.setAttribute('error', 'unauthorized');
+        return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
       }
 
-      return Response.json({
-        ...result,
-        checkedItemIds: Array.from(result.checkedItemIds),
-      });
-    } catch (error) {
-      shoppingLogger.error(
-        'Failed to get shopping list',
-        error instanceof Error ? error : undefined,
-      );
-      span.setAttribute('error', error instanceof Error ? error.message : 'unknown');
-      return Response.json(
-        { error: 'Failed to get shopping list' },
-        { status: HTTP_INTERNAL_SERVER_ERROR },
-      );
-    }
-  });
+      const { id } = await context.params;
+      span.setAttribute('list_id', id);
+
+      try {
+        const result = await getShoppingList(id);
+
+        if (!result) {
+          span.setAttribute('error', 'not_found');
+          return Response.json({ error: 'Shopping list not found' }, { status: HTTP_NOT_FOUND });
+        }
+
+        return Response.json({
+          ...result,
+          checkedItemIds: Array.from(result.checkedItemIds),
+        });
+      } catch (error) {
+        shoppingLogger.error('Failed to get shopping list', toError(error));
+        span.setAttribute('error', toErrorMessage(error));
+        return Response.json(
+          { error: 'Failed to get shopping list' },
+          { status: HTTP_INTERNAL_SERVER_ERROR },
+        );
+      }
+    }),
+  );
 }
 
 interface PatchRequest {
@@ -122,11 +122,8 @@ async function handleClearChecked(id: string): Promise<Response> {
 
 /** Handle PATCH error responses */
 function handlePatchError(error: unknown, span: { setAttribute: (k: string, v: string) => void }) {
-  const errorMessage = error instanceof Error ? error.message : 'unknown';
-  shoppingLogger.error(
-    'Failed to update shopping list',
-    error instanceof Error ? error : undefined,
-  );
+  const errorMessage = toErrorMessage(error);
+  shoppingLogger.error('Failed to update shopping list', toError(error));
   span.setAttribute('error', errorMessage);
 
   if (errorMessage === 'Shopping list not found' || errorMessage === 'Item not found') {
@@ -147,36 +144,38 @@ function handlePatchError(error: unknown, span: { setAttribute: (k: string, v: s
  * - clearChecked: Remove all checked items
  */
 export async function PATCH(request: Request, context: RouteContext): Promise<Response> {
-  return withTrace('api.shopping-list.patch', async (span) => {
-    const cookieStore = await cookies();
-    const user = await getSessionFromCookies(cookieStore);
+  return withRequestContext(request, () =>
+    withTrace('api.shopping-list.patch', async (span) => {
+      const cookieStore = await cookies();
+      const user = await getSessionFromCookies(cookieStore);
 
-    if (!user) {
-      span.setAttribute('error', 'unauthorized');
-      return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
-    }
-
-    const { id } = await context.params;
-    span.setAttribute('list_id', id);
-
-    try {
-      const body = (await request.json()) as PatchRequest;
-      span.setAttribute('action', body.action);
-
-      switch (body.action) {
-        case 'toggleItem':
-          return handleToggleItem(id, body.itemId);
-        case 'addItem':
-          return handleAddItem(id, body.item);
-        case 'clearChecked':
-          return handleClearChecked(id);
-        default:
-          return Response.json({ error: 'Invalid action' }, { status: HTTP_BAD_REQUEST });
+      if (!user) {
+        span.setAttribute('error', 'unauthorized');
+        return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
       }
-    } catch (error) {
-      return handlePatchError(error, span);
-    }
-  });
+
+      const { id } = await context.params;
+      span.setAttribute('list_id', id);
+
+      try {
+        const body = (await request.json()) as PatchRequest;
+        span.setAttribute('action', body.action);
+
+        switch (body.action) {
+          case 'toggleItem':
+            return handleToggleItem(id, body.itemId);
+          case 'addItem':
+            return handleAddItem(id, body.item);
+          case 'clearChecked':
+            return handleClearChecked(id);
+          default:
+            return Response.json({ error: 'Invalid action' }, { status: HTTP_BAD_REQUEST });
+        }
+      } catch (error) {
+        return handlePatchError(error, span);
+      }
+    }),
+  );
 }
 
 /**
@@ -184,33 +183,32 @@ export async function PATCH(request: Request, context: RouteContext): Promise<Re
  *
  * Delete a shopping list.
  */
-export async function DELETE(_request: Request, context: RouteContext): Promise<Response> {
-  return withTrace('api.shopping-list.delete', async (span) => {
-    const cookieStore = await cookies();
-    const user = await getSessionFromCookies(cookieStore);
+export async function DELETE(request: Request, context: RouteContext): Promise<Response> {
+  return withRequestContext(request, () =>
+    withTrace('api.shopping-list.delete', async (span) => {
+      const cookieStore = await cookies();
+      const user = await getSessionFromCookies(cookieStore);
 
-    if (!user) {
-      span.setAttribute('error', 'unauthorized');
-      return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
-    }
+      if (!user) {
+        span.setAttribute('error', 'unauthorized');
+        return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
+      }
 
-    const { id } = await context.params;
-    span.setAttribute('list_id', id);
+      const { id } = await context.params;
+      span.setAttribute('list_id', id);
 
-    try {
-      await deleteShoppingList(id);
-      shoppingLogger.info('Shopping list deleted', { listId: id, userId: user.id });
-      return Response.json({ success: true });
-    } catch (error) {
-      shoppingLogger.error(
-        'Failed to delete shopping list',
-        error instanceof Error ? error : undefined,
-      );
-      span.setAttribute('error', error instanceof Error ? error.message : 'unknown');
-      return Response.json(
-        { error: 'Failed to delete shopping list' },
-        { status: HTTP_INTERNAL_SERVER_ERROR },
-      );
-    }
-  });
+      try {
+        await deleteShoppingList(id);
+        shoppingLogger.info('Shopping list deleted', { listId: id, userId: user.id });
+        return Response.json({ success: true });
+      } catch (error) {
+        shoppingLogger.error('Failed to delete shopping list', toError(error));
+        span.setAttribute('error', toErrorMessage(error));
+        return Response.json(
+          { error: 'Failed to delete shopping list' },
+          { status: HTTP_INTERNAL_SERVER_ERROR },
+        );
+      }
+    }),
+  );
 }

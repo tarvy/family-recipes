@@ -16,7 +16,8 @@ import {
   verifyMagicLink,
 } from '@/lib/auth';
 import { ensureOwnerAllowlist } from '@/lib/auth/allowlist';
-import { logger } from '@/lib/logger';
+import { toError } from '@/lib/errors';
+import { logger, withRequestContext } from '@/lib/logger';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
@@ -33,57 +34,59 @@ function buildRedirectUrl(path: string, error?: string): string {
 }
 
 export async function GET(request: Request): Promise<Response> {
-  return withTrace('api.auth.verify', async (span) => {
-    logger.api.info('Magic link verification requested', { path: '/api/auth/verify' });
+  return withRequestContext(request, () =>
+    withTrace('api.auth.verify', async (span) => {
+      logger.api.info('Magic link verification requested', { path: '/api/auth/verify' });
 
-    const url = new URL(request.url);
-    const token = url.searchParams.get('token');
+      const url = new URL(request.url);
+      const token = url.searchParams.get('token');
 
-    // Validate token presence
-    if (!token) {
-      span.setAttribute('error', 'missing_token');
-      logger.auth.warn('Verification attempted without token');
-      return NextResponse.redirect(buildRedirectUrl('/login', 'missing_token'));
-    }
-
-    try {
-      const verification = await resolveVerification(token, span);
-      if ('response' in verification) {
-        return verification.response;
+      // Validate token presence
+      if (!token) {
+        span.setAttribute('error', 'missing_token');
+        logger.auth.warn('Verification attempted without token');
+        return NextResponse.redirect(buildRedirectUrl('/login', 'missing_token'));
       }
 
-      span.setAttribute('email', verification.email);
+      try {
+        const verification = await resolveVerification(token, span);
+        if ('response' in verification) {
+          return verification.response;
+        }
 
-      await connectDB();
-      await ensureOwnerAllowlist();
+        span.setAttribute('email', verification.email);
 
-      const allowedEmail = await resolveAllowedEmail(verification.email);
-      if (!allowedEmail) {
-        return NextResponse.redirect(buildRedirectUrl('/login', 'not_allowed'));
+        await connectDB();
+        await ensureOwnerAllowlist();
+
+        const allowedEmail = await resolveAllowedEmail(verification.email);
+        if (!allowedEmail) {
+          return NextResponse.redirect(buildRedirectUrl('/login', 'not_allowed'));
+        }
+
+        const { user, isNewUser } = await resolveUser(verification.email, allowedEmail.role);
+        await markFirstSignedIn(allowedEmail);
+
+        span.setAttribute('user_id', user._id.toString());
+        span.setAttribute('is_new_user', isNewUser);
+
+        const session = await createSession(user._id.toString());
+
+        const cookieStore = await cookies();
+        cookieStore.set(SESSION_COOKIE_NAME, session.token, SESSION_COOKIE_OPTIONS);
+
+        logger.auth.info('User authenticated successfully', {
+          userId: user._id.toString(),
+          email: user.email,
+        });
+
+        return NextResponse.redirect(buildRedirectUrl('/recipes'));
+      } catch (error) {
+        logger.api.error('Auth verify endpoint error', toError(error));
+        return NextResponse.redirect(buildRedirectUrl('/login', 'server_error'));
       }
-
-      const { user, isNewUser } = await resolveUser(verification.email, allowedEmail.role);
-      await markFirstSignedIn(allowedEmail);
-
-      span.setAttribute('user_id', user._id.toString());
-      span.setAttribute('is_new_user', isNewUser);
-
-      const session = await createSession(user._id.toString());
-
-      const cookieStore = await cookies();
-      cookieStore.set(SESSION_COOKIE_NAME, session.token, SESSION_COOKIE_OPTIONS);
-
-      logger.auth.info('User authenticated successfully', {
-        userId: user._id.toString(),
-        email: user.email,
-      });
-
-      return NextResponse.redirect(buildRedirectUrl('/recipes'));
-    } catch (error) {
-      logger.api.error('Auth verify endpoint error', error instanceof Error ? error : undefined);
-      return NextResponse.redirect(buildRedirectUrl('/login', 'server_error'));
-    }
-  });
+    }),
+  );
 }
 
 async function resolveVerification(

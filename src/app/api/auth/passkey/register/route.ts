@@ -25,7 +25,8 @@ import {
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
-import { logger } from '@/lib/logger';
+import { toError } from '@/lib/errors';
+import { logger, withRequestContext } from '@/lib/logger';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
@@ -36,47 +37,72 @@ interface RegisterRequestBody {
 
 const REGISTER_PATH = '/api/auth/passkey/register';
 
+type AuthCheckResult =
+  | { authorized: true; user: SessionUser }
+  | { authorized: false; response: Response; error: string };
+
+/** Check user is authenticated and allowlisted */
+async function checkUserAllowed(
+  cookieStore: Awaited<ReturnType<typeof cookies>>,
+): Promise<AuthCheckResult> {
+  const user = await getSessionFromCookies(cookieStore);
+  if (!user) {
+    return {
+      authorized: false,
+      error: 'unauthorized',
+      response: Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED }),
+    };
+  }
+
+  await ensureOwnerAllowlist();
+  const allowed = await findAllowedEmail(user.email);
+  if (!allowed) {
+    logger.auth.warn('Passkey registration blocked for non-allowlisted email', {
+      email: user.email,
+    });
+    return {
+      authorized: false,
+      error: 'not_allowed',
+      response: Response.json({ error: 'not_allowed' }, { status: HTTP_FORBIDDEN }),
+    };
+  }
+
+  return { authorized: true, user };
+}
+
 export async function POST(request: Request): Promise<Response> {
-  return withTrace('api.auth.passkey.register', async (span) => {
-    logger.api.info('Passkey registration requested', { path: REGISTER_PATH });
+  return withRequestContext(request, () =>
+    withTrace('api.auth.passkey.register', async (span) => {
+      logger.api.info('Passkey registration requested', { path: REGISTER_PATH });
 
-    const cookieStore = await cookies();
-    const user = await getSessionFromCookies(cookieStore);
-
-    if (!user) {
-      span.setAttribute('error', 'unauthorized');
-      return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
-    }
-
-    await ensureOwnerAllowlist();
-
-    const allowed = await findAllowedEmail(user.email);
-    if (!allowed) {
-      span.setAttribute('error', 'not_allowed');
-      logger.auth.warn('Passkey registration blocked for non-allowlisted email', {
-        email: user.email,
-      });
-      return Response.json({ error: 'not_allowed' }, { status: HTTP_FORBIDDEN });
-    }
-
-    let body: RegisterRequestBody = {};
-    try {
-      body = (await request.json()) as RegisterRequestBody;
-    } catch {
-      body = {};
-    }
-
-    if (body.response) {
-      if (!isRegistrationResponse(body.response)) {
-        span.setAttribute('error', 'invalid_payload');
-        return Response.json({ error: 'invalid_payload' }, { status: HTTP_BAD_REQUEST });
+      const cookieStore = await cookies();
+      const authCheck = await checkUserAllowed(cookieStore);
+      if (!authCheck.authorized) {
+        span.setAttribute('error', authCheck.error);
+        return authCheck.response;
       }
 
-      return handleVerification(body.response, user.id, cookieStore);
-    }
+      const { user } = authCheck;
 
-    return handleOptions(user, cookieStore);
-  });
+      let body: RegisterRequestBody = {};
+      try {
+        body = (await request.json()) as RegisterRequestBody;
+      } catch {
+        body = {};
+      }
+
+      if (body.response) {
+        if (!isRegistrationResponse(body.response)) {
+          span.setAttribute('error', 'invalid_payload');
+          return Response.json({ error: 'invalid_payload' }, { status: HTTP_BAD_REQUEST });
+        }
+
+        return handleVerification(body.response, user.id, cookieStore);
+      }
+
+      return handleOptions(user, cookieStore);
+    }),
+  );
 }
 
 function isRegistrationResponse(value: unknown): value is RegistrationResponseJSON {
@@ -119,10 +145,7 @@ async function handleOptions(
 
     return Response.json({ options });
   } catch (error) {
-    logger.auth.error(
-      'Passkey registration options failed',
-      error instanceof Error ? error : undefined,
-    );
+    logger.auth.error('Passkey registration options failed', toError(error));
     return Response.json({ error: 'registration_failed' }, { status: HTTP_INTERNAL_SERVER_ERROR });
   }
 }
@@ -183,10 +206,7 @@ async function handleVerification(
 
     return Response.json({ success: true });
   } catch (error) {
-    logger.auth.error(
-      'Passkey registration verification error',
-      error instanceof Error ? error : undefined,
-    );
+    logger.auth.error('Passkey registration verification error', toError(error));
     cookieStore.delete(getPasskeyChallengeCookieName());
     return Response.json({ error: 'verification_failed' }, { status: HTTP_INTERNAL_SERVER_ERROR });
   }

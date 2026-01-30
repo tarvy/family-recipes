@@ -19,7 +19,8 @@ import {
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
-import { logger } from '@/lib/logger';
+import { toError, toErrorMessage } from '@/lib/errors';
+import { logger, withRequestContext } from '@/lib/logger';
 import { createShoppingList } from '@/lib/shopping/service';
 
 const shoppingLogger = logger.shopping;
@@ -73,58 +74,57 @@ function validateRequest(
 }
 
 export async function POST(request: Request): Promise<Response> {
-  return withTrace('api.shopping-list.create', async (span) => {
-    const cookieStore = await cookies();
-    const user = await getSessionFromCookies(cookieStore);
+  return withRequestContext(request, () =>
+    withTrace('api.shopping-list.create', async (span) => {
+      const cookieStore = await cookies();
+      const user = await getSessionFromCookies(cookieStore);
 
-    if (!user) {
-      span.setAttribute('error', 'unauthorized');
-      return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
-    }
-
-    span.setAttribute('user_id', user.id);
-
-    try {
-      const body = await request.json();
-      const validation = validateRequest(body);
-
-      if (!validation.valid) {
-        span.setAttribute('error', 'validation_failed');
-        return Response.json({ error: validation.error }, { status: HTTP_BAD_REQUEST });
+      if (!user) {
+        span.setAttribute('error', 'unauthorized');
+        return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
       }
 
-      const data = validation.data;
-      span.setAttribute('recipe_count', data.recipeSlugs.length);
+      span.setAttribute('user_id', user.id);
 
-      const result = await createShoppingList({
-        name: data.name,
-        recipeSlugs: data.recipeSlugs,
-        servingsMultipliers: data.servingsMultipliers,
-        userId: new Types.ObjectId(user.id),
-      });
+      try {
+        const body = await request.json();
+        const validation = validateRequest(body);
 
-      shoppingLogger.info('Shopping list created', {
-        listId: result.id,
-        recipeCount: result.recipeCount,
-        itemCount: result.itemCount,
-        userId: user.id,
-      });
+        if (!validation.valid) {
+          span.setAttribute('error', 'validation_failed');
+          return Response.json({ error: validation.error }, { status: HTTP_BAD_REQUEST });
+        }
 
-      // Convert Set to array for JSON serialization
-      return Response.json({
-        ...result,
-        checkedItemIds: Array.from(result.checkedItemIds),
-      });
-    } catch (error) {
-      shoppingLogger.error(
-        'Failed to create shopping list',
-        error instanceof Error ? error : undefined,
-      );
-      span.setAttribute('error', error instanceof Error ? error.message : 'unknown');
-      return Response.json(
-        { error: 'Failed to create shopping list' },
-        { status: HTTP_INTERNAL_SERVER_ERROR },
-      );
-    }
-  });
+        const data = validation.data;
+        span.setAttribute('recipe_count', data.recipeSlugs.length);
+
+        const result = await createShoppingList({
+          name: data.name,
+          recipeSlugs: data.recipeSlugs,
+          servingsMultipliers: data.servingsMultipliers,
+          userId: new Types.ObjectId(user.id),
+        });
+
+        shoppingLogger.info('Shopping list created', {
+          listId: result.id,
+          recipeCount: result.recipeCount,
+          itemCount: result.itemCount,
+          userId: user.id,
+        });
+
+        // Convert Set to array for JSON serialization
+        return Response.json({
+          ...result,
+          checkedItemIds: Array.from(result.checkedItemIds),
+        });
+      } catch (error) {
+        shoppingLogger.error('Failed to create shopping list', toError(error));
+        span.setAttribute('error', toErrorMessage(error));
+        return Response.json(
+          { error: 'Failed to create shopping list' },
+          { status: HTTP_INTERNAL_SERVER_ERROR },
+        );
+      }
+    }),
+  );
 }
