@@ -16,7 +16,7 @@ Personal recipe management application using Cooklang format with mobile-first d
 - **Database**: MongoDB Atlas + Mongoose
 - **Auth**: Magic links + Passkeys
 - **Observability**: Pino + Vercel Logs
-- **Infrastructure**: Terraform (Atlas, Vercel)
+- **Infrastructure**: MongoDB Atlas, Vercel
 - **Linting**: Biome + Thai-lint
 
 ## Getting Started

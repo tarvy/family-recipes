@@ -154,31 +154,6 @@ Relying Party ID for WebAuthn/Passkeys.
 
 ---
 
-## Terraform Variables (CI Only)
-
-These are used by Terraform in CI/CD pipelines for infrastructure management. Set them as GitHub Secrets with the `TF_VAR_` prefix automatically applied in the workflow:
-
-| GitHub Secret | Terraform Variable | Purpose |
-|---------------|-------------------|---------|
-| `MONGODB_ATLAS_PUBLIC_KEY` | `mongodb_atlas_public_key` | Atlas API public key |
-| `MONGODB_ATLAS_PRIVATE_KEY` | `mongodb_atlas_private_key` | Atlas API private key |
-| `MONGODB_ATLAS_ORG_ID` | `mongodb_atlas_org_id` | Atlas organization ID |
-| `MONGODB_DB_PASSWORD` | `mongodb_db_password` | Database password |
-| `VERCEL_TOKEN` | `vercel_api_token` | Vercel API token |
-| `VERCEL_PROJECT_ID` | `vercel_project_id` | Vercel project ID |
-| `VERCEL_TEAM_ID` | `vercel_team_id` | Vercel team ID (optional) |
-
-### Terraform Cloud (Remote State)
-
-Terraform uses Terraform Cloud for remote state and locking. Configure the GitHub
-secret below so CI can authenticate:
-
-| GitHub Secret | Purpose |
-|---------------|---------|
-| `TERRAFORM_CLOUD_TOKEN` | Terraform Cloud user API token (maps to `TF_TOKEN_app_terraform_io`) |
-
----
-
 ## Environment Files
 
 | File | Git | Purpose |
@@ -194,7 +169,7 @@ This repository is public. Do not store real secrets in git or documentation.
 Recommended practice:
 - **Source of truth**: Store secrets in a password manager (1Password is recommended).
 - **Local dev**: Copy values into `.env.local` (ignored by git).
-- **Production**: Set secrets as Vercel environment variables (Terraform manages these in `infra/terraform/`).
+- **Production**: Set secrets as Vercel environment variables.
 
 ## Vercel Environment Variables
 

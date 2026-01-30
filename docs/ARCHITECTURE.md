@@ -23,14 +23,14 @@
 └───────────────┘   └─────────────────┘   └───────────────┘
 ```
 
-## Infrastructure as Code
+## Infrastructure
 
-All infrastructure is managed via Terraform in `infra/terraform/`:
+Infrastructure is managed directly via service dashboards:
 
-| Resource | Provider | Purpose |
-|----------|----------|---------|
-| MongoDB Atlas | `mongodb/mongodbatlas` | Database cluster, users, IP access |
-| Vercel | `vercel/vercel` | Environment variables |
+| Service | Purpose |
+|---------|---------|
+| MongoDB Atlas | Database cluster, users, IP access |
+| Vercel | Deployments, environment variables, blob storage |
 
 ## Observability
 
