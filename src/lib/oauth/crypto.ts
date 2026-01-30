@@ -43,7 +43,8 @@ export function generateSecureToken(length: number): string {
   const chars: string[] = [];
 
   for (const byte of bytes) {
-    chars.push(alphabet[byte % alphabet.length]);
+    // charAt always returns a string, modulo guarantees valid index
+    chars.push(alphabet.charAt(byte % alphabet.length));
   }
 
   return chars.join('');
