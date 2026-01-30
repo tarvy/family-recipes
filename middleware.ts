@@ -39,10 +39,11 @@ export const config = {
     /*
      * Match all paths except:
      * - api (API routes)
+     * - mcp (MCP server route)
      * - _next/static (static files)
      * - _next/image (image optimization)
      * - Static assets (favicon, manifest, sw, icons)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons).*)',
+    '/((?!api|mcp|_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons).*)',
   ],
 };
