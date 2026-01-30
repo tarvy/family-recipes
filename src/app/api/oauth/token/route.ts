@@ -8,7 +8,12 @@
 
 import { connectDB } from '@/db/connection';
 import { OAuthClient, OAuthCode, OAuthRefreshToken } from '@/db/models';
-import { HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED } from '@/lib/constants/http-status';
+import {
+  HTTP_BAD_REQUEST,
+  HTTP_NO_CONTENT,
+  HTTP_OK,
+  HTTP_UNAUTHORIZED,
+} from '@/lib/constants/http-status';
 import { logger } from '@/lib/logger';
 import {
   ACCESS_TOKEN_TTL_SECONDS,
@@ -27,6 +32,10 @@ export const runtime = 'nodejs';
 
 const MS_PER_SECOND = 1000;
 
+/** Basic auth prefix and its length */
+const BASIC_AUTH_PREFIX = 'Basic ';
+const BASIC_AUTH_PREFIX_LENGTH = BASIC_AUTH_PREFIX.length;
+
 /** CORS headers for OAuth endpoints */
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -42,7 +51,7 @@ function errorResponse(error: string, description: string, status: number): Resp
 }
 
 function tokenResponse(response: TokenResponse): Response {
-  return Response.json(response, { status: 200, headers: CORS_HEADERS });
+  return Response.json(response, { status: HTTP_OK, headers: CORS_HEADERS });
 }
 
 /**
@@ -54,8 +63,8 @@ function extractClientCredentials(
 ): { clientId: string | null; clientSecret: string | null } {
   // Try Authorization header first (Basic auth)
   const authHeader = request.headers.get('Authorization');
-  if (authHeader?.startsWith('Basic ')) {
-    const encoded = authHeader.slice(6);
+  if (authHeader?.startsWith(BASIC_AUTH_PREFIX)) {
+    const encoded = authHeader.slice(BASIC_AUTH_PREFIX_LENGTH);
     const decoded = Buffer.from(encoded, 'base64').toString('utf8');
     const [id, secret] = decoded.split(':');
     if (id) {
@@ -292,7 +301,7 @@ export async function POST(request: Request): Promise<Response> {
 
 export async function OPTIONS(): Promise<Response> {
   return new Response(null, {
-    status: 204,
+    status: HTTP_NO_CONTENT,
     headers: CORS_HEADERS,
   });
 }

@@ -10,7 +10,12 @@
 import { connectDB } from '@/db/connection';
 import { OAuthClient, OAuthCode } from '@/db/models';
 import { getSessionFromRequest, validateSession } from '@/lib/auth';
-import { HTTP_BAD_REQUEST, HTTP_UNAUTHORIZED } from '@/lib/constants/http-status';
+import {
+  HTTP_BAD_REQUEST,
+  HTTP_FOUND,
+  HTTP_NO_CONTENT,
+  HTTP_UNAUTHORIZED,
+} from '@/lib/constants/http-status';
 import { logger } from '@/lib/logger';
 import {
   CODE_TTL_SECONDS,
@@ -84,7 +89,7 @@ function buildErrorRedirect(
   if (state) {
     url.searchParams.set('state', state);
   }
-  return Response.redirect(url.toString(), 302);
+  return Response.redirect(url.toString(), HTTP_FOUND);
 }
 
 function buildSuccessRedirect(redirectUri: string, code: string, state?: string): Response {
@@ -93,7 +98,7 @@ function buildSuccessRedirect(redirectUri: string, code: string, state?: string)
   if (state) {
     url.searchParams.set('state', state);
   }
-  return Response.redirect(url.toString(), 302);
+  return Response.redirect(url.toString(), HTTP_FOUND);
 }
 
 /**
@@ -216,7 +221,7 @@ function buildConsentRedirect(params: ValidatedAuthorizeParams): Response {
   if (params.state) {
     consentUrl.searchParams.set('state', params.state);
   }
-  return Response.redirect(consentUrl.toString(), 302);
+  return Response.redirect(consentUrl.toString(), HTTP_FOUND);
 }
 
 /**
@@ -416,7 +421,7 @@ export async function POST(request: Request): Promise<Response> {
 
 export async function OPTIONS(): Promise<Response> {
   return new Response(null, {
-    status: 204,
+    status: HTTP_NO_CONTENT,
     headers: CORS_HEADERS,
   });
 }

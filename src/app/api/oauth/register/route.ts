@@ -6,7 +6,12 @@
 
 import { connectDB } from '@/db/connection';
 import { OAuthClient } from '@/db/models';
-import { HTTP_BAD_REQUEST, HTTP_CREATED, HTTP_UNAUTHORIZED } from '@/lib/constants/http-status';
+import {
+  HTTP_BAD_REQUEST,
+  HTTP_CREATED,
+  HTTP_NO_CONTENT,
+  HTTP_UNAUTHORIZED,
+} from '@/lib/constants/http-status';
 import { logger } from '@/lib/logger';
 import {
   type ClientRegistrationRequest,
@@ -83,7 +88,7 @@ function isValidRegistrationRequest(
 
 export async function OPTIONS(): Promise<Response> {
   return new Response(null, {
-    status: 204,
+    status: HTTP_NO_CONTENT,
     headers: CORS_HEADERS,
   });
 }
