@@ -1,4 +1,4 @@
-# PR-020: Observability - Vercel Logs First (No Grafana OTEL) - Technical Design
+# PR-020: Observability - Vercel Logs First (No OTEL) - Technical Design
 
 > **Status**: Draft
 > **Last Updated**: 2026-01-28
@@ -8,7 +8,7 @@
 
 ## Overview
 
-Adopt a Vercel-first logging strategy using existing Pino loggers and keep telemetry helpers as safe no-ops. Align documentation with runtime reality (no active Grafana OTEL), while preserving stable APIs (`withTrace`, `traceDbQuery`) for future reintroduction of tracing.
+Adopt a Vercel-first logging strategy using existing Pino loggers and keep telemetry helpers as safe no-ops. Align documentation with runtime reality (no active OTEL), while preserving stable APIs (`withTrace`, `traceDbQuery`) for future reintroduction of tracing. Remove Grafana-related infrastructure and CI wiring to avoid unused observability dependencies.
 
 ---
 
@@ -69,6 +69,12 @@ src/
 docs/
 ├── OBSERVABILITY.md        # update to Vercel-first logging
 └── ENVIRONMENT.md          # adjust runtime env vars if needed
+
+.github/
+└── workflows/terraform.yml  # remove Grafana TF_VAR wiring
+
+infra/terraform/
+└── (remove Grafana provider/module/outputs)
 ```
 
 ---

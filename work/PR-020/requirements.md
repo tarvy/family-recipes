@@ -1,4 +1,4 @@
-# PR-020: Observability - Vercel Logs First (No Grafana OTEL) - Requirements
+# PR-020: Observability - Vercel Logs First (No OTEL) - Requirements
 
 > **Status**: Draft
 > **PR Branch**: `feat/pr-020-observability-logs`
@@ -8,7 +8,7 @@
 
 ## Problem Statement
 
-Observability is inconsistent with the current runtime: OpenTelemetry/Grafana was attempted, then disabled due to ESM/CJS issues on Vercel. `src/lib/telemetry.ts` is a no-op, `src/instrumentation.ts` is missing, and docs still claim Grafana/OTLP is active. We need a Vercel-first logging strategy that works with the existing Pino logger and keeps telemetry helpers as safe no-ops so that API routes remain stable while we debug issues (e.g., magic link auth).
+Observability is inconsistent with the current runtime: OpenTelemetry/tracing was attempted, then disabled due to runtime compatibility issues. `src/lib/telemetry.ts` is a no-op, `src/instrumentation.ts` is missing, and docs still claim OTLP tracing is active. We need a Vercel-first logging strategy that works with the existing Pino logger and keeps telemetry helpers as safe no-ops so that API routes remain stable while we debug issues (e.g., magic link auth).
 
 ---
 
@@ -18,7 +18,7 @@ Observability is inconsistent with the current runtime: OpenTelemetry/Grafana wa
 
 **As a** developer
 **I want** consistent structured logs in Vercel
-**So that** I can debug auth and API issues without OTEL/Grafana
+**So that** I can debug auth and API issues without OTEL
 
 #### Acceptance Criteria
 
@@ -59,8 +59,8 @@ Feature: Telemetry API stability
 
 ## Out of Scope
 
-- Reintroducing Grafana OTLP exporters or OpenTelemetry SDK wiring
-- Configuring log drains to Grafana/Loki or other vendors
+- Reintroducing OTLP exporters or OpenTelemetry SDK wiring
+- Configuring log drains to external vendors
 - Adding distributed tracing or metrics
 - Fixing unrelated build/ESM issues outside observability scope
 
@@ -71,17 +71,17 @@ Feature: Telemetry API stability
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
 | Vercel logs show structured entries for API routes | 100% of key endpoints | Manual verification in Vercel logs |
-| Docs match runtime behavior | No claims of active Grafana/OTEL runtime tracing | Review `docs/OBSERVABILITY.md` |
+| Docs match runtime behavior | No claims of active OTEL runtime tracing | Review `docs/OBSERVABILITY.md` |
 | Telemetry helpers are safe no-ops | 0 runtime errors from tracing calls | Manual test on auth route |
 
 ---
 
 ## Open Questions
 
-- Should we remove Grafana runtime env vars from `.env.example` and `docs/ENVIRONMENT.md`, or mark them as deprecated-but-optional for future tracing?
+- Should we remove runtime tracing env vars from `.env.example` and `docs/ENVIRONMENT.md`, or mark them as deprecated-but-optional for future tracing?
 - Do we want a simple request-id correlation (e.g., `x-request-id`/`x-vercel-id`) added to logs in API routes?
 - Should `src/instrumentation.ts` be a minimal no-op to satisfy Next.js expectations?
-- If Vercel logs are sufficient, do we deprecate Grafana references in infra docs or keep them for future use?
+- If Vercel logs are sufficient, do we deprecate tracing references in infra docs or keep them for future use?
 
 ---
 
