@@ -13,7 +13,6 @@ This guide covers local development setup, workflow, and CI/CD processes.
 | Python | 3.9+ | Thai-lint (optional for local) |
 | Just | 1.0+ | Task runner (optional) |
 | Git | 2.x | Version control |
-| Terraform | 1.5+ | Infrastructure management (optional) |
 
 ---
 
@@ -151,44 +150,6 @@ If you need a repeatable task for agents, prefer adding an API endpoint over cus
 
 ---
 
-## Terraform Setup (Infrastructure)
-
-Infrastructure is managed in `infra/terraform/`. For local development, you only need `MONGODB_URI` in your `.env.local`. Terraform is primarily used for CI/CD.
-
-### Running Terraform locally
-
-```bash
-cd infra/terraform
-terraform init
-terraform plan -var-file=environments/dev.tfvars
-terraform apply -var-file=environments/dev.tfvars
-```
-
-Required environment variables for Terraform:
-- `TF_VAR_mongodb_atlas_public_key`
-- `TF_VAR_mongodb_atlas_private_key`
-- `TF_VAR_mongodb_atlas_org_id`
-- `TF_VAR_mongodb_db_password`
-- `TF_VAR_vercel_api_token`
-- `TF_VAR_vercel_project_id`
-
-### Terraform Cloud Remote State
-
-Terraform uses Terraform Cloud for remote state and locking.
-
-1. Create or select workspace: `tarvy-terraform-org` → `family-recipes`
-2. Generate a Terraform Cloud user API token
-3. Export locally:
-   ```bash
-   export TF_TOKEN_app_terraform_io="your-terraform-cloud-token"
-   ```
-4. Add the token as a GitHub Secret: `TERRAFORM_CLOUD_TOKEN`
-
-**Note:** The CI plan uses `environments/prod.tfvars` to keep a single workspace
-and avoid duplicate resource errors.
-
----
-
 ## Development Workflow
 
 ### 1. Create a feature branch
@@ -253,7 +214,6 @@ The following checks run automatically:
 | Lint | Biome | Code style and formatting |
 | Type Check | TypeScript | Type safety |
 | Thai-lint | Thai-lint | AI code quality patterns |
-| Terraform Plan | Terraform | Infrastructure change preview (if infra/ changed) |
 
 A preview deployment is created on Vercel.
 
@@ -275,7 +235,6 @@ Expected response:
 
 - Production deployment triggers automatically
 - Deploys to Vercel production environment
-- Terraform apply runs for infrastructure changes
 
 ### Required GitHub Secrets
 
@@ -286,11 +245,6 @@ For deployments to work, these secrets must be configured:
 | `VERCEL_TOKEN` | Vercel CLI authentication |
 | `VERCEL_ORG_ID` | Vercel organization ID |
 | `VERCEL_PROJECT_ID` | Vercel project ID |
-| `TERRAFORM_CLOUD_TOKEN` | Terraform Cloud API token for remote state |
-| `MONGODB_ATLAS_PUBLIC_KEY` | Atlas API public key |
-| `MONGODB_ATLAS_PRIVATE_KEY` | Atlas API private key |
-| `MONGODB_ATLAS_ORG_ID` | Atlas organization ID |
-| `MONGODB_DB_PASSWORD` | Database password |
 
 ---
 

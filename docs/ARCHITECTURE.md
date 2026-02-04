@@ -112,6 +112,9 @@ recipes
 ├── difficulty
 ├── cuisine
 ├── course
+├── author
+├── diet []
+├── locale
 ├── ingredients [] (embedded)
 │   ├── name
 │   ├── quantity
@@ -127,11 +130,15 @@ recipes
 ├── tags []
 ├── primaryPhotoUrl
 ├── photoUrls []
+├── rawCooklang
+├── category
+├── source (mcp | api | sync | import)
 ├── createdAt
 ├── updatedAt
 └── lastSyncedAt
 
 Text index on: title, description, ingredients.name, tags
+Indexes on: category, cuisine, course, tags, ingredients.name
 ```
 
 ### Shopping Lists (Embedded Items Pattern)
@@ -210,17 +217,18 @@ recipe_notes
 
 ## MCP Tools
 
-| Tool | Description |
-|------|-------------|
-| `recipe_search` | Search recipes by query, ingredients, cuisine, tags |
-| `recipe_get` | Get full recipe by slug |
-| `recipe_create` | Create new recipe |
-| `recipe_edit` | Edit existing recipe |
-| `recipe_list` | List all recipes |
-| `shopping_list_create` | Create shopping list from recipes |
-| `shopping_list_get` | Get current shopping list |
-| `ingredient_lookup` | Find recipes by ingredient |
-| `meal_plan_suggest` | Suggest meals |
+| Tool | Description | Scope |
+|------|-------------|-------|
+| `recipe_list` | List recipes with optional category filter | recipes:read |
+| `recipe_get` | Get full recipe by slug | recipes:read |
+| `recipe_search` | Search recipes by query, cuisine, course, tags | recipes:read |
+| `recipe_categories` | List valid recipe categories | recipes:read |
+| `ingredient_lookup` | Find recipes containing an ingredient | recipes:read |
+| `recipe_create` | Create new recipe from Cooklang content | recipes:write |
+| `recipe_update` | Update existing recipe | recipes:write |
+| `recipe_delete` | Delete recipe by slug | recipes:write |
+| `shopping_list_create` | Create shopping list from recipe slugs | shopping:write |
+| `shopping_list_get` | Get shopping list by ID | shopping:read |
 
 ## Security
 

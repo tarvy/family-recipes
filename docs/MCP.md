@@ -60,7 +60,8 @@ OAuth metadata is available at:
 
 | Scope | Description | Tools |
 |-------|-------------|-------|
-| `recipes:read` | Read recipes | `recipe_list`, `recipe_get`, `recipe_search`, `ingredient_lookup` |
+| `recipes:read` | Read recipes | `recipe_list`, `recipe_get`, `recipe_search`, `recipe_categories`, `ingredient_lookup` |
+| `recipes:write` | Create and modify recipes | `recipe_create`, `recipe_update`, `recipe_delete` |
 | `shopping:read` | View shopping lists | `shopping_list_get` |
 | `shopping:write` | Create shopping lists | `shopping_list_create` |
 
@@ -75,14 +76,23 @@ OAuth metadata is available at:
 
 ## Tools
 
-### Recipes
+### Recipes (Read)
 
 | Tool | Scope | Description | Inputs |
 |------|-------|-------------|--------|
 | `recipe_list` | `recipes:read` | List recipe previews | `category?`, `limit?` |
 | `recipe_get` | `recipes:read` | Fetch full recipe by slug | `slug` |
 | `recipe_search` | `recipes:read` | Search recipe metadata | `query`, `cuisine?`, `course?`, `tags?`, `limit?`, `skip?` |
+| `recipe_categories` | `recipes:read` | List valid recipe categories | (none) |
 | `ingredient_lookup` | `recipes:read` | Find recipes by ingredient | `ingredient` |
+
+### Recipes (Write)
+
+| Tool | Scope | Description | Inputs |
+|------|-------|-------------|--------|
+| `recipe_create` | `recipes:write` | Create recipe from Cooklang | `content`, `category` |
+| `recipe_update` | `recipes:write` | Update existing recipe | `slug`, `content`, `category` |
+| `recipe_delete` | `recipes:write` | Delete recipe by slug | `slug` |
 
 ### Shopping Lists
 

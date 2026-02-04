@@ -65,11 +65,8 @@ family-recipes/
 │   └── mcp/              # MCP server implementation
 ├── docs/                 # Permanent documentation
 ├── work/                 # PR working documents (temporary)
-│   ├── TEMPLATES/        # Document templates
-│   └── PR-XXX/           # Active PR docs
-├── scripts/              # Utility scripts
-├── e2e/                  # Playwright E2E tests
-└── tests/                # Unit tests
+│   └── TEMPLATES/        # Document templates
+└── scripts/              # Utility scripts
 ```
 
 ## Documentation
@@ -83,7 +80,6 @@ family-recipes/
 - [Authentication](docs/AUTH.md)
 - [MCP Server](docs/MCP.md)
 - [Cooklang Format](docs/COOKLANG.md)
-- [Testing](docs/TESTING.md)
 
 ## License
 
