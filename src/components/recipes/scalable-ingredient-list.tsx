@@ -114,93 +114,53 @@ export function ScalableIngredientList({
 
   const scaledServings = defaultServings ? Math.round(defaultServings * multiplier) : null;
 
+  const controls = (
+    <div className="flex items-center gap-3">
+      {defaultServings && scaledServings && (
+        <span className="whitespace-nowrap text-sm text-muted-foreground">
+          {multiplier === DEFAULT_MULTIPLIER
+            ? `${defaultServings} serving${defaultServings !== 1 ? 's' : ''}`
+            : `${defaultServings} → ${scaledServings} serving${scaledServings !== 1 ? 's' : ''}`}
+        </span>
+      )}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={handleDecrement}
+          disabled={multiplier <= MIN_MULTIPLIER}
+          className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground hover:bg-pink-light disabled:opacity-50 disabled:hover:bg-transparent"
+          aria-label="Decrease multiplier"
+        >
+          <MinusIcon className="h-3 w-3" />
+        </button>
+        <span className="w-10 text-center text-sm font-medium text-foreground">{multiplier}×</span>
+        <button
+          type="button"
+          onClick={handleIncrement}
+          disabled={multiplier >= MAX_MULTIPLIER}
+          className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground hover:bg-pink-light disabled:opacity-50 disabled:hover:bg-transparent"
+          aria-label="Increase multiplier"
+        >
+          <PlusIcon className="h-3 w-3" />
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <div>
-      {/* Mobile: controls on top, right-aligned */}
-      <div className="flex items-center justify-end gap-3 md:hidden">
-        {defaultServings && scaledServings && (
-          <span className="text-sm text-muted-foreground">
-            {multiplier === DEFAULT_MULTIPLIER
-              ? `${defaultServings} serving${defaultServings !== 1 ? 's' : ''}`
-              : `${defaultServings} → ${scaledServings} serving${scaledServings !== 1 ? 's' : ''}`}
-          </span>
-        )}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleDecrement}
-            disabled={multiplier <= MIN_MULTIPLIER}
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground hover:bg-pink-light disabled:opacity-50 disabled:hover:bg-transparent"
-            aria-label="Decrease multiplier"
-          >
-            <MinusIcon className="h-3 w-3" />
-          </button>
-          <span className="w-10 text-center text-sm font-medium text-foreground">
-            {multiplier}×
-          </span>
-          <button
-            type="button"
-            onClick={handleIncrement}
-            disabled={multiplier >= MAX_MULTIPLIER}
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground hover:bg-pink-light disabled:opacity-50 disabled:hover:bg-transparent"
-            aria-label="Increase multiplier"
-          >
-            <PlusIcon className="h-3 w-3" />
-          </button>
-        </div>
-      </div>
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* Controls on top, right-aligned - doesn't shrink */}
+      <div className="flex shrink-0 items-center justify-end gap-3">{controls}</div>
 
-      {/* Desktop: two columns — ingredients left, controls right */}
-      <div className="mt-3 flex gap-6 md:mt-0">
-        {/* Ingredient list */}
-        <ul className="min-w-0 flex-1 space-y-2">
-          {ingredients.map((ingredient) => (
-            <li key={createIngredientKey(ingredient)} className="flex items-start gap-3">
-              <span
-                className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-pink"
-                aria-hidden="true"
-              />
-              <span className="text-foreground">{formatIngredient(ingredient, multiplier)}</span>
-            </li>
-          ))}
-        </ul>
-
-        {/* Desktop controls — right column, top-aligned */}
-        <div className="hidden shrink-0 items-start md:flex">
-          <div className="flex items-center gap-3">
-            {defaultServings && scaledServings && (
-              <span className="whitespace-nowrap text-sm text-muted-foreground">
-                {multiplier === DEFAULT_MULTIPLIER
-                  ? `${defaultServings} serving${defaultServings !== 1 ? 's' : ''}`
-                  : `${defaultServings} → ${scaledServings} serving${scaledServings !== 1 ? 's' : ''}`}
-              </span>
-            )}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleDecrement}
-                disabled={multiplier <= MIN_MULTIPLIER}
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground hover:bg-pink-light disabled:opacity-50 disabled:hover:bg-transparent"
-                aria-label="Decrease multiplier"
-              >
-                <MinusIcon className="h-3 w-3" />
-              </button>
-              <span className="w-10 text-center text-sm font-medium text-foreground">
-                {multiplier}×
-              </span>
-              <button
-                type="button"
-                onClick={handleIncrement}
-                disabled={multiplier >= MAX_MULTIPLIER}
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-foreground hover:bg-pink-light disabled:opacity-50 disabled:hover:bg-transparent"
-                aria-label="Increase multiplier"
-              >
-                <PlusIcon className="h-3 w-3" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Ingredient list - scrolls when needed */}
+      <ul className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+        {ingredients.map((ingredient) => (
+          <li key={createIngredientKey(ingredient)} className="flex items-start gap-3">
+            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-pink" aria-hidden="true" />
+            <span className="text-foreground">{formatIngredient(ingredient, multiplier)}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
