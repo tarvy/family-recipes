@@ -8,7 +8,7 @@
 import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { RecipeEditorForm } from '@/components/recipes/recipe-editor-form';
-import { getRawCooklangContent } from '@/lib/recipes/loader';
+import { getRawCooklangContent } from '@/lib/recipes/repository';
 
 interface EditRecipePageProps {
   params: Promise<{ slug: string }>;

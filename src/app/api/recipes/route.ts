@@ -2,7 +2,7 @@
  * POST /api/recipes
  *
  * Create a new recipe from raw Cooklang content.
- * Writes the content directly to a .cook file on the filesystem.
+ * Saves directly to MongoDB (source of truth).
  *
  * Auth: Session required.
  */
@@ -15,9 +15,9 @@ import {
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
-import { extractMetadataFromContent, generateSlugFromTitle } from '@/lib/cooklang/metadata';
+import { extractMetadataFromContent } from '@/lib/cooklang/metadata';
 import { logger, withRequestContext } from '@/lib/logger';
-import { recipeFileExists, writeRawCooklangContent } from '@/lib/recipes/writer';
+import { createRecipe as createRecipeInDb } from '@/lib/recipes/repository';
 import { withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
@@ -102,34 +102,26 @@ async function createRecipe(
   }
 
   const { content, category } = validation.data;
-
-  // Extract title from content to generate slug
-  const metadata = extractMetadataFromContent(content);
-  const slug = generateSlugFromTitle(metadata.title);
-
-  span.setAttribute('slug', slug);
   span.setAttribute('category', category);
 
-  // Check if recipe already exists
-  const exists = await recipeFileExists(slug, category);
-  if (exists) {
-    span.setAttribute('error', 'conflict');
-    return Response.json(
-      { error: 'A recipe with this title already exists in this category' },
-      { status: HTTP_CONFLICT },
-    );
+  // Create recipe in MongoDB (source of truth)
+  const result = await createRecipeInDb(content, category, 'api');
+
+  if (!result.success) {
+    const status = result.code === 'DUPLICATE_SLUG' ? HTTP_CONFLICT : HTTP_BAD_REQUEST;
+    span.setAttribute('error', result.code ?? 'create_failed');
+    return Response.json({ error: result.error }, { status });
   }
 
-  // Write raw content directly to file
-  await writeRawCooklangContent(content, category, slug);
+  span.setAttribute('slug', result.slug);
 
-  logger.recipes.info('Recipe created (Cooklang-first)', {
-    slug,
+  logger.recipes.info('Recipe created via API', {
+    slug: result.slug,
     category,
     userId,
   });
 
-  return Response.json({ success: true, slug });
+  return Response.json({ success: true, slug: result.slug });
 }
 
 export async function POST(request: Request): Promise<Response> {

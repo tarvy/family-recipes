@@ -337,3 +337,16 @@ PR-034:
       path: src/components/recipes/recipe-content-layout.tsx
     # Modifies existing file - adds md:/lg: breakpoints alongside orientation query
     # Also modifies: src/app/(main)/recipes/[slug]/page.tsx (container max-width)
+
+PR-035:
+  name: "MongoDB-Primary Recipe API"
+  checks:
+    - type: file
+      path: src/app/api/recipes/route.ts
+    - type: file
+      path: src/app/api/recipes/[slug]/route.ts
+    - type: file
+      path: src/lib/recipes/repository.ts
+    # Updates API routes to use repository.ts instead of filesystem writer
+    # Recipe detail page and edit page also read from MongoDB
+    # Enables recipe editing in production (Vercel)

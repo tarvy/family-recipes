@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { RecipeDetail } from '@/lib/recipes/loader';
+import type { RecipeDetail } from '@/lib/recipes/repository';
 import { InteractiveStepList } from './interactive-step-list';
 import { RecipeContentLayout } from './recipe-content-layout';
 import { ScalableIngredientList } from './scalable-ingredient-list';
