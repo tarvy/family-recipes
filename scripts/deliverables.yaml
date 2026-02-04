@@ -1,0 +1,338 @@
+# Deliverables Configuration for Progress Tracking
+#
+# Add new PRs here as work items are created.
+# The progress script reads this file to check completion status.
+#
+# Format:
+#   PR-XXX:
+#     name: "Human-readable name"
+#     checks:
+#       - type: file
+#         path: "relative/path/to/file.ts"
+#       - type: dir
+#         path: "relative/path/to/directory"
+#
+# Status is determined automatically:
+#   - complete: all checks pass
+#   - in_progress: some checks pass
+#   - not_started: no checks pass
+
+# =============================================================================
+# PHASE 1: Foundation (PR-001 to PR-006)
+# =============================================================================
+
+PR-001:
+  name: "Project Scaffold"
+  checks:
+    - type: file
+      path: package.json
+    - type: file
+      path: tsconfig.json
+    - type: file
+      path: next.config.ts
+    - type: file
+      path: README.md
+    - type: file
+      path: docs/ARCHITECTURE.md
+    - type: dir
+      path: src/app
+
+PR-002:
+  name: "Environment Setup"
+  checks:
+    - type: file
+      path: .env.example
+    - type: file
+      path: docs/ENVIRONMENT.md
+    - type: file
+      path: .claude/settings.local.json
+    - type: file
+      path: scripts/progress.py
+
+PR-003:
+  name: "Linting Setup"
+  checks:
+    - type: file
+      path: biome.json
+    - type: file
+      path: .husky/pre-commit
+    - type: file
+      path: .thailint.yaml
+    - type: file
+      path: docs/LINTING.md
+
+PR-004:
+  name: "CI/CD Pipeline"
+  checks:
+    - type: file
+      path: .github/workflows/ci.yml
+    - type: file
+      path: .github/workflows/deploy.yml
+    - type: file
+      path: .github/PULL_REQUEST_TEMPLATE.md
+    - type: file
+      path: docs/DEVELOPMENT.md
+
+PR-005:
+  name: "Observability"
+  checks:
+    - type: file
+      path: src/instrumentation.ts
+    - type: file
+      path: src/lib/telemetry.ts
+    - type: file
+      path: src/lib/logger.ts
+    - type: file
+      path: docs/OBSERVABILITY.md
+
+PR-006:
+  name: "Database Schema"
+  checks:
+    - type: file
+      path: src/db/connection.ts
+    - type: file
+      path: src/db/models/index.ts
+    - type: file
+      path: src/db/models/user.model.ts
+    - type: file
+      path: src/db/models/recipe.model.ts
+
+# =============================================================================
+# PHASE 2: Authentication (PR-007 to PR-008)
+# =============================================================================
+
+PR-007:
+  name: "Auth - Magic Links"
+  checks:
+    - type: file
+      path: src/lib/auth/magic-link.ts
+    - type: file
+      path: src/lib/email/send.ts
+    - type: file
+      path: src/app/api/auth/verify/route.ts
+    - type: file
+      path: src/lib/auth/session.ts
+    - type: file
+      path: src/app/(auth)/login/page.tsx
+    - type: file
+      path: docs/AUTH.md
+
+PR-008:
+  name: "Auth - Passkeys"
+  checks:
+    - type: file
+      path: src/lib/auth/passkey.ts
+    - type: file
+      path: src/app/api/auth/passkey/register/route.ts
+    - type: file
+      path: src/app/api/auth/passkey/authenticate/route.ts
+    - type: file
+      path: src/app/(main)/settings/page.tsx
+
+# =============================================================================
+# PHASE 3: Cooklang & Recipes (PR-009 to PR-013)
+# =============================================================================
+
+PR-009:
+  name: "Cooklang Integration"
+  checks:
+    - type: file
+      path: src/lib/cooklang/parser.ts
+    - type: file
+      path: src/lib/cooklang/serializer.ts
+    - type: file
+      path: src/lib/git-recipes/sync.ts
+    - type: file
+      path: src/app/api/recipes/sync/route.ts
+    - type: file
+      path: docs/COOKLANG.md
+
+PR-010:
+  name: "Recipe Migration"
+  checks:
+    - type: dir
+      path: recipes/entrees
+    - type: dir
+      path: recipes/desserts
+    - type: dir
+      path: recipes/soups
+    - type: dir
+      path: recipes/sides
+    - type: dir
+      path: recipes/salads
+    - type: dir
+      path: recipes/breakfast
+
+PR-011:
+  name: "Recipe UI - List & Search"
+  checks:
+    - type: file
+      path: src/components/recipes/recipe-card.tsx
+    - type: file
+      path: src/components/recipes/recipe-grid.tsx
+    - type: file
+      path: src/components/recipes/recipe-filters.tsx
+    - type: file
+      path: src/app/(main)/recipes/page.tsx
+
+PR-012:
+  name: "Recipe UI - Detail View"
+  checks:
+    - type: file
+      path: src/app/(main)/recipes/[slug]/page.tsx
+    - type: file
+      path: src/components/recipes/ingredient-list.tsx
+    - type: file
+      path: src/components/recipes/step-list.tsx
+
+PR-013:
+  name: "Recipe UI - Create/Edit"
+  checks:
+    - type: file
+      path: src/app/(main)/recipes/new/page.tsx
+    - type: file
+      path: src/components/recipes/recipe-form.tsx
+    - type: file
+      path: src/components/recipes/cooklang-editor.tsx
+    # Photo upload descoped - will be added in future PR if needed
+
+# =============================================================================
+# PHASE 4: Shopping & MCP (PR-014 to PR-015)
+# =============================================================================
+
+PR-014:
+  name: "Shopping Lists"
+  checks:
+    - type: file
+      path: src/app/(main)/shopping-list/page.tsx
+    - type: file
+      path: src/lib/shopping/aggregator.ts
+    - type: file
+      path: src/lib/shopping/categories.ts
+    - type: file
+      path: src/components/shopping/shopping-list.tsx
+
+PR-015:
+  name: "MCP Server"
+  checks:
+    - type: file
+      path: src/mcp/server.ts
+    - type: file
+      path: src/mcp/tools/recipes.ts
+    - type: file
+      path: src/mcp/tools/shopping.ts
+    - type: file
+      path: src/app/mcp/route.ts
+    - type: file
+      path: docs/MCP.md
+
+# =============================================================================
+# PHASE 5: Polish & Infrastructure (PR-016 to PR-019)
+# =============================================================================
+
+PR-016:
+  name: "PWA & Mobile Polish"
+  checks:
+    - type: file
+      path: public/manifest.json
+    - type: file
+      path: public/sw.js
+
+PR-017:
+  name: "Testing Suite"
+  checks:
+    - type: file
+      path: vitest.config.ts
+    - type: file
+      path: playwright.config.ts
+    - type: file
+      path: tests/setup.ts
+    - type: file
+      path: docs/TESTING.md
+
+PR-018:
+  name: "Terraform Infrastructure"
+  checks:
+    - type: file
+      path: infra/terraform/main.tf
+    - type: file
+      path: infra/terraform/modules/mongodb-atlas/main.tf
+    - type: file
+      path: infra/terraform/modules/vercel/main.tf
+    - type: file
+      path: .github/workflows/terraform.yml
+
+PR-019:
+  name: "Documentation Updates"
+  checks:
+    - type: file
+      path: docs/ARCHITECTURE.md
+    - type: file
+      path: docs/DEVELOPMENT.md
+    - type: file
+      path: docs/ENVIRONMENT.md
+
+# =============================================================================
+# PHASE 6: Cooklang Enhancements (PR-026 to PR-027)
+# =============================================================================
+
+PR-026:
+  name: "Cooklang Metadata Compatibility"
+  checks:
+    - type: file
+      path: src/lib/cooklang/constants.ts
+    # Deliverables tracked via work/PR-026/progress.md
+
+PR-027:
+  name: "Cooklang Metadata Consolidation"
+  checks:
+    - type: file
+      path: src/lib/cooklang/parser.ts
+    - type: file
+      path: src/lib/cooklang/metadata.ts
+    # Refactoring PR - key files should be updated
+
+# =============================================================================
+# PHASE 7: MCP Write Tools (PR-028 to PR-031)
+# =============================================================================
+
+PR-028:
+  name: "Add recipes:write OAuth Scope"
+  checks:
+    - type: file
+      path: src/lib/oauth/types.ts
+    # OAuth scope addition - scope defined in OAUTH_SCOPES
+
+PR-029:
+  name: "Add recipe_create MCP Tool"
+  checks:
+    - type: file
+      path: src/mcp/tools/recipes.ts
+    # Tool addition to existing file
+
+PR-030:
+  name: "Add recipe_update MCP Tool"
+  checks:
+    - type: file
+      path: src/mcp/tools/recipes.ts
+    # Tool addition to existing file
+
+PR-031:
+  name: "Add recipe_categories MCP Tool"
+  checks:
+    - type: file
+      path: src/mcp/tools/recipes.ts
+    # Tool addition to existing file
+
+# =============================================================================
+# PHASE 8: Architecture Evolution (PR-032+)
+# =============================================================================
+
+PR-032:
+  name: "MongoDB-Primary Architecture"
+  checks:
+    - type: file
+      path: src/db/models/recipe.model.ts
+    - type: file
+      path: src/lib/recipes/repository.ts
+    # Major refactor - deliverables defined in work/PR-032/design.md
