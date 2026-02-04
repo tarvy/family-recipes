@@ -59,6 +59,7 @@ export const TOOL_SCOPES: Record<string, OAuthScope[]> = {
   recipe_categories: ['recipes:read'],
   recipe_create: ['recipes:write'],
   recipe_update: ['recipes:write'],
+  recipe_delete: ['recipes:write'],
   ingredient_lookup: ['recipes:read'],
   shopping_list_get: ['shopping:read'],
   shopping_list_create: ['shopping:write'],

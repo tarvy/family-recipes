@@ -116,6 +116,28 @@ const recipeSchema = new Schema<IRecipeDocument>(
     lastSyncedAt: {
       type: Date,
     },
+    // Extended metadata fields (PR-026)
+    author: {
+      type: String,
+    },
+    diet: {
+      type: [String],
+      default: undefined,
+    },
+    locale: {
+      type: String,
+    },
+    // MongoDB-primary architecture (PR-032)
+    rawCooklang: {
+      type: String,
+    },
+    category: {
+      type: String,
+    },
+    source: {
+      type: String,
+      enum: ['mcp', 'api', 'sync', 'import'],
+    },
   },
   {
     timestamps: true,
@@ -126,6 +148,7 @@ const recipeSchema = new Schema<IRecipeDocument>(
 recipeSchema.index({ tags: 1 });
 recipeSchema.index({ cuisine: 1 });
 recipeSchema.index({ course: 1 });
+recipeSchema.index({ category: 1 });
 recipeSchema.index({ 'ingredients.name': 1 });
 
 // Text search weights - higher numbers = more relevance in search results

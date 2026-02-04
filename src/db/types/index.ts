@@ -96,6 +96,9 @@ export interface IStep {
   timers?: { duration: number; unit: string }[];
 }
 
+/** Source of recipe data */
+export type RecipeSource = 'mcp' | 'api' | 'sync' | 'import';
+
 export interface IRecipe {
   filePath: string;
   gitCommitHash: string;
@@ -122,6 +125,13 @@ export interface IRecipe {
   author?: string;
   diet?: string[];
   locale?: string;
+  // MongoDB-primary architecture (PR-032)
+  /** Raw Cooklang source content for serialization and editing */
+  rawCooklang?: string;
+  /** Recipe category (e.g., "entrees", "desserts") */
+  category?: string;
+  /** Source of this recipe data */
+  source?: RecipeSource;
 }
 
 export interface IRecipeDocument extends IRecipe, Document {}
