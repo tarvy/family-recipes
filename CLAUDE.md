@@ -1,4 +1,8 @@
-# STOP
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Read AGENTS.md
 
 You MUST read `AGENTS.md` before taking any action in this repository.
 

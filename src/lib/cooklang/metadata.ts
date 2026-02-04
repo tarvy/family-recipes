@@ -5,11 +5,7 @@
  * Used by the Cooklang-first editor to sync metadata fields with content.
  */
 
-import { DECIMAL_RADIX, METADATA_KEYS, TIME_UNIT_TO_MINUTES } from './constants';
-
-/** Regex match group indices for time parsing */
-const TIME_VALUE_GROUP = 1;
-const TIME_UNIT_GROUP = 2;
+import { DECIMAL_RADIX, METADATA_KEYS, normalizeMetadataKey, parseTimeString } from './constants';
 
 /** Regex match group indices for metadata line parsing */
 const METADATA_KEY_GROUP = 1;
@@ -28,6 +24,10 @@ export interface CooklangMetadata {
   course?: string;
   source?: string;
   tags?: string[];
+  // Extended metadata fields
+  author?: string;
+  diet?: string[];
+  locale?: string;
 }
 
 /** Result of splitting content into metadata and body */
@@ -38,22 +38,6 @@ export interface ContentParts {
 
 /** Regex to match metadata lines: >> key: value */
 const METADATA_LINE_REGEX = /^>>\s*([^:]+):\s*(.*)$/;
-
-/**
- * Parse a time string like "30 minutes" or "1 hour" into minutes
- */
-function parseTimeToMinutes(timeStr: string): number | undefined {
-  const match = timeStr.match(/^(\d+(?:\.\d+)?)\s*(\w+)?$/);
-  if (!match?.[TIME_VALUE_GROUP]) {
-    return undefined;
-  }
-
-  const value = Number.parseFloat(match[TIME_VALUE_GROUP]);
-  const unit = match[TIME_UNIT_GROUP]?.toLowerCase() ?? 'minutes';
-  const multiplier = TIME_UNIT_TO_MINUTES[unit] ?? 1;
-
-  return Math.round(value * multiplier);
-}
 
 /**
  * Extract metadata from a single line
@@ -70,9 +54,29 @@ function parseMetadataLine(line: string): { key: string; value: string } | null 
 }
 
 /**
+ * Parse servings from various formats
+ * "4" → 4, "4 servings" → 4, "12 cookies" → 12
+ */
+function parseServings(value: string): number | undefined {
+  const match = value.match(/^(\d+)/);
+  return match?.[1] ? Number.parseInt(match[1], DECIMAL_RADIX) : undefined;
+}
+
+/**
+ * Parse comma-separated list (for tags, diet)
+ */
+function parseCommaSeparatedList(value: string): string[] {
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+/**
  * Extract all metadata from Cooklang content
  *
  * Parses >> key: value lines and returns structured metadata object.
+ * Handles aliases (serves → servings, time → total time, etc.)
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Parser switch-case complexity is inherent
 export function extractMetadataFromContent(content: string): CooklangMetadata {
@@ -85,9 +89,11 @@ export function extractMetadataFromContent(content: string): CooklangMetadata {
       continue;
     }
 
-    const { key, value } = parsed;
+    // Normalize key to handle aliases (serves → servings, time → total time, etc.)
+    const normalizedKey = normalizeMetadataKey(parsed.key);
+    const { value } = parsed;
 
-    switch (key) {
+    switch (normalizedKey) {
       case METADATA_KEYS.TITLE:
         metadata.title = value;
         break;
@@ -95,28 +101,28 @@ export function extractMetadataFromContent(content: string): CooklangMetadata {
         metadata.description = value;
         break;
       case METADATA_KEYS.SERVINGS: {
-        const servings = Number.parseInt(value, DECIMAL_RADIX);
-        if (!Number.isNaN(servings)) {
+        const servings = parseServings(value);
+        if (servings !== undefined) {
           metadata.servings = servings;
         }
         break;
       }
       case METADATA_KEYS.PREP_TIME: {
-        const prepTime = parseTimeToMinutes(value);
+        const prepTime = parseTimeString(value);
         if (prepTime !== undefined) {
           metadata.prepTime = prepTime;
         }
         break;
       }
       case METADATA_KEYS.COOK_TIME: {
-        const cookTime = parseTimeToMinutes(value);
+        const cookTime = parseTimeString(value);
         if (cookTime !== undefined) {
           metadata.cookTime = cookTime;
         }
         break;
       }
       case METADATA_KEYS.TOTAL_TIME: {
-        const totalTime = parseTimeToMinutes(value);
+        const totalTime = parseTimeString(value);
         if (totalTime !== undefined) {
           metadata.totalTime = totalTime;
         }
@@ -135,10 +141,17 @@ export function extractMetadataFromContent(content: string): CooklangMetadata {
         metadata.source = value;
         break;
       case METADATA_KEYS.TAGS:
-        metadata.tags = value
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean);
+        metadata.tags = parseCommaSeparatedList(value);
+        break;
+      // Extended metadata fields
+      case 'author':
+        metadata.author = value;
+        break;
+      case 'diet':
+        metadata.diet = parseCommaSeparatedList(value);
+        break;
+      case 'locale':
+        metadata.locale = value;
         break;
     }
   }

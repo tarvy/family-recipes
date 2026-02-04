@@ -41,6 +41,39 @@ Metadata uses the `>> key: value` syntax at the top of the file:
 | `course` | Meal course | `>> course: dinner` |
 | `tags` | Comma-separated tags | `>> tags: quick, healthy, vegetarian` |
 | `source` | Recipe source URL | `>> source: https://example.com/recipe` |
+| `author` | Recipe author | `>> author: Grandma Rose` |
+| `diet` | Dietary restrictions (comma-separated) | `>> diet: gluten-free, vegetarian` |
+| `locale` | Language/locale | `>> locale: en_US` |
+
+### Metadata Aliases
+
+For compatibility with the Cooklang specification and recipes from external sources, the following key aliases are supported:
+
+| Canonical Key | Aliases | Notes |
+|---------------|---------|-------|
+| `servings` | `serves`, `yield` | Extracts first number (e.g., "12 cookies" → 12) |
+| `total time` | `time`, `duration`, `time required` | |
+| `description` | `introduction` | |
+
+### Time Format
+
+Time values support both verbose and compact formats:
+
+**Verbose format** (traditional):
+```cooklang
+>> prep time: 30 minutes
+>> cook time: 1 hour
+>> total time: 1.5 hours
+```
+
+**Compact format** (Cooklang specification):
+```cooklang
+>> prep time: 30m
+>> cook time: 1h
+>> total time: 1h30m
+```
+
+Supported units: `h` (hours), `m` (minutes), `hours`, `hour`, `hr`, `hrs`, `minutes`, `minute`, `min`, `mins`
 
 ### Ingredients
 

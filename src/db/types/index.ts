@@ -118,6 +118,10 @@ export interface IRecipe {
   createdAt: Date;
   updatedAt: Date;
   lastSyncedAt?: Date;
+  // Extended metadata fields (PR-026)
+  author?: string;
+  diet?: string[];
+  locale?: string;
 }
 
 export interface IRecipeDocument extends IRecipe, Document {}
