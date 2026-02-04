@@ -21,7 +21,7 @@ import {
 import type { ICookware, IIngredient, IRecipe, IStep } from '@/db/types';
 import { logger } from '@/lib/logger';
 import { withTrace } from '@/lib/telemetry';
-import { DECIMAL_RADIX, METADATA_KEYS, TIME_UNIT_TO_MINUTES } from './constants';
+import { DECIMAL_RADIX, METADATA_KEYS, normalizeMetadataKey, parseTimeString } from './constants';
 
 export interface ParseContext {
   /** Path to the .cook file relative to recipes directory */
@@ -64,26 +64,6 @@ function generateSlug(input: string): string {
 function titleFromFilePath(filePath: string): string {
   const filename = filePath.split('/').pop() ?? filePath;
   return filename.replace(/\.cook$/, '').replace(/-/g, ' ');
-}
-
-/** Regex capture group indices for time parsing: (value)(unit) */
-const TIME_REGEX_VALUE_GROUP = 1;
-const TIME_REGEX_UNIT_GROUP = 2;
-
-/**
- * Parse a time string like "30 minutes" or "1 hour" to minutes
- */
-function parseTimeToMinutes(timeStr: string): number | undefined {
-  const match = timeStr.match(/^(\d+(?:\.\d+)?)\s*(\w+)?$/);
-  if (!match?.[TIME_REGEX_VALUE_GROUP]) {
-    return undefined;
-  }
-
-  const value = parseFloat(match[TIME_REGEX_VALUE_GROUP]);
-  const unit = (match[TIME_REGEX_UNIT_GROUP] ?? 'minutes').toLowerCase();
-  const multiplier = TIME_UNIT_TO_MINUTES[unit] ?? 1;
-
-  return Math.round(value * multiplier);
 }
 
 /**
@@ -223,6 +203,26 @@ function deduplicateCookware(cookware: ICookware[]): ICookware[] {
 type Metadata = Record<string, string>;
 
 /**
+ * Normalize metadata keys to handle aliases
+ *
+ * Transforms raw metadata from cooklang-ts by normalizing keys:
+ * - 'serves' → 'servings'
+ * - 'time' → 'total time'
+ * - 'introduction' → 'description'
+ */
+function normalizeMetadata(rawMetadata: Metadata): Metadata {
+  const normalized: Metadata = {};
+  for (const [key, value] of Object.entries(rawMetadata)) {
+    const normalizedKey = normalizeMetadataKey(key);
+    // First occurrence wins (original key takes priority)
+    if (!(normalizedKey in normalized)) {
+      normalized[normalizedKey] = value;
+    }
+  }
+  return normalized;
+}
+
+/**
  * Apply string metadata fields to a recipe
  */
 function applyStringFields(recipe: IRecipe, metadata: Metadata): void {
@@ -253,7 +253,7 @@ function applyStringFields(recipe: IRecipe, metadata: Metadata): void {
 function applyTimeFields(recipe: IRecipe, metadata: Metadata): void {
   const prepTimeStr = metadata[METADATA_KEYS.PREP_TIME];
   if (prepTimeStr) {
-    const prepTime = parseTimeToMinutes(prepTimeStr);
+    const prepTime = parseTimeString(prepTimeStr);
     if (prepTime !== undefined) {
       recipe.prepTime = prepTime;
     }
@@ -261,7 +261,7 @@ function applyTimeFields(recipe: IRecipe, metadata: Metadata): void {
 
   const cookTimeStr = metadata[METADATA_KEYS.COOK_TIME];
   if (cookTimeStr) {
-    const cookTime = parseTimeToMinutes(cookTimeStr);
+    const cookTime = parseTimeString(cookTimeStr);
     if (cookTime !== undefined) {
       recipe.cookTime = cookTime;
     }
@@ -269,10 +269,40 @@ function applyTimeFields(recipe: IRecipe, metadata: Metadata): void {
 
   const totalTimeStr = metadata[METADATA_KEYS.TOTAL_TIME];
   if (totalTimeStr) {
-    const totalTime = parseTimeToMinutes(totalTimeStr);
+    const totalTime = parseTimeString(totalTimeStr);
     if (totalTime !== undefined) {
       recipe.totalTime = totalTime;
     }
+  }
+}
+
+/**
+ * Parse comma-separated list (for diet)
+ */
+function parseCommaSeparatedList(value: string): string[] {
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Apply extended metadata fields (author, diet, locale) to a recipe
+ */
+function applyExtendedMetadata(recipe: IRecipe, metadata: Metadata): void {
+  const author = metadata['author'];
+  if (author) {
+    recipe.author = author;
+  }
+
+  const diet = metadata['diet'];
+  if (diet) {
+    recipe.diet = parseCommaSeparatedList(diet);
+  }
+
+  const locale = metadata['locale'];
+  if (locale) {
+    recipe.locale = locale;
   }
 }
 
@@ -296,6 +326,8 @@ function applyOptionalMetadata(recipe: IRecipe, metadata: Metadata): void {
   if (tagsStr) {
     recipe.tags = parseTags(tagsStr);
   }
+
+  applyExtendedMetadata(recipe, metadata);
 }
 
 /**
@@ -353,7 +385,7 @@ export async function parseCooklang(source: string, context: ParseContext): Prom
 
     try {
       const cooklang = new CooklangRecipe(source);
-      const metadata = cooklang.metadata;
+      const metadata = normalizeMetadata(cooklang.metadata);
       const title = metadata[METADATA_KEYS.TITLE] || titleFromFilePath(context.filePath);
       const slug = generateSlug(metadata[METADATA_KEYS.TITLE] || context.filePath);
 
