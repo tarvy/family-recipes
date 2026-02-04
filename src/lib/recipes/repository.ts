@@ -50,6 +50,38 @@ export interface RecipeDeleteError {
 
 export type RecipeDeleteResult = RecipeDeleteSuccess | RecipeDeleteError;
 
+/**
+ * Recipe detail format for UI display
+ */
+export interface RecipeDetail {
+  slug: string;
+  title: string;
+  category: string;
+  description?: string;
+  servings?: number;
+  prepTime?: number;
+  cookTime?: number;
+  totalTime?: number;
+  difficulty?: string;
+  cuisine?: string;
+  course?: string;
+  ingredients: Array<{
+    name: string;
+    quantity?: string;
+    unit?: string;
+  }>;
+  cookware: Array<{
+    name: string;
+    quantity?: number;
+  }>;
+  steps: Array<{
+    text: string;
+    timers?: Array<{ duration: number; unit: string }>;
+    ingredients?: Array<{ name: string; quantity?: string; unit?: string }>;
+  }>;
+  tags: string[];
+}
+
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
@@ -67,6 +99,88 @@ function buildFilePath(category: string, slug: string): string {
 function extractCategory(filePath: string): string {
   const parts = filePath.split('/');
   return parts.length > 1 && parts[0] ? parts[0] : 'uncategorized';
+}
+
+/**
+ * Map ingredient to detail format, omitting undefined properties
+ */
+function mapIngredient(i: IRecipe['ingredients'][number]): RecipeDetail['ingredients'][number] {
+  const result: RecipeDetail['ingredients'][number] = { name: i.name };
+  if (i.quantity !== undefined) {
+    result.quantity = i.quantity;
+  }
+  if (i.unit !== undefined) {
+    result.unit = i.unit;
+  }
+  return result;
+}
+
+/**
+ * Map cookware to detail format, omitting undefined properties
+ */
+function mapCookware(c: IRecipe['cookware'][number]): RecipeDetail['cookware'][number] {
+  const result: RecipeDetail['cookware'][number] = { name: c.name };
+  if (c.quantity !== undefined) {
+    result.quantity = c.quantity;
+  }
+  return result;
+}
+
+/**
+ * Map step to detail format, omitting undefined properties
+ */
+function mapStep(s: IRecipe['steps'][number]): RecipeDetail['steps'][number] {
+  const result: RecipeDetail['steps'][number] = { text: s.text };
+  if (s.timers && s.timers.length > 0) {
+    result.timers = s.timers;
+  }
+  if (s.ingredients && s.ingredients.length > 0) {
+    result.ingredients = s.ingredients.map(mapIngredient);
+  }
+  return result;
+}
+
+/**
+ * Convert IRecipeDocument to RecipeDetail format for UI display
+ */
+function toRecipeDetail(doc: IRecipeDocument): RecipeDetail {
+  const detail: RecipeDetail = {
+    slug: doc.slug,
+    title: doc.title,
+    category: doc.category ?? extractCategory(doc.filePath),
+    ingredients: doc.ingredients.map(mapIngredient),
+    cookware: doc.cookware.map(mapCookware),
+    steps: doc.steps.map(mapStep),
+    tags: doc.tags ?? [],
+  };
+
+  // Add optional fields if present
+  if (doc.description) {
+    detail.description = doc.description;
+  }
+  if (doc.servings !== undefined) {
+    detail.servings = doc.servings;
+  }
+  if (doc.prepTime !== undefined) {
+    detail.prepTime = doc.prepTime;
+  }
+  if (doc.cookTime !== undefined) {
+    detail.cookTime = doc.cookTime;
+  }
+  if (doc.totalTime !== undefined) {
+    detail.totalTime = doc.totalTime;
+  }
+  if (doc.difficulty) {
+    detail.difficulty = doc.difficulty;
+  }
+  if (doc.cuisine) {
+    detail.cuisine = doc.cuisine;
+  }
+  if (doc.course) {
+    detail.course = doc.course;
+  }
+
+  return detail;
 }
 
 // -----------------------------------------------------------------------------
@@ -94,6 +208,19 @@ export async function getRecipeBySlug(slug: string): Promise<IRecipeDocument | n
 
     return recipe;
   });
+}
+
+/**
+ * Get recipe detail by slug for UI display
+ *
+ * Returns the recipe in RecipeDetail format suitable for the detail page.
+ */
+export async function getRecipeDetail(slug: string): Promise<RecipeDetail | null> {
+  const doc = await getRecipeBySlug(slug);
+  if (!doc) {
+    return null;
+  }
+  return toRecipeDetail(doc);
 }
 
 /**

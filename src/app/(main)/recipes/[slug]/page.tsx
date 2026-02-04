@@ -4,7 +4,7 @@ import { MainLayout } from '@/components/layout';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { Card } from '@/components/ui';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
-import { getRecipeBySlug } from '@/lib/recipes/loader';
+import { getRecipeDetail } from '@/lib/recipes/repository';
 
 interface RecipeDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -12,7 +12,7 @@ interface RecipeDetailPageProps {
 
 export async function generateMetadata({ params }: RecipeDetailPageProps) {
   const { slug } = await params;
-  const recipe = await getRecipeBySlug(slug);
+  const recipe = await getRecipeDetail(slug);
 
   if (!recipe) {
     return { title: 'Recipe Not Found | Family Recipes' };
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: RecipeDetailPageProps) {
 
 export default async function RecipeDetailPage({ params }: RecipeDetailPageProps) {
   const { slug } = await params;
-  const recipe = await getRecipeBySlug(slug);
+  const recipe = await getRecipeDetail(slug);
 
   if (!recipe) {
     notFound();

@@ -3,21 +3,22 @@
  *
  * GET /api/recipes/[slug] - Get recipe details (no auth)
  * PUT /api/recipes/[slug] - Update recipe with raw Cooklang content (auth required)
+ * DELETE /api/recipes/[slug] - Delete recipe (auth required)
  */
 
 import { cookies } from 'next/headers';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import {
   HTTP_BAD_REQUEST,
+  HTTP_CONFLICT,
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_NOT_FOUND,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
-import { extractMetadataFromContent, generateSlugFromTitle } from '@/lib/cooklang/metadata';
+import { extractMetadataFromContent } from '@/lib/cooklang/metadata';
 import { toError, toErrorMessage } from '@/lib/errors';
 import { logger, withRequestContext } from '@/lib/logger';
-import { getRawCooklangContent, getRecipeBySlug } from '@/lib/recipes/loader';
-import { deleteRecipeFile, writeRawCooklangContent } from '@/lib/recipes/writer';
+import { deleteRecipe, getRecipeDetail, updateRecipe } from '@/lib/recipes/repository';
 import { withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
@@ -56,7 +57,7 @@ export async function GET(request: Request, { params }: RouteParams): Promise<Re
       span.setAttribute('slug', slug);
 
       try {
-        const recipe = await getRecipeBySlug(slug);
+        const recipe = await getRecipeDetail(slug);
 
         if (!recipe) {
           span.setAttribute('error', 'not_found');
@@ -124,35 +125,24 @@ function validateRequest(
   };
 }
 
-interface ExistingRecipeInfo {
-  category: string;
-}
-
 /**
- * Handle cleanup when recipe location changes
+ * Map repository error codes to HTTP status codes
  */
-async function handleRecipeRelocation(
-  originalSlug: string,
-  newSlug: string,
-  newCategory: string,
-  existingRecipe: ExistingRecipeInfo,
-): Promise<void> {
-  const slugChanged = newSlug !== originalSlug;
-  const categoryChanged = newCategory !== existingRecipe.category;
-
-  if (slugChanged || categoryChanged) {
-    await deleteRecipeFile(originalSlug, existingRecipe.category);
-    logger.recipes.info('Deleted old recipe file during update', {
-      oldSlug: originalSlug,
-      oldCategory: existingRecipe.category,
-    });
+function mapErrorCodeToStatus(code: string | undefined): number {
+  if (code === 'NOT_FOUND') {
+    return HTTP_NOT_FOUND;
   }
+  if (code === 'DUPLICATE_SLUG') {
+    return HTTP_CONFLICT;
+  }
+  return HTTP_BAD_REQUEST;
 }
 
 /**
  * PUT /api/recipes/[slug]
  *
  * Update recipe with raw Cooklang content. Auth required.
+ * Saves directly to MongoDB (source of truth).
  */
 export async function PUT(request: Request, { params }: RouteParams): Promise<Response> {
   return withRequestContext(request, () =>
@@ -171,13 +161,6 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
       span.setAttribute('user_id', user.id);
 
       try {
-        // Check if recipe exists by trying to get raw content
-        const existingRecipe = await getRawCooklangContent(originalSlug);
-        if (!existingRecipe) {
-          span.setAttribute('error', 'not_found');
-          return Response.json({ error: 'Recipe not found' }, { status: HTTP_NOT_FOUND });
-        }
-
         const body = await request.json();
         const validation = validateRequest(body);
 
@@ -187,33 +170,79 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
         }
 
         const { content, category } = validation.data;
-
-        // Extract title from content to generate new slug
-        const metadata = extractMetadataFromContent(content);
-        const newSlug = generateSlugFromTitle(metadata.title);
-
-        span.setAttribute('new_slug', newSlug);
         span.setAttribute('category', category);
 
-        // Handle file relocation if slug or category changed
-        await handleRecipeRelocation(originalSlug, newSlug, category, existingRecipe);
+        const result = await updateRecipe(originalSlug, content, category);
 
-        // Write raw content directly to file
-        await writeRawCooklangContent(content, category, newSlug);
+        if (!result.success) {
+          span.setAttribute('error', result.code ?? 'update_failed');
+          return Response.json(
+            { error: result.error },
+            { status: mapErrorCodeToStatus(result.code) },
+          );
+        }
 
-        logger.recipes.info('Recipe updated (Cooklang-first)', {
+        span.setAttribute('new_slug', result.slug);
+        logger.recipes.info('Recipe updated via API', {
           originalSlug,
-          newSlug,
+          newSlug: result.slug,
           category,
           userId: user.id,
         });
 
-        return Response.json({ success: true, slug: newSlug });
+        return Response.json({ success: true, slug: result.slug });
       } catch (error) {
         logger.recipes.error('Failed to update recipe', toError(error));
         span.setAttribute('error', toErrorMessage(error));
         return Response.json(
           { error: 'Failed to update recipe' },
+          { status: HTTP_INTERNAL_SERVER_ERROR },
+        );
+      }
+    }),
+  );
+}
+
+/**
+ * DELETE /api/recipes/[slug]
+ *
+ * Delete a recipe. Auth required.
+ */
+export async function DELETE(request: Request, { params }: RouteParams): Promise<Response> {
+  return withRequestContext(request, () =>
+    withTrace('api.recipes.delete', async (span) => {
+      const { slug } = await params;
+      span.setAttribute('slug', slug);
+
+      const cookieStore = await cookies();
+      const user = await getSessionFromCookies(cookieStore);
+
+      if (!user) {
+        span.setAttribute('error', 'unauthorized');
+        return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
+      }
+
+      span.setAttribute('user_id', user.id);
+
+      try {
+        const result = await deleteRecipe(slug);
+
+        if (!result.success) {
+          span.setAttribute('error', 'not_found');
+          return Response.json({ error: result.error }, { status: HTTP_NOT_FOUND });
+        }
+
+        logger.recipes.info('Recipe deleted via API', {
+          slug,
+          userId: user.id,
+        });
+
+        return Response.json({ success: true });
+      } catch (error) {
+        logger.recipes.error('Failed to delete recipe', toError(error));
+        span.setAttribute('error', toErrorMessage(error));
+        return Response.json(
+          { error: 'Failed to delete recipe' },
           { status: HTTP_INTERNAL_SERVER_ERROR },
         );
       }
