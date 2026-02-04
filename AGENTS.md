@@ -4,6 +4,56 @@ This repository is designed for AI-agent maintainability. All AI agents (Claude 
 
 ---
 
+## Quick Reference
+
+### Tech Stack
+
+Next.js 15 + React 19 + MongoDB Atlas + Mongoose + Tailwind CSS + Biome + Thai-lint
+
+### System Architecture
+
+```
+CLIENTS (Web/PWA, Claude Code, Cursor)
+         │
+         ▼
+    Vercel: Next.js 15 App Router
+    ├── /app/*        (Pages, SSR/SSG)
+    ├── /api/*        (REST endpoints)
+    └── /mcp          (MCP server, OAuth 2.1)
+         │
+    ┌────┴────┬──────────────┐
+    ▼         ▼              ▼
+MongoDB   Git Repo      Vercel Blob
+(metadata) (.cook files)  (photos)
+```
+
+### Key Data Flows
+
+- **Source of Truth**: Cooklang files (`.cook`) in `recipes/` directory
+- **Sync**: Git push → files parsed → MongoDB metadata updated
+- **Auth**: Magic links + Passkeys → JWT sessions (httpOnly cookies)
+- **MCP**: OAuth 2.1 with PKCE, scopes: `recipes:read`, `shopping:read`, `shopping:write`
+
+### Common Commands
+
+```bash
+npm run dev          # Start dev server (Turbopack) at localhost:3000
+npm run build        # Production build
+npm run lint         # Run Biome linter
+npm run lint:fix     # Auto-fix lint issues
+npm run typecheck    # TypeScript type checking
+python scripts/progress.py  # Check PR progress status
+thailint all src/    # Run Thai-lint locally
+```
+
+### Pre-Commit Checklist
+
+```bash
+npm run lint:fix && npm run lint && npm run typecheck
+```
+
+---
+
 ## MANDATORY: Work Tracking Gate
 
 **This is non-negotiable. There are no exceptions. Do not reason around this.**
@@ -108,6 +158,7 @@ Each PR has living documents in `work/PR-XXX/`:
 ```bash
 mkdir work/PR-XXX
 cp work/TEMPLATES/*.md work/PR-XXX/
+# Add deliverables to scripts/deliverables.yaml
 ```
 
 ### Working a PR
@@ -163,24 +214,15 @@ Once tracking is confirmed:
 
 ## Architecture Reference
 
-### Available Now
-
 | Document | Purpose |
 |----------|---------|
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System design, data flow, component relationships |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System design, data flow, database schemas |
 | [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) | All credentials, API keys, external service setup |
 | [`docs/LINTING.md`](docs/LINTING.md) | Biome + Thai-lint configuration and usage |
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Local development setup, workflow, CI/CD |
-| [`docs/OBSERVABILITY.md`](docs/OBSERVABILITY.md) | Logging patterns, Vercel logs, telemetry no-ops |
-
-### Planned (created with their PRs)
-
-| Document | Created In | Purpose |
-|----------|------------|---------|
-| `docs/AUTH.md` | PR-007 | Magic links, passkeys, session management |
-| `docs/COOKLANG.md` | PR-009 | Recipe format, parsing, sync process |
-| `docs/MCP.md` | PR-015 | MCP server tools, AI integration |
-| `docs/TESTING.md` | PR-017 | Vitest, Playwright, test patterns |
+| [`docs/OBSERVABILITY.md`](docs/OBSERVABILITY.md) | Logging patterns, Vercel logs, telemetry |
+| [`docs/COOKLANG.md`](docs/COOKLANG.md) | Recipe format, parsing, sync process |
+| [`docs/MCP.md`](docs/MCP.md) | MCP server tools, OAuth 2.1, AI integration |
 
 ---
 
@@ -253,6 +295,22 @@ This outputs:
 - `.progress.json` with machine-readable state
 
 The script checks file existence - no AI reasoning. If a deliverable file exists, it's marked complete.
+
+### Adding New PRs to Progress Tracking
+
+Deliverables are defined in `scripts/deliverables.yaml`. When creating a new PR:
+
+```yaml
+PR-XXX:
+  name: "Human-readable PR name"
+  checks:
+    - type: file
+      path: src/path/to/expected/file.ts
+    - type: dir
+      path: src/path/to/expected/directory
+```
+
+The YAML config is the source of truth - edit it directly to add, modify, or update deliverables.
 
 ---
 
