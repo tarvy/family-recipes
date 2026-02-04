@@ -25,11 +25,11 @@ export function RecipeDetailClient({ recipe, cookwareSection }: RecipeDetailClie
   return (
     <RecipeContentLayout
       ingredientPanel={
-        <>
-          {/* Ingredients */}
-          <section>
-            <h2 className="text-xl font-semibold text-foreground">Ingredients</h2>
-            <div className="mt-4 rounded-lg bg-card-nested p-5 ring-1 ring-border">
+        <div className="flex h-full flex-col">
+          {/* Ingredients - takes remaining space with internal scroll */}
+          <section className="flex min-h-0 flex-1 flex-col">
+            <h2 className="shrink-0 text-xl font-semibold text-foreground">Ingredients</h2>
+            <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg bg-card-nested p-5 ring-1 ring-border">
               <ScalableIngredientList
                 ingredients={recipe.ingredients}
                 defaultServings={recipe.servings}
@@ -39,9 +39,9 @@ export function RecipeDetailClient({ recipe, cookwareSection }: RecipeDetailClie
             </div>
           </section>
 
-          {/* Cookware */}
-          {cookwareSection}
-        </>
+          {/* Cookware - shrinks to fit */}
+          {cookwareSection && <div className="shrink-0">{cookwareSection}</div>}
+        </div>
       }
       instructionsPanel={
         <section>

@@ -35,7 +35,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
   return (
     <MainLayout>
       <div className="px-6 py-6">
-        <Card className="relative mx-auto w-full max-w-3xl p-6 sm:p-8">
+        <Card className="relative mx-auto w-full max-w-3xl md:max-w-4xl lg:max-w-5xl p-6 sm:p-8">
           {/* Edit button — top right */}
           <Link
             href={`/recipes/${slug}/edit`}

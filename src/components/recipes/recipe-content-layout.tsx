@@ -1,11 +1,12 @@
 /**
  * Responsive two-column layout for recipe content.
  *
- * Switches from single-column (portrait) to two-column (landscape) layout
- * based on device orientation and minimum height.
+ * Layout behavior:
+ * - Default: Single column (ingredients above instructions)
+ * - Mobile landscape (640px-1024px wide): Two columns for cooking mode
  *
- * - Portrait: ingredients above instructions (stacked)
- * - Landscape (>= 480px height): ingredients left, instructions right
+ * Desktop (>1024px) stays single-column for better readability.
+ * Mobile landscape triggers two-column so users can see ingredients while following steps.
  */
 
 interface RecipeContentLayoutProps {
@@ -22,30 +23,38 @@ export function RecipeContentLayout({
   return (
     <div
       className={`
-        flex flex-col gap-10
-        [@media(orientation:landscape)_and_(min-height:480px)]:grid
-        [@media(orientation:landscape)_and_(min-height:480px)]:grid-cols-[minmax(280px,1fr)_minmax(320px,2fr)]
-        [@media(orientation:landscape)_and_(min-height:480px)]:gap-6
-        [@media(orientation:landscape)_and_(min-height:480px)]:max-h-[70vh]
+        flex flex-col gap-10 transition-all duration-200 ease-out
+        [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:flex-row
+        [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:gap-6
+        [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:h-[calc(100vh-100px)]
       `}
     >
-      {/* Left column: Ingredients & Equipment */}
+      {/* Left: Ingredients & Equipment — 40% in landscape two-column */}
       <div
         className={`
-          [@media(orientation:landscape)_and_(min-height:480px)]:overflow-y-auto
-          [@media(orientation:landscape)_and_(min-height:480px)]:pr-4
+          min-w-0
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:flex
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:flex-col
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:flex-[0.4_1_0]
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:min-h-0
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:pr-4
         `}
       >
         {ingredientPanel}
       </div>
 
-      {/* Right column: Instructions */}
+      {/* Right: Instructions — 60% in landscape two-column */}
       <div
         className={`
-          [@media(orientation:landscape)_and_(min-height:480px)]:overflow-y-auto
-          [@media(orientation:landscape)_and_(min-height:480px)]:border-l
-          [@media(orientation:landscape)_and_(min-height:480px)]:border-border
-          [@media(orientation:landscape)_and_(min-height:480px)]:pl-6
+          min-w-0
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:flex
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:flex-col
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:flex-[0.6_1_0]
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:min-h-0
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:overflow-y-auto
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:border-l
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:border-border
+          [@media(orientation:landscape)_and_(min-width:640px)_and_(max-width:1024px)]:pl-6
         `}
       >
         {instructionsPanel}

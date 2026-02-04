@@ -329,3 +329,11 @@ PR-033:
     - type: file
       path: src/components/recipes/ingredient-tooltip.tsx
     # Also modifies: src/lib/recipes/loader.ts (RecipeDetail.steps needs ingredients)
+
+PR-034:
+  name: "Recipe Detail Width-Based Responsive Layout"
+  checks:
+    - type: file
+      path: src/components/recipes/recipe-content-layout.tsx
+    # Modifies existing file - adds md:/lg: breakpoints alongside orientation query
+    # Also modifies: src/app/(main)/recipes/[slug]/page.tsx (container max-width)
