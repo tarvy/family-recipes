@@ -1,7 +1,7 @@
 # PR-033: Recipe Detail Responsive Layout - Progress & Agent Handoff
 
-> **Status**: Not Started
-> **Started**: —
+> **Status**: In Progress
+> **Started**: 2026-02-04
 > **Target**: —
 > **Branch**: `feat/033-recipe-detail-responsive`
 
@@ -13,7 +13,7 @@
 |-------|--------|-------|
 | Requirements | [x] Draft [ ] Review [ ] Approved | |
 | Design | [x] Draft [ ] Review [ ] Approved | |
-| Implementation | [ ] Not Started [ ] In Progress [ ] Complete | |
+| Implementation | [ ] Not Started [x] In Progress [ ] Complete | Phase 0 done |
 | Testing | [ ] Unit [ ] Integration [ ] E2E | |
 | Documentation | [ ] Updated [ ] Reviewed | |
 | Cleanup | [ ] Temp files removed [ ] Ready for merge | |
@@ -24,7 +24,7 @@
 
 From `scripts/deliverables.yaml`:
 
-- [ ] `src/lib/recipes/loader.ts` - Add ingredients to RecipeDetail.steps (BLOCKER FIX)
+- [x] `src/lib/recipes/loader.ts` - Add ingredients to RecipeDetail.steps (BLOCKER FIX)
 - [ ] `src/components/recipes/recipe-detail-client.tsx` - Client wrapper with shared state
 - [ ] `src/components/recipes/recipe-content-layout.tsx` - Responsive two-column grid
 - [ ] `src/components/recipes/interactive-step-list.tsx` - Steps with tappable ingredients
@@ -39,7 +39,7 @@ From `scripts/deliverables.yaml`:
 **Dependencies**: None (must complete first)
 
 **Deliverables**:
-- [ ] `src/lib/recipes/loader.ts` - RecipeDetail interface and convertStepsForDetail()
+- [x] `src/lib/recipes/loader.ts` - RecipeDetail interface and convertStepsForDetail()
 
 **Agent Prompt**:
 ```
@@ -321,7 +321,11 @@ Phases are sequential - each builds on the previous. Phase 0 must complete first
 
 ## Session Log
 
-(No sessions yet)
+### Session 1 - 2026-02-04
+- Completed Phase 0: Data Model Fix
+- Updated `RecipeDetail.steps` to include `ingredients` array
+- Updated `convertStepsForDetail()` to preserve step ingredients
+- Lint and typecheck pass
 
 ---
 

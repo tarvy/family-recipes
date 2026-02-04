@@ -213,6 +213,7 @@ export interface RecipeDetail {
   steps: Array<{
     text: string;
     timers?: Array<{ duration: number; unit: string }>;
+    ingredients?: Array<{ name: string; quantity?: string; unit?: string }>;
   }>;
   tags: string[];
 }
@@ -221,14 +222,21 @@ export interface RecipeDetail {
  * Convert IRecipe steps to RecipeDetail steps
  */
 function convertStepsForDetail(
-  steps: Array<{ text: string; timers?: Array<{ duration: number; unit: string }> }>,
+  steps: Array<{
+    text: string;
+    timers?: Array<{ duration: number; unit: string }>;
+    ingredients?: Array<{ name: string; quantity?: string; unit?: string }>;
+  }>,
 ): RecipeDetail['steps'] {
   return steps.map((step) => {
-    const mapped: { text: string; timers?: Array<{ duration: number; unit: string }> } = {
+    const mapped: RecipeDetail['steps'][number] = {
       text: step.text,
     };
     if (step.timers && step.timers.length > 0) {
       mapped.timers = step.timers;
+    }
+    if (step.ingredients && step.ingredients.length > 0) {
+      mapped.ingredients = step.ingredients;
     }
     return mapped;
   });
