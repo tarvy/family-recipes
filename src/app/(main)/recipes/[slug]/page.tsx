@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
-import { ScalableIngredientList } from '@/components/recipes/scalable-ingredient-list';
-import { StepList } from '@/components/recipes/step-list';
+import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { Card } from '@/components/ui';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
 import { getRecipeBySlug } from '@/lib/recipes/loader';
@@ -105,42 +104,30 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             )}
           </header>
 
-          {/* Ingredients */}
-          <section className="mt-10">
-            <h2 className="text-xl font-semibold text-foreground">Ingredients</h2>
-            <div className="mt-4 rounded-lg bg-card-nested p-5 ring-1 ring-border">
-              <ScalableIngredientList
-                ingredients={recipe.ingredients}
-                defaultServings={recipe.servings}
-              />
-            </div>
-          </section>
-
-          {/* Cookware */}
-          {recipe.cookware.length > 0 && (
-            <section className="mt-8">
-              <h2 className="text-xl font-semibold text-foreground">Equipment</h2>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {recipe.cookware.map((item) => (
-                  <span
-                    key={`${item.name}-${item.quantity ?? 1}`}
-                    className="rounded-full bg-lavender-light px-3 py-1 text-sm text-foreground"
-                  >
-                    {item.quantity && item.quantity > 1 ? `${item.quantity}× ` : ''}
-                    {item.name}
-                  </span>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Instructions */}
-          <section className="mt-10">
-            <h2 className="text-xl font-semibold text-foreground">Instructions</h2>
-            <div className="mt-4">
-              <StepList steps={recipe.steps} />
-            </div>
-          </section>
+          {/* Recipe Content: Responsive two-column layout in landscape */}
+          <div className="mt-10">
+            <RecipeDetailClient
+              recipe={recipe}
+              cookwareSection={
+                recipe.cookware.length > 0 ? (
+                  <section className="mt-8">
+                    <h2 className="text-xl font-semibold text-foreground">Equipment</h2>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {recipe.cookware.map((item) => (
+                        <span
+                          key={`${item.name}-${item.quantity ?? 1}`}
+                          className="rounded-full bg-lavender-light px-3 py-1 text-sm text-foreground"
+                        >
+                          {item.quantity && item.quantity > 1 ? `${item.quantity}× ` : ''}
+                          {item.name}
+                        </span>
+                      ))}
+                    </div>
+                  </section>
+                ) : undefined
+              }
+            />
+          </div>
 
           {/* Footer meta */}
           {(recipe.cuisine || recipe.course || recipe.difficulty) && (
