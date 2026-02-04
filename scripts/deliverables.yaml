@@ -227,7 +227,7 @@ PR-015:
       path: docs/MCP.md
 
 # =============================================================================
-# PHASE 5: Polish & Infrastructure (PR-016 to PR-019)
+# PHASE 5: Polish & Documentation (PR-016, PR-019)
 # =============================================================================
 
 PR-016:
@@ -237,30 +237,6 @@ PR-016:
       path: public/manifest.json
     - type: file
       path: public/sw.js
-
-PR-017:
-  name: "Testing Suite"
-  checks:
-    - type: file
-      path: vitest.config.ts
-    - type: file
-      path: playwright.config.ts
-    - type: file
-      path: tests/setup.ts
-    - type: file
-      path: docs/TESTING.md
-
-PR-018:
-  name: "Terraform Infrastructure"
-  checks:
-    - type: file
-      path: infra/terraform/main.tf
-    - type: file
-      path: infra/terraform/modules/mongodb-atlas/main.tf
-    - type: file
-      path: infra/terraform/modules/vercel/main.tf
-    - type: file
-      path: .github/workflows/terraform.yml
 
 PR-019:
   name: "Documentation Updates"
@@ -336,3 +312,20 @@ PR-032:
     - type: file
       path: src/lib/recipes/repository.ts
     # Major refactor - deliverables defined in work/PR-032/design.md
+
+# =============================================================================
+# PHASE 9: UI Enhancements (PR-033+)
+# =============================================================================
+
+PR-033:
+  name: "Recipe Detail Responsive Layout"
+  checks:
+    - type: file
+      path: src/components/recipes/recipe-detail-client.tsx
+    - type: file
+      path: src/components/recipes/recipe-content-layout.tsx
+    - type: file
+      path: src/components/recipes/interactive-step-list.tsx
+    - type: file
+      path: src/components/recipes/ingredient-tooltip.tsx
+    # Also modifies: src/lib/recipes/loader.ts (RecipeDetail.steps needs ingredients)

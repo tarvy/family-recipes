@@ -10,186 +10,33 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).parent.parent
+import yaml
 
-# Deliverables to check (file existence)
-DELIVERABLES = {
-    "PR-001": {
-        "name": "Project Scaffold",
-        "checks": [
-            ("file", "package.json"),
-            ("file", "tsconfig.json"),
-            ("file", "next.config.ts"),
-            ("file", "README.md"),
-            ("file", "docs/ARCHITECTURE.md"),
-            ("dir", "src/app"),
-        ],
-    },
-    "PR-002": {
-        "name": "Environment Setup",
-        "checks": [
-            ("file", ".env.example"),
-            ("file", "docs/ENVIRONMENT.md"),
-            ("file", ".claude/settings.local.json"),
-            ("file", "scripts/progress.py"),
-        ],
-    },
-    "PR-003": {
-        "name": "Linting Setup",
-        "checks": [
-            ("file", "biome.json"),
-            ("file", ".husky/pre-commit"),
-            ("file", ".thailint.yaml"),
-            ("file", "docs/LINTING.md"),
-        ],
-    },
-    "PR-004": {
-        "name": "CI/CD Pipeline",
-        "checks": [
-            ("file", ".github/workflows/ci.yml"),
-            ("file", ".github/workflows/deploy.yml"),
-            ("file", ".github/PULL_REQUEST_TEMPLATE.md"),
-            ("file", "docs/DEVELOPMENT.md"),
-        ],
-    },
-    "PR-005": {
-        "name": "Observability",
-        "checks": [
-            ("file", "src/instrumentation.ts"),
-            ("file", "src/lib/telemetry.ts"),
-            ("file", "src/lib/logger.ts"),
-            ("file", "docs/OBSERVABILITY.md"),
-        ],
-    },
-    "PR-006": {
-        "name": "Database Schema",
-        "checks": [
-            ("file", "src/db/connection.ts"),
-            ("file", "src/db/models/index.ts"),
-            ("file", "src/db/models/user.model.ts"),
-            ("file", "src/db/models/recipe.model.ts"),
-        ],
-    },
-    "PR-007": {
-        "name": "Auth - Magic Links",
-        "checks": [
-            ("file", "src/lib/auth/magic-link.ts"),
-            ("file", "src/lib/email/send.ts"),
-            ("file", "src/app/api/auth/verify/route.ts"),
-            ("file", "src/lib/auth/session.ts"),
-            ("file", "src/app/(auth)/login/page.tsx"),
-            ("file", "docs/AUTH.md"),
-        ],
-    },
-    "PR-008": {
-        "name": "Auth - Passkeys",
-        "checks": [
-            ("file", "src/lib/auth/passkey.ts"),
-            ("file", "src/app/api/auth/passkey/register/route.ts"),
-            ("file", "src/app/api/auth/passkey/authenticate/route.ts"),
-            ("file", "src/app/(main)/settings/page.tsx"),
-        ],
-    },
-    "PR-009": {
-        "name": "Cooklang Integration",
-        "checks": [
-            ("file", "src/lib/cooklang/parser.ts"),
-            ("file", "src/lib/cooklang/serializer.ts"),
-            ("file", "src/lib/git-recipes/sync.ts"),
-            ("file", "src/app/api/recipes/sync/route.ts"),
-            ("file", "docs/COOKLANG.md"),
-        ],
-    },
-    "PR-010": {
-        "name": "Recipe Migration",
-        "checks": [
-            ("dir", "recipes/entrees"),
-            ("dir", "recipes/desserts"),
-            ("dir", "recipes/soups"),
-            ("dir", "recipes/sides"),
-            ("dir", "recipes/salads"),
-            ("dir", "recipes/breakfast"),
-        ],
-    },
-    "PR-011": {
-        "name": "Recipe UI - List & Search",
-        "checks": [
-            ("file", "src/components/recipes/recipe-card.tsx"),
-            ("file", "src/components/recipes/recipe-grid.tsx"),
-            ("file", "src/components/recipes/recipe-filters.tsx"),
-            ("file", "src/app/(main)/recipes/page.tsx"),
-        ],
-    },
-    "PR-012": {
-        "name": "Recipe UI - Detail View",
-        "checks": [
-            ("file", "src/app/(main)/recipes/[slug]/page.tsx"),
-            ("file", "src/components/recipes/ingredient-list.tsx"),
-            ("file", "src/components/recipes/step-list.tsx"),
-        ],
-    },
-    "PR-013": {
-        "name": "Recipe UI - Create/Edit",
-        "checks": [
-            ("file", "src/app/(main)/recipes/new/page.tsx"),
-            ("file", "src/components/recipes/recipe-form.tsx"),
-            ("file", "src/components/recipes/cooklang-editor.tsx"),
-            ("file", "src/app/api/photos/upload/route.ts"),
-        ],
-    },
-    "PR-014": {
-        "name": "Shopping Lists",
-        "checks": [
-            ("file", "src/app/(main)/shopping-list/page.tsx"),
-            ("file", "src/lib/shopping/aggregator.ts"),
-            ("file", "src/lib/shopping/categories.ts"),
-            ("file", "src/components/shopping/shopping-list.tsx"),
-        ],
-    },
-    "PR-015": {
-        "name": "MCP Server",
-        "checks": [
-            ("file", "src/mcp/server.ts"),
-            ("file", "src/mcp/tools/recipes.ts"),
-            ("file", "src/mcp/tools/shopping.ts"),
-            ("file", "src/app/mcp/route.ts"),
-            ("file", "docs/MCP.md"),
-        ],
-    },
-    "PR-016": {
-        "name": "PWA & Mobile Polish",
-        "checks": [
-            ("file", "public/manifest.json"),
-            ("file", "public/sw.js"),
-        ],
-    },
-    "PR-017": {
-        "name": "Testing Suite",
-        "checks": [
-            ("file", "vitest.config.ts"),
-            ("file", "playwright.config.ts"),
-            ("file", "tests/setup.ts"),
-            ("file", "docs/TESTING.md"),
-        ],
-    },
-    "PR-018": {
-        "name": "Terraform Infrastructure",
-        "checks": [
-            ("file", "infra/terraform/main.tf"),
-            ("file", "infra/terraform/modules/mongodb-atlas/main.tf"),
-            ("file", "infra/terraform/modules/vercel/main.tf"),
-            ("file", ".github/workflows/terraform.yml"),
-        ],
-    },
-    "PR-019": {
-        "name": "Documentation Updates",
-        "checks": [
-            ("file", "docs/ARCHITECTURE.md"),
-            ("file", "docs/DEVELOPMENT.md"),
-            ("file", "docs/ENVIRONMENT.md"),
-        ],
-    },
-}
+PROJECT_ROOT = Path(__file__).parent.parent
+DELIVERABLES_FILE = Path(__file__).parent / "deliverables.yaml"
+
+
+def load_deliverables() -> dict:
+    """Load deliverables from YAML config file."""
+    if not DELIVERABLES_FILE.exists():
+        print(f"ERROR: {DELIVERABLES_FILE} not found")
+        return {}
+
+    with open(DELIVERABLES_FILE) as f:
+        data = yaml.safe_load(f)
+
+    # Convert YAML format to internal format
+    deliverables = {}
+    for pr_id, pr_data in data.items():
+        checks = []
+        for check in pr_data.get("checks", []):
+            checks.append((check["type"], check["path"]))
+        deliverables[pr_id] = {
+            "name": pr_data["name"],
+            "checks": checks,
+        }
+
+    return deliverables
 
 
 def check_file(path: str) -> bool:
@@ -217,10 +64,10 @@ def check_git_branch(branch: str) -> bool:
     return branch in result.stdout
 
 
-def check_pr_status() -> dict:
+def check_pr_status(deliverables: dict) -> dict:
     """Check deliverable status for all PRs."""
     results = {}
-    for pr_id, pr_data in DELIVERABLES.items():
+    for pr_id, pr_data in deliverables.items():
         checks = pr_data["checks"]
         passed = 0
         total = len(checks)
@@ -238,7 +85,9 @@ def check_pr_status() -> dict:
                 passed += 1
             details.append({"type": check_type, "path": path, "exists": exists})
 
-        if passed == total:
+        if total == 0:
+            status = "no_checks"
+        elif passed == total:
             status = "complete"
         elif passed > 0:
             status = "in_progress"
@@ -256,27 +105,49 @@ def check_pr_status() -> dict:
     return results
 
 
+def sort_pr_key(pr_id: str) -> int:
+    """Extract numeric part of PR ID for sorting."""
+    try:
+        return int(pr_id.replace("PR-", ""))
+    except ValueError:
+        return 999
+
+
 def main():
     """Main entry point."""
-    results = check_pr_status()
+    deliverables = load_deliverables()
+    if not deliverables:
+        return
+
+    results = check_pr_status(deliverables)
 
     print(f"\n{'=' * 60}")
     print("  FAMILY RECIPES - Progress Report")
     print(f"  Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"  Config: {DELIVERABLES_FILE.name}")
     print(f"{'=' * 60}\n")
 
     # Group by status
     complete = []
     in_progress = []
     not_started = []
+    no_checks = []
 
     for pr_id, data in results.items():
         if data["status"] == "complete":
             complete.append((pr_id, data))
         elif data["status"] == "in_progress":
             in_progress.append((pr_id, data))
+        elif data["status"] == "no_checks":
+            no_checks.append((pr_id, data))
         else:
             not_started.append((pr_id, data))
+
+    # Sort each group by PR number
+    complete.sort(key=lambda x: sort_pr_key(x[0]))
+    in_progress.sort(key=lambda x: sort_pr_key(x[0]))
+    not_started.sort(key=lambda x: sort_pr_key(x[0]))
+    no_checks.sort(key=lambda x: sort_pr_key(x[0]))
 
     # Print completed
     if complete:
@@ -302,15 +173,23 @@ def main():
             print(f"    [ ] {pr_id}: {data['name']}")
         print()
 
+    # Print items with no checks defined
+    if no_checks:
+        print("  NO CHECKS DEFINED:")
+        for pr_id, data in no_checks:
+            print(f"    [?] {pr_id}: {data['name']}")
+        print()
+
     # Summary
     print(f"{'=' * 60}")
+    trackable = len(complete) + len(in_progress) + len(not_started)
     print(
-        f"  Summary: {len(complete)}/{len(results)} complete, "
+        f"  Summary: {len(complete)}/{trackable} complete, "
         f"{len(in_progress)} in progress, "
         f"{len(not_started)} not started"
     )
 
-    # Overall progress
+    # Overall progress (only count PRs with checks)
     total_checks = sum(len(d["details"]) for d in results.values())
     passed_checks = sum(
         sum(1 for det in d["details"] if det["exists"]) for d in results.values()
@@ -322,11 +201,13 @@ def main():
     # Output JSON for automation
     output = {
         "timestamp": datetime.now().isoformat(),
+        "config_file": str(DELIVERABLES_FILE),
         "prs": results,
         "summary": {
             "complete": len(complete),
             "in_progress": len(in_progress),
             "not_started": len(not_started),
+            "no_checks": len(no_checks),
             "total": len(results),
             "overall_checks_passed": passed_checks,
             "overall_checks_total": total_checks,

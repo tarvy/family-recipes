@@ -22,7 +22,7 @@
 
 ## Deliverables Checklist
 
-From `.progress.json` PR definition:
+From `scripts/deliverables.yaml` (add your PR entry there first):
 
 - [ ] `path/to/file1.ts` - [brief description]
 - [ ] `path/to/file2.ts` - [brief description]
@@ -169,6 +169,7 @@ Can run in parallel with Stream A after Phase 1 completes.
 ## Completion Confidence
 
 ### Automated Checks
+- [ ] Deliverables registered in `scripts/deliverables.yaml`
 - [ ] `npm run lint` - All files pass Biome
 - [ ] `npm run typecheck` - No TypeScript errors
 - [ ] `npm run test` - All tests pass

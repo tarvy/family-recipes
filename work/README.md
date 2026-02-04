@@ -29,9 +29,20 @@ work/
    cp work/TEMPLATES/*.md work/PR-XXX/
    ```
 
-3. Update file headers with PR details
+3. Register deliverables in `scripts/deliverables.yaml`:
+   ```yaml
+   PR-XXX:
+     name: "Your PR Name"
+     checks:
+       - type: file
+         path: src/path/to/expected/file.ts
+       - type: dir
+         path: src/path/to/expected/directory
+   ```
 
-4. Work through documents in order:
+4. Update file headers with PR details
+
+5. Work through documents in order:
    - **requirements.md** first - define the problem and success criteria
    - **design.md** second - technical approach
    - **progress.md** third - break into phases and agent prompts
@@ -64,7 +75,8 @@ work/
 │                       CLEANUP                               │
 │  - Delete work/PR-XXX/ directory                            │
 │  - Update permanent docs in docs/                           │
-│  - Verify .progress.json shows complete                     │
+│  - Verify `python scripts/progress.py` shows complete       │
+│  - Deliverables stay in scripts/deliverables.yaml (history) │
 └─────────────────────────────────────────────────────────────┘
 ```
 
