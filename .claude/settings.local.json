@@ -14,7 +14,8 @@
       "Bash(mv *)",
       "Bash(cat *)",
       "Bash(ls *)",
-      "Bash(cursor:*)"
+      "Bash(cursor:*)",
+      "Bash(npx tsx:*)"
     ],
     "deny": []
   }
