@@ -21,6 +21,10 @@ interface Ingredient {
 interface ScalableIngredientListProps {
   ingredients: Ingredient[];
   defaultServings?: number | undefined;
+  /** External multiplier control (controlled mode) */
+  multiplier?: number;
+  /** Callback when multiplier changes (controlled mode) */
+  onMultiplierChange?: (multiplier: number) => void;
 }
 
 /**
@@ -77,15 +81,31 @@ function formatIngredient(ingredient: Ingredient, multiplier: number): string {
 export function ScalableIngredientList({
   ingredients,
   defaultServings,
+  multiplier: externalMultiplier,
+  onMultiplierChange,
 }: ScalableIngredientListProps) {
-  const [multiplier, setMultiplier] = useState(DEFAULT_MULTIPLIER);
+  const [internalMultiplier, setInternalMultiplier] = useState(DEFAULT_MULTIPLIER);
+
+  // Use external multiplier if provided (controlled mode), else internal state
+  const isControlled = externalMultiplier !== undefined;
+  const multiplier = isControlled ? externalMultiplier : internalMultiplier;
 
   function handleDecrement() {
-    setMultiplier((prev) => Math.max(MIN_MULTIPLIER, prev - MULTIPLIER_STEP));
+    const newValue = Math.max(MIN_MULTIPLIER, multiplier - MULTIPLIER_STEP);
+    if (isControlled && onMultiplierChange) {
+      onMultiplierChange(newValue);
+    } else {
+      setInternalMultiplier(newValue);
+    }
   }
 
   function handleIncrement() {
-    setMultiplier((prev) => Math.min(MAX_MULTIPLIER, prev + MULTIPLIER_STEP));
+    const newValue = Math.min(MAX_MULTIPLIER, multiplier + MULTIPLIER_STEP);
+    if (isControlled && onMultiplierChange) {
+      onMultiplierChange(newValue);
+    } else {
+      setInternalMultiplier(newValue);
+    }
   }
 
   if (ingredients.length === 0) {
