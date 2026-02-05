@@ -9,13 +9,16 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCookingSession } from '@/components/cooking-session';
 import { Button } from '@/components/ui';
+import { NAV_Z_INDEX } from '@/lib/constants/navigation';
 import { DECIMAL_RADIX } from '@/lib/cooklang/constants';
 import {
   buildCooklangContent,
   type CooklangMetadata,
   splitMetadataAndBody,
 } from '@/lib/cooklang/metadata';
+import { cn } from '@/lib/utils';
 import { CooklangEditor, insertTextAtPosition } from './cooklang-editor';
 import { CooklangPreview } from './cooklang-preview';
 import { IngredientPopover } from './ingredient-popover';
@@ -82,6 +85,7 @@ export function RecipeEditorForm({
   mode,
 }: RecipeEditorFormProps) {
   const router = useRouter();
+  const { hasContent: hasCookingContent } = useCookingSession();
 
   // Parse initial content into metadata and body
   const initialParts = useMemo(() => {
@@ -213,7 +217,7 @@ export function RecipeEditorForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className={cn('space-y-6', hasCookingContent && 'pb-20')}>
       {/* Error display */}
       {error && (
         <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
@@ -227,11 +231,12 @@ export function RecipeEditorForm({
       {/* Editor and preview split */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Editor */}
-        <div>
+        <div className="flex flex-col">
           <CooklangEditor
             value={body}
             onChange={setBody}
             onInsertIngredient={handleOpenIngredientPopover}
+            className="flex-1"
           />
         </div>
 
@@ -242,7 +247,10 @@ export function RecipeEditorForm({
       </div>
 
       {/* Submit bar */}
-      <div className="sticky bottom-0 border-t border-border bg-background py-4">
+      <div
+        className="sticky bottom-0 border-t border-border bg-background py-4"
+        style={{ zIndex: NAV_Z_INDEX.editorSaveBar }}
+      >
         <div className="flex justify-end gap-4">
           <Button type="button" variant="ghost" onClick={() => router.back()}>
             Cancel
