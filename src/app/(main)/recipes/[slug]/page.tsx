@@ -4,6 +4,7 @@ import { MainLayout } from '@/components/layout';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { Card } from '@/components/ui';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
+import { formatUpdatedDate } from '@/lib/format/date';
 import { getRecipeBySlug } from '@/lib/recipes/loader';
 import type { RecipeDetail } from '@/lib/recipes/repository';
 import { getRecipeDetail } from '@/lib/recipes/repository';
@@ -74,32 +75,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             )}
 
             {/* Meta info */}
-            <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
-              {recipe.prepTime !== undefined && (
-                <span className="flex items-center gap-1">
-                  <ClockIcon />
-                  Prep: {formatTime(recipe.prepTime)}
-                </span>
-              )}
-              {recipe.cookTime !== undefined && (
-                <span className="flex items-center gap-1">
-                  <ClockIcon />
-                  Cook: {formatTime(recipe.cookTime)}
-                </span>
-              )}
-              {recipe.totalTime !== undefined && (
-                <span className="flex items-center gap-1">
-                  <ClockIcon />
-                  Total: {formatTime(recipe.totalTime)}
-                </span>
-              )}
-              {recipe.servings !== undefined && (
-                <span className="flex items-center gap-1">
-                  <ServingsIcon />
-                  {recipe.servings} serving{recipe.servings !== 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
+            <RecipeMetaRow recipe={recipe} />
 
             {/* Tags */}
             {recipe.tags.length > 0 && (
@@ -142,12 +118,15 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           </div>
 
           {/* Footer meta */}
-          {(recipe.cuisine || recipe.course || recipe.difficulty) && (
+          {(recipe.cuisine || recipe.course || recipe.difficulty || recipe.updatedAt) && (
             <footer className="mt-10 border-t border-border pt-6">
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                 {recipe.cuisine && <span>Cuisine: {recipe.cuisine}</span>}
                 {recipe.course && <span>Course: {recipe.course}</span>}
                 {recipe.difficulty && <span>Difficulty: {recipe.difficulty}</span>}
+                {recipe.updatedAt && (
+                  <span>Last updated: {formatUpdatedDate(recipe.updatedAt)}</span>
+                )}
               </div>
             </footer>
           )}
@@ -170,6 +149,46 @@ function formatTime(minutes: number): string {
     return `${hours} hr`;
   }
   return `${hours} hr ${remainingMinutes} min`;
+}
+
+/**
+ * Meta info row showing times, servings, and updated date
+ */
+function RecipeMetaRow({ recipe }: { recipe: RecipeDetail }) {
+  return (
+    <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
+      {recipe.prepTime !== undefined && (
+        <span className="flex items-center gap-1">
+          <ClockIcon />
+          Prep: {formatTime(recipe.prepTime)}
+        </span>
+      )}
+      {recipe.cookTime !== undefined && (
+        <span className="flex items-center gap-1">
+          <ClockIcon />
+          Cook: {formatTime(recipe.cookTime)}
+        </span>
+      )}
+      {recipe.totalTime !== undefined && (
+        <span className="flex items-center gap-1">
+          <ClockIcon />
+          Total: {formatTime(recipe.totalTime)}
+        </span>
+      )}
+      {recipe.servings !== undefined && (
+        <span className="flex items-center gap-1">
+          <ServingsIcon />
+          {recipe.servings} serving{recipe.servings !== 1 ? 's' : ''}
+        </span>
+      )}
+      {recipe.updatedAt && (
+        <span className="flex items-center gap-1">
+          <CalendarIcon />
+          Updated {formatUpdatedDate(recipe.updatedAt)}
+        </span>
+      )}
+    </div>
+  );
 }
 
 /**
@@ -208,6 +227,26 @@ function ServingsIcon() {
         strokeWidth="2"
         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
       />
+    </svg>
+  );
+}
+
+/**
+ * Calendar icon for updated date
+ */
+function CalendarIcon() {
+  return (
+    <svg
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" strokeWidth="2" />
+      <line x1="16" y1="2" x2="16" y2="6" strokeWidth="2" />
+      <line x1="8" y1="2" x2="8" y2="6" strokeWidth="2" />
+      <line x1="3" y1="10" x2="21" y2="10" strokeWidth="2" />
     </svg>
   );
 }

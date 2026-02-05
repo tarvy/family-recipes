@@ -216,6 +216,7 @@ export interface RecipeDetail {
     ingredients?: Array<{ name: string; quantity?: string; unit?: string }>;
   }>;
   tags: string[];
+  updatedAt?: string;
 }
 
 /**
