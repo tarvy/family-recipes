@@ -127,12 +127,21 @@ function mapCookware(c: IRecipe['cookware'][number]): RecipeDetail['cookware'][n
 }
 
 /**
+ * Map timer to plain object (strips Mongoose subdocument metadata)
+ */
+function mapTimer(
+  t: IRecipe['steps'][number]['timers'] extends Array<infer T> | undefined ? T : never,
+): { duration: number; unit: string } {
+  return { duration: t.duration, unit: t.unit };
+}
+
+/**
  * Map step to detail format, omitting undefined properties
  */
 function mapStep(s: IRecipe['steps'][number]): RecipeDetail['steps'][number] {
   const result: RecipeDetail['steps'][number] = { text: s.text };
   if (s.timers && s.timers.length > 0) {
-    result.timers = s.timers;
+    result.timers = s.timers.map(mapTimer);
   }
   if (s.ingredients && s.ingredients.length > 0) {
     result.ingredients = s.ingredients.map(mapIngredient);
@@ -151,7 +160,7 @@ function toRecipeDetail(doc: IRecipeDocument): RecipeDetail {
     ingredients: doc.ingredients.map(mapIngredient),
     cookware: doc.cookware.map(mapCookware),
     steps: doc.steps.map(mapStep),
-    tags: doc.tags ?? [],
+    tags: [...(doc.tags ?? [])],
   };
 
   // Add optional fields if present
