@@ -18,7 +18,13 @@ import {
 import { extractMetadataFromContent } from '@/lib/cooklang/metadata';
 import { toError, toErrorMessage } from '@/lib/errors';
 import { logger, withRequestContext } from '@/lib/logger';
-import { deleteRecipe, getRecipeDetail, updateRecipe } from '@/lib/recipes/repository';
+import {
+  createRecipe,
+  deleteRecipe,
+  getRecipeDetail,
+  type RecipeWriteResult,
+  updateRecipe,
+} from '@/lib/recipes/repository';
 import { withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
@@ -139,6 +145,27 @@ function mapErrorCodeToStatus(code: string | undefined): number {
 }
 
 /**
+ * Update or create a recipe in MongoDB.
+ *
+ * Attempts an update first. If the recipe is not yet in MongoDB
+ * (e.g. filesystem-only), falls back to creating it.
+ */
+async function updateOrCreateRecipe(
+  slug: string,
+  content: string,
+  category: string,
+): Promise<RecipeWriteResult> {
+  const result = await updateRecipe(slug, content, category);
+
+  if (!result.success && result.code === 'NOT_FOUND') {
+    logger.recipes.info('Recipe not in MongoDB, creating from edit', { slug, category });
+    return createRecipe(content, category, 'api');
+  }
+
+  return result;
+}
+
+/**
  * PUT /api/recipes/[slug]
  *
  * Update recipe with raw Cooklang content. Auth required.
@@ -172,7 +199,7 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
         const { content, category } = validation.data;
         span.setAttribute('category', category);
 
-        const result = await updateRecipe(originalSlug, content, category);
+        const result = await updateOrCreateRecipe(originalSlug, content, category);
 
         if (!result.success) {
           span.setAttribute('error', result.code ?? 'update_failed');
