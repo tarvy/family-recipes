@@ -7,12 +7,12 @@
  * Provides a monospace textarea with insert buttons for common syntax.
  */
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { SyntaxHelp } from './syntax-help';
 
-/** Minimum rows for the textarea */
-const MIN_ROWS = 12;
+/** Minimum height for the textarea in pixels (equivalent to ~12 rows) */
+const MIN_HEIGHT_PX = 288;
 
 interface CooklangEditorProps {
   /** Current content value */
@@ -35,6 +35,17 @@ export function CooklangEditor({
   className,
 }: CooklangEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-grow textarea to fit content.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: value must trigger re-measurement even though it is a prop
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      return;
+    }
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.max(textarea.scrollHeight, MIN_HEIGHT_PX)}px`;
+  }, [value]);
 
   /**
    * Insert text at the current cursor position
@@ -123,9 +134,9 @@ export function CooklangEditor({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        rows={MIN_ROWS}
+        style={{ minHeight: `${MIN_HEIGHT_PX}px` }}
         className={cn(
-          'w-full rounded-lg border border-input bg-card px-4 py-3',
+          'w-full flex-1 rounded-lg border border-input bg-card px-4 py-3',
           'font-mono text-sm text-foreground',
           'placeholder:text-muted-foreground/50',
           'focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender',

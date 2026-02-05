@@ -369,3 +369,21 @@ PR-036:
     # Interactive cooking timers and pinned recipes
     # Click timer badges in recipe steps to start countdown
     # Persistent bottom panel shows active timers across pages
+
+PR-037:
+  name: "Recipe Editor & Detail UX Improvements"
+  checks:
+    - type: file
+      path: src/lib/format/date.ts
+    - type: file
+      path: src/lib/recipes/repository.ts
+    - type: file
+      path: src/lib/recipes/loader.ts
+    - type: file
+      path: src/app/(main)/recipes/[slug]/page.tsx
+    - type: file
+      path: src/lib/constants/navigation.ts
+    - type: file
+      path: src/components/recipes/recipe-editor-form.tsx
+    - type: file
+      path: src/components/recipes/cooklang-editor.tsx

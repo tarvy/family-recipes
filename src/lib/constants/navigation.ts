@@ -21,6 +21,7 @@ const Z_INDEX_HEADER = 40;
 const Z_INDEX_OVERLAY = 45;
 const Z_INDEX_DRAWER = 50;
 const Z_INDEX_COOKING_PANEL = 55;
+const Z_INDEX_EDITOR_SAVE_BAR = 58;
 const Z_INDEX_SEARCH_MODAL = 60;
 
 /** Z-index values for navigation elements */
@@ -29,5 +30,6 @@ export const NAV_Z_INDEX = {
   drawer: Z_INDEX_DRAWER,
   overlay: Z_INDEX_OVERLAY,
   cookingPanel: Z_INDEX_COOKING_PANEL,
+  editorSaveBar: Z_INDEX_EDITOR_SAVE_BAR,
   searchModal: Z_INDEX_SEARCH_MODAL,
 } as const;

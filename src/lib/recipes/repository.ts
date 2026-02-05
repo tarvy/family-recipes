@@ -80,6 +80,7 @@ export interface RecipeDetail {
     ingredients?: Array<{ name: string; quantity?: string; unit?: string }>;
   }>;
   tags: string[];
+  updatedAt?: string;
 }
 
 // -----------------------------------------------------------------------------
@@ -187,6 +188,9 @@ function toRecipeDetail(doc: IRecipeDocument): RecipeDetail {
   }
   if (doc.course) {
     detail.course = doc.course;
+  }
+  if (doc.updatedAt) {
+    detail.updatedAt = doc.updatedAt.toISOString();
   }
 
   return detail;
