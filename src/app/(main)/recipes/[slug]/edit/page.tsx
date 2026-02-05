@@ -8,15 +8,27 @@
 import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { RecipeEditorForm } from '@/components/recipes/recipe-editor-form';
-import { getRawCooklangContent } from '@/lib/recipes/repository';
+import { getRawCooklangContent as getFromLoader } from '@/lib/recipes/loader';
+import { getRawCooklangContent as getFromRepository } from '@/lib/recipes/repository';
 
 interface EditRecipePageProps {
   params: Promise<{ slug: string }>;
 }
 
+/** Load raw Cooklang content: MongoDB first, then file-based loader fallback. */
+async function loadRawCooklangContent(
+  slug: string,
+): Promise<{ content: string; category: string; slug: string } | null> {
+  const fromDb = await getFromRepository(slug);
+  if (fromDb) {
+    return fromDb;
+  }
+  return getFromLoader(slug);
+}
+
 export async function generateMetadata({ params }: EditRecipePageProps) {
   const { slug } = await params;
-  const recipe = await getRawCooklangContent(slug);
+  const recipe = await loadRawCooklangContent(slug);
 
   if (!recipe) {
     return { title: 'Recipe Not Found | Family Recipes' };
@@ -34,7 +46,7 @@ export async function generateMetadata({ params }: EditRecipePageProps) {
 
 export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const { slug } = await params;
-  const recipe = await getRawCooklangContent(slug);
+  const recipe = await loadRawCooklangContent(slug);
 
   if (!recipe) {
     notFound();
