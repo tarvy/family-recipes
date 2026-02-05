@@ -4,15 +4,27 @@ import { MainLayout } from '@/components/layout';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { Card } from '@/components/ui';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
+import { getRecipeBySlug } from '@/lib/recipes/loader';
+import type { RecipeDetail } from '@/lib/recipes/repository';
 import { getRecipeDetail } from '@/lib/recipes/repository';
 
 interface RecipeDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
+/** Load recipe for detail page: MongoDB first, then file-based loader fallback. */
+async function loadRecipeDetail(slug: string): Promise<RecipeDetail | null> {
+  const fromDb = await getRecipeDetail(slug);
+  if (fromDb) {
+    return fromDb;
+  }
+  const fromLoader = await getRecipeBySlug(slug);
+  return fromLoader as RecipeDetail | null;
+}
+
 export async function generateMetadata({ params }: RecipeDetailPageProps) {
   const { slug } = await params;
-  const recipe = await getRecipeDetail(slug);
+  const recipe = await loadRecipeDetail(slug);
 
   if (!recipe) {
     return { title: 'Recipe Not Found | Family Recipes' };
@@ -26,7 +38,7 @@ export async function generateMetadata({ params }: RecipeDetailPageProps) {
 
 export default async function RecipeDetailPage({ params }: RecipeDetailPageProps) {
   const { slug } = await params;
-  const recipe = await getRecipeDetail(slug);
+  const recipe = await loadRecipeDetail(slug);
 
   if (!recipe) {
     notFound();

@@ -3,10 +3,11 @@
 /**
  * Client Providers Component
  *
- * Wraps the app with client-side providers (PWA, navigation, etc.)
+ * Wraps the app with client-side providers (PWA, navigation, cooking session, etc.)
  */
 
 import type { ReactNode } from 'react';
+import { CookingSessionPanel, CookingSessionProvider } from '@/components/cooking-session';
 import { NavigationProvider } from '@/components/navigation';
 import { OfflineIndicator, PWAProvider, UpdatePrompt } from '@/components/pwa';
 
@@ -18,9 +19,12 @@ export function ClientProviders({ children }: ClientProvidersProps): ReactNode {
   return (
     <PWAProvider>
       <NavigationProvider>
-        {children}
-        <OfflineIndicator />
-        <UpdatePrompt />
+        <CookingSessionProvider>
+          {children}
+          <CookingSessionPanel />
+          <OfflineIndicator />
+          <UpdatePrompt />
+        </CookingSessionProvider>
       </NavigationProvider>
     </PWAProvider>
   );

@@ -153,6 +153,32 @@ Each PR has living documents in `work/PR-XXX/`:
 | `design.md` | Technical approach, architecture | Diagrams, API specs, schemas |
 | `progress.md` | Implementation tracking, agent prompts | Phases, tests, session logs |
 
+### Planning New Work (Claude Code)
+
+When a user requests a new feature or significant change, follow this workflow:
+
+1. **Enter Plan Mode** - Use `EnterPlanMode` tool to formally enter planning mode
+2. **Research with Explore Agents** - Use `Task` tool with `subagent_type=Explore` to:
+   - Understand existing patterns in the codebase
+   - Find relevant files and integration points
+   - Research technical requirements
+3. **Design with Plan Agent** - Use `Task` tool with `subagent_type=Plan` to:
+   - Create high-level technical design
+   - Define component architecture
+   - Identify implementation phases
+4. **Refine with Clarity Specialist** - Use `Task` tool with `subagent_type=agent-clarity-specialist` to:
+   - Transform the plan into implementation-ready detail
+   - Add specific file paths, code snippets, validation steps
+   - Create unambiguous agent prompts for each phase
+5. **Write Work Tracking Documents** - Create `work/PR-XXX/` with:
+   - `requirements.md` - User stories, acceptance criteria (Gherkin)
+   - `design.md` - Technical approach from Plan agent
+   - `progress.md` - Phased implementation from Clarity Specialist
+6. **Add Deliverables** - Update `scripts/deliverables.yaml` with expected files
+7. **Exit Plan Mode** - Use `ExitPlanMode` tool to request user approval
+
+**Do NOT skip steps.** The agent cascade (Explore → Plan → Clarity Specialist) ensures thorough research and unambiguous implementation guides.
+
 ### Starting a PR
 
 ```bash

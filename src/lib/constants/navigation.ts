@@ -20,6 +20,7 @@ export const MOBILE_NAV_BREAKPOINT_PX = 768;
 const Z_INDEX_HEADER = 40;
 const Z_INDEX_OVERLAY = 45;
 const Z_INDEX_DRAWER = 50;
+const Z_INDEX_COOKING_PANEL = 55;
 const Z_INDEX_SEARCH_MODAL = 60;
 
 /** Z-index values for navigation elements */
@@ -27,5 +28,6 @@ export const NAV_Z_INDEX = {
   header: Z_INDEX_HEADER,
   drawer: Z_INDEX_DRAWER,
   overlay: Z_INDEX_OVERLAY,
+  cookingPanel: Z_INDEX_COOKING_PANEL,
   searchModal: Z_INDEX_SEARCH_MODAL,
 } as const;

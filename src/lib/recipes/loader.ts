@@ -283,7 +283,7 @@ function buildRecipeDetail(recipe: IRecipe, relativePath: string): RecipeDetail 
     ingredients: recipe.ingredients,
     cookware: recipe.cookware,
     steps: convertStepsForDetail(recipe.steps),
-    tags: recipe.tags,
+    tags: recipe.tags ?? [],
   };
 
   applyOptionalDetailFields(detail, recipe);

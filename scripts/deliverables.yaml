@@ -350,3 +350,22 @@ PR-035:
     # Updates API routes to use repository.ts instead of filesystem writer
     # Recipe detail page and edit page also read from MongoDB
     # Enables recipe editing in production (Vercel)
+
+# =============================================================================
+# PHASE 10: Cooking Experience (PR-036+)
+# =============================================================================
+
+PR-036:
+  name: "Active Cooking Timers"
+  checks:
+    - type: dir
+      path: src/components/cooking-session
+    - type: file
+      path: src/components/cooking-session/cooking-session-context.tsx
+    - type: file
+      path: src/components/cooking-session/cooking-session-panel.tsx
+    - type: file
+      path: src/components/cooking-session/timer-badge.tsx
+    # Interactive cooking timers and pinned recipes
+    # Click timer badges in recipe steps to start countdown
+    # Persistent bottom panel shows active timers across pages
