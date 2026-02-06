@@ -1,17 +1,21 @@
 /**
  * Cover photo button for recipe detail pages.
  *
- * Opens the camera capture modal, uploads the captured photo as the
- * recipe's cover image via the photo upload API with setCover=true.
+ * Shows a dropdown with two options: take a photo with the camera,
+ * or pick an existing image from the device's camera roll / file system.
+ * Uploads the chosen image as the recipe's cover via the photo upload API.
  */
 
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CameraCapture } from './camera-capture';
 
 /** SVG icon stroke width */
 const ICON_STROKE_WIDTH = 2;
+
+/** Accepted image MIME types for the file picker */
+const ACCEPTED_IMAGE_TYPES = 'image/jpeg,image/png,image/webp';
 
 interface CoverPhotoButtonProps {
   /** Recipe slug for upload association */
@@ -21,16 +25,35 @@ interface CoverPhotoButtonProps {
 type UploadState = 'idle' | 'uploading' | 'success' | 'error';
 
 export function CoverPhotoButton({ recipeSlug }: CoverPhotoButtonProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [uploadState, setUploadState] = useState<UploadState>('idle');
+  const menuRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleCapture = useCallback(
-    async (blob: Blob) => {
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
+
+  const uploadPhoto = useCallback(
+    async (file: Blob, filename: string) => {
       setUploadState('uploading');
 
       try {
         const formData = new FormData();
-        formData.append('file', blob, `${recipeSlug}-cover-${Date.now()}.jpg`);
+        formData.append('file', file, filename);
         formData.append('recipeSlug', recipeSlug);
         formData.append('setCover', 'true');
 
@@ -52,11 +75,45 @@ export function CoverPhotoButton({ recipeSlug }: CoverPhotoButtonProps) {
     [recipeSlug],
   );
 
+  const handleCameraCapture = useCallback(
+    async (blob: Blob) => {
+      await uploadPhoto(blob, `${recipeSlug}-cover-${Date.now()}.jpg`);
+    },
+    [recipeSlug, uploadPhoto],
+  );
+
+  const handleFileSelected = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) {
+        return;
+      }
+
+      await uploadPhoto(file, file.name);
+
+      // Reset file input so the same file can be selected again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    },
+    [uploadPhoto],
+  );
+
+  const openCamera = useCallback(() => {
+    setMenuOpen(false);
+    setCameraOpen(true);
+  }, []);
+
+  const openFilePicker = useCallback(() => {
+    setMenuOpen(false);
+    fileInputRef.current?.click();
+  }, []);
+
   return (
-    <>
+    <div ref={menuRef} className="relative">
       <button
         type="button"
-        onClick={() => setCameraOpen(true)}
+        onClick={() => setMenuOpen((prev) => !prev)}
         disabled={uploadState === 'uploading'}
         className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1 text-sm font-medium text-muted-foreground hover:border-lavender hover:text-lavender disabled:opacity-50"
       >
@@ -64,12 +121,44 @@ export function CoverPhotoButton({ recipeSlug }: CoverPhotoButtonProps) {
         {buttonLabel(uploadState)}
       </button>
 
+      {/* Dropdown menu */}
+      {menuOpen && (
+        <div className="absolute right-0 top-full z-10 mt-1 w-44 overflow-hidden rounded-lg border border-border bg-card shadow-lg">
+          <button
+            type="button"
+            onClick={openCamera}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-foreground hover:bg-pink-light"
+          >
+            <CameraIcon className="h-4 w-4 text-muted-foreground" />
+            Take Photo
+          </button>
+          <button
+            type="button"
+            onClick={openFilePicker}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-foreground hover:bg-pink-light"
+          >
+            <GalleryIcon className="h-4 w-4 text-muted-foreground" />
+            Choose from Library
+          </button>
+        </div>
+      )}
+
+      {/* Hidden file input for camera roll / file picker */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ACCEPTED_IMAGE_TYPES}
+        onChange={handleFileSelected}
+        className="hidden"
+        aria-label="Choose a photo from your device"
+      />
+
       <CameraCapture
         isOpen={cameraOpen}
         onClose={() => setCameraOpen(false)}
-        onCapture={handleCapture}
+        onCapture={handleCameraCapture}
       />
-    </>
+    </div>
   );
 }
 
@@ -106,6 +195,25 @@ function CameraIcon({ className }: { className?: string }) {
         strokeLinejoin="round"
         strokeWidth={ICON_STROKE_WIDTH}
         d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  );
+}
+
+function GalleryIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={ICON_STROKE_WIDTH}
+        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
       />
     </svg>
   );
