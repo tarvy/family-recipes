@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { CoverPhotoButton } from '@/components/media/cover-photo-button';
+import { PinRecipeButton } from '@/components/recipes/pin-recipe-button';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { Card } from '@/components/ui';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
@@ -58,6 +59,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
               <EditIcon className="h-4 w-4" />
               Edit
             </Link>
+            <PinRecipeButton recipeSlug={slug} recipeTitle={recipe.title} />
             <CoverPhotoButton recipeSlug={slug} />
           </div>
 
