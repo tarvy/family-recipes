@@ -369,3 +369,28 @@ PR-036:
     # Interactive cooking timers and pinned recipes
     # Click timer badges in recipe steps to start countdown
     # Persistent bottom panel shows active timers across pages
+
+# =============================================================================
+# PHASE 11: Media Capture (PR-037)
+# =============================================================================
+
+PR-037:
+  name: "Media Capture (Camera & Microphone)"
+  checks:
+    - type: dir
+      path: src/components/media
+    - type: file
+      path: src/lib/media/use-media-stream.ts
+    - type: file
+      path: src/components/media/camera-capture.tsx
+    - type: file
+      path: src/components/media/audio-recorder.tsx
+    - type: file
+      path: src/components/media/media-capture-section.tsx
+    - type: file
+      path: src/components/media/permission-prompt.tsx
+    - type: file
+      path: src/app/api/photos/upload/route.ts
+    # Camera and microphone access via getUserMedia
+    # Photo capture and upload to Vercel Blob storage
+    # Audio recording for recipe notes

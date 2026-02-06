@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
+import { CoverPhotoButton } from '@/components/media/cover-photo-button';
+import { ClockIcon, EditIcon, ServingsIcon } from '@/components/media/icons';
+import { PinRecipeButton } from '@/components/recipes/pin-recipe-button';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { Card } from '@/components/ui';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
@@ -48,14 +51,18 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     <MainLayout>
       <div className="px-6 py-6">
         <Card className="relative mx-auto w-full max-w-3xl md:max-w-4xl lg:max-w-5xl p-6 sm:p-8">
-          {/* Edit button — top right */}
-          <Link
-            href={`/recipes/${slug}/edit`}
-            className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1 text-sm font-medium text-muted-foreground hover:border-lavender hover:text-lavender sm:right-6 sm:top-6"
-          >
-            <EditIcon className="h-4 w-4" />
-            Edit
-          </Link>
+          {/* Action buttons — top right */}
+          <div className="absolute right-4 top-4 flex flex-col gap-2 sm:right-6 sm:top-6">
+            <Link
+              href={`/recipes/${slug}/edit`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1 text-sm font-medium text-muted-foreground hover:border-lavender hover:text-lavender"
+            >
+              <EditIcon className="h-4 w-4" />
+              Edit
+            </Link>
+            <PinRecipeButton recipeSlug={slug} recipeTitle={recipe.title} />
+            <CoverPhotoButton recipeSlug={slug} />
+          </div>
 
           {/* Header */}
           <header>
@@ -170,66 +177,4 @@ function formatTime(minutes: number): string {
     return `${hours} hr`;
   }
   return `${hours} hr ${remainingMinutes} min`;
-}
-
-/**
- * Clock icon
- */
-function ClockIcon() {
-  return (
-    <svg
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10" strokeWidth="2" />
-      <path strokeLinecap="round" strokeWidth="2" d="M12 6v6l4 2" />
-    </svg>
-  );
-}
-
-/**
- * Servings/people icon
- */
-function ServingsIcon() {
-  return (
-    <svg
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-      />
-    </svg>
-  );
-}
-
-/**
- * Edit/pencil icon
- */
-function EditIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-      />
-    </svg>
-  );
 }
