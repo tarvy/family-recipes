@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useMediaStream } from '@/lib/media/use-media-stream';
+import { CloseIcon, MicIcon } from './icons';
 import { PermissionPrompt } from './permission-prompt';
 
 /** Interval for updating the recording timer display (ms) */
@@ -19,8 +20,8 @@ const TIMER_INTERVAL_MS = 1000;
 /** Seconds per minute for time formatting */
 const SECONDS_PER_MINUTE = 60;
 
-/** SVG icon stroke width */
-const ICON_STROKE_WIDTH = 2;
+/** Minimum digit width for zero-padded time display */
+const TIME_DISPLAY_PAD_WIDTH = 2;
 
 interface AudioRecorderProps {
   /** Whether the recorder is open */
@@ -170,7 +171,7 @@ export function AudioRecorder({ isOpen, onClose, onRecorded }: AudioRecorderProp
 
   const minutes = Math.floor(elapsedSeconds / SECONDS_PER_MINUTE);
   const seconds = elapsedSeconds % SECONDS_PER_MINUTE;
-  const timeDisplay = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  const timeDisplay = `${String(minutes).padStart(TIME_DISPLAY_PAD_WIDTH, '0')}:${String(seconds).padStart(TIME_DISPLAY_PAD_WIDTH, '0')}`;
 
   return (
     <div className="rounded-lg bg-card-nested p-4 ring-1 ring-border">
@@ -203,7 +204,7 @@ export function AudioRecorder({ isOpen, onClose, onRecorded }: AudioRecorderProp
         permissionState !== 'unavailable' && (
           <div className="mt-4 flex justify-center">
             <Button variant="primary" onClick={handleStartRecording}>
-              <MicIcon />
+              <MicIcon className="h-5 w-5" />
               <span className="ml-2">Start Recording</span>
             </Button>
           </div>
@@ -239,43 +240,5 @@ export function AudioRecorder({ isOpen, onClose, onRecorded }: AudioRecorderProp
         </div>
       )}
     </div>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={ICON_STROKE_WIDTH}
-        d="M6 18L18 6M6 6l12 12"
-      />
-    </svg>
-  );
-}
-
-function MicIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={ICON_STROKE_WIDTH}
-        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4M12 15a3 3 0 003-3V5a3 3 0 00-6 0v7a3 3 0 003 3z"
-      />
-    </svg>
   );
 }
