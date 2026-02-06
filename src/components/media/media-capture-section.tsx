@@ -10,6 +10,7 @@
 
 import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { uploadRecipePhoto } from '@/lib/media/upload-photo';
 import { AudioRecorder } from './audio-recorder';
 import { CameraCapture } from './camera-capture';
 import { CameraIcon, MicIcon } from './icons';
@@ -35,23 +36,13 @@ export function MediaCaptureSection({ recipeSlug, onPhotoUploaded }: MediaCaptur
       setUploadError(null);
 
       try {
-        const formData = new FormData();
-        formData.append('file', blob, `${recipeSlug}-${Date.now()}.jpg`);
-        formData.append('recipeSlug', recipeSlug);
-
-        const response = await fetch('/api/photos/upload', {
-          method: 'POST',
-          body: formData,
+        const { url } = await uploadRecipePhoto({
+          file: blob,
+          filename: `${recipeSlug}-${Date.now()}.jpg`,
+          recipeSlug,
         });
-
-        if (!response.ok) {
-          const data: { error?: string } = await response.json();
-          throw new Error(data.error ?? 'Upload failed');
-        }
-
-        const data: { url: string } = await response.json();
         setUploadState('success');
-        onPhotoUploaded?.(data.url);
+        onPhotoUploaded?.(url);
       } catch (err) {
         setUploadState('error');
         setUploadError(err instanceof Error ? err.message : 'Upload failed');

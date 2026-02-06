@@ -25,8 +25,14 @@ import { traceDbQuery, withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
 
-/** Maximum upload file size in bytes (10 MB) */
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+/** Maximum upload size in megabytes */
+const MAX_UPLOAD_SIZE_MB = 10;
+
+/** Bytes per kilobyte */
+const BYTES_PER_KB = 1024;
+
+/** Maximum upload file size in bytes */
+const MAX_FILE_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * BYTES_PER_KB * BYTES_PER_KB;
 
 /** Allowed MIME types for photo uploads */
 const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);

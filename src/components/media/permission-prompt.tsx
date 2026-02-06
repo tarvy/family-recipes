@@ -9,6 +9,7 @@
 
 import { Button } from '@/components/ui/button';
 import type { MediaPermissionState } from '@/lib/media/use-media-stream';
+import { CameraOffIcon, MicOffIcon } from './icons';
 
 interface PermissionPromptProps {
   /** Current permission state */
@@ -24,12 +25,12 @@ export function PermissionPrompt({ permissionState, mediaType, onRetry }: Permis
     return null;
   }
 
-  const icon = mediaType === 'camera' ? CameraOffIcon : MicOffIcon;
+  const Icon = mediaType === 'camera' ? CameraOffIcon : MicOffIcon;
 
   return (
     <div className="flex flex-col items-center gap-4 rounded-lg bg-card-nested p-6 text-center ring-1 ring-border">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-        {icon()}
+        <Icon className="h-6 w-6 text-muted-foreground" />
       </div>
 
       {permissionState === 'denied' && (
@@ -71,46 +72,5 @@ export function PermissionPrompt({ permissionState, mediaType, onRetry }: Permis
         </div>
       )}
     </div>
-  );
-}
-
-/** SVG icon stroke width */
-const ICON_STROKE_WIDTH = 2;
-
-function CameraOffIcon() {
-  return (
-    <svg
-      className="h-6 w-6 text-muted-foreground"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={ICON_STROKE_WIDTH}
-        d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-      />
-    </svg>
-  );
-}
-
-function MicOffIcon() {
-  return (
-    <svg
-      className="h-6 w-6 text-muted-foreground"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={ICON_STROKE_WIDTH}
-        d="M19 19l-7-7m0 0l-7-7m7 7h8m-8 0V5a2 2 0 00-4 0v6"
-      />
-    </svg>
   );
 }

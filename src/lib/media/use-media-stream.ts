@@ -169,14 +169,9 @@ export function useMediaStream({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (streamRef.current) {
-        for (const track of streamRef.current.getTracks()) {
-          track.stop();
-        }
-        streamRef.current = null;
-      }
+      stopStream();
     };
-  }, []);
+  }, [stopStream]);
 
   return {
     stream,

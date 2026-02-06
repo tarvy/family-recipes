@@ -9,6 +9,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { uploadRecipePhoto } from '@/lib/media/upload-photo';
 import { CameraCapture } from './camera-capture';
 import { CameraIcon, GalleryIcon } from './icons';
 
@@ -50,21 +51,7 @@ export function CoverPhotoButton({ recipeSlug }: CoverPhotoButtonProps) {
       setUploadState('uploading');
 
       try {
-        const formData = new FormData();
-        formData.append('file', file, filename);
-        formData.append('recipeSlug', recipeSlug);
-        formData.append('setCover', 'true');
-
-        const response = await fetch('/api/photos/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const data: { error?: string } = await response.json();
-          throw new Error(data.error ?? 'Upload failed');
-        }
-
+        await uploadRecipePhoto({ file, filename, recipeSlug, setCover: true });
         setUploadState('success');
       } catch {
         setUploadState('error');

@@ -40,6 +40,14 @@ export function CameraCapture({ isOpen, onClose, onCapture }: CameraCaptureProps
     },
   });
 
+  const clearPreview = useCallback(() => {
+    setCapturedBlob(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  }, [previewUrl]);
+
   // Connect stream to video element
   useEffect(() => {
     if (videoRef.current && stream) {
@@ -53,13 +61,9 @@ export function CameraCapture({ isOpen, onClose, onCapture }: CameraCaptureProps
       start().catch(() => {});
     } else {
       stop();
-      setCapturedBlob(null);
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-        setPreviewUrl(null);
-      }
+      clearPreview();
     }
-  }, [isOpen, start, stop, previewUrl]);
+  }, [isOpen, start, stop, clearPreview]);
 
   // Cleanup preview URL on unmount
   useEffect(() => {
@@ -100,12 +104,8 @@ export function CameraCapture({ isOpen, onClose, onCapture }: CameraCaptureProps
   }, []);
 
   const handleRetake = useCallback(() => {
-    setCapturedBlob(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
-  }, [previewUrl]);
+    clearPreview();
+  }, [clearPreview]);
 
   const handleUsePhoto = useCallback(() => {
     if (capturedBlob) {
@@ -116,13 +116,9 @@ export function CameraCapture({ isOpen, onClose, onCapture }: CameraCaptureProps
 
   const handleClose = useCallback(() => {
     stop();
-    setCapturedBlob(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
+    clearPreview();
     onClose();
-  }, [stop, onClose, previewUrl]);
+  }, [stop, clearPreview, onClose]);
 
   if (!isOpen) {
     return null;

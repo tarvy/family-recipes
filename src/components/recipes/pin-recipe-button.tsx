@@ -9,9 +9,7 @@
 
 import { useCallback } from 'react';
 import { useCookingSession } from '@/components/cooking-session';
-
-/** SVG icon stroke width */
-const ICON_STROKE_WIDTH = 2;
+import { PinIcon } from '@/components/media/icons';
 
 interface PinRecipeButtonProps {
   /** Recipe slug for pin association */
@@ -47,25 +45,6 @@ export function PinRecipeButton({ recipeSlug, recipeTitle }: PinRecipeButtonProp
       {pinned ? <PinFilledIcon className="h-4 w-4" /> : <PinIcon className="h-4 w-4" />}
       {pinned ? 'Pinned' : 'Pin Recipe'}
     </button>
-  );
-}
-
-function PinIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={ICON_STROKE_WIDTH}
-        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-      />
-    </svg>
   );
 }
 
