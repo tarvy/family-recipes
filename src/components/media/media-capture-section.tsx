@@ -17,9 +17,7 @@ import { CameraCapture } from './camera-capture';
 const ICON_STROKE_WIDTH = 2;
 
 interface MediaCaptureSectionProps {
-  /** Recipe ID for associating uploads */
-  recipeId: string;
-  /** Recipe slug for display and upload context */
+  /** Recipe slug for associating uploads */
   recipeSlug: string;
   /** Callback when a photo is uploaded successfully */
   onPhotoUploaded?: (url: string) => void;
@@ -27,11 +25,7 @@ interface MediaCaptureSectionProps {
 
 type UploadState = 'idle' | 'uploading' | 'success' | 'error';
 
-export function MediaCaptureSection({
-  recipeId,
-  recipeSlug,
-  onPhotoUploaded,
-}: MediaCaptureSectionProps) {
+export function MediaCaptureSection({ recipeSlug, onPhotoUploaded }: MediaCaptureSectionProps) {
   const [cameraOpen, setCameraOpen] = useState(false);
   const [audioOpen, setAudioOpen] = useState(false);
   const [uploadState, setUploadState] = useState<UploadState>('idle');
@@ -45,7 +39,7 @@ export function MediaCaptureSection({
       try {
         const formData = new FormData();
         formData.append('file', blob, `${recipeSlug}-${Date.now()}.jpg`);
-        formData.append('recipeId', recipeId);
+        formData.append('recipeSlug', recipeSlug);
 
         const response = await fetch('/api/photos/upload', {
           method: 'POST',
@@ -65,7 +59,7 @@ export function MediaCaptureSection({
         setUploadError(err instanceof Error ? err.message : 'Upload failed');
       }
     },
-    [recipeId, recipeSlug, onPhotoUploaded],
+    [recipeSlug, onPhotoUploaded],
   );
 
   const handleAudioRecorded = useCallback((_blob: Blob) => {

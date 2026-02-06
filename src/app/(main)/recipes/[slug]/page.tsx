@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
+import { CoverPhotoButton } from '@/components/media/cover-photo-button';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { Card } from '@/components/ui';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
@@ -48,14 +49,17 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     <MainLayout>
       <div className="px-6 py-6">
         <Card className="relative mx-auto w-full max-w-3xl md:max-w-4xl lg:max-w-5xl p-6 sm:p-8">
-          {/* Edit button — top right */}
-          <Link
-            href={`/recipes/${slug}/edit`}
-            className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1 text-sm font-medium text-muted-foreground hover:border-lavender hover:text-lavender sm:right-6 sm:top-6"
-          >
-            <EditIcon className="h-4 w-4" />
-            Edit
-          </Link>
+          {/* Action buttons — top right */}
+          <div className="absolute right-4 top-4 flex flex-col gap-2 sm:right-6 sm:top-6">
+            <Link
+              href={`/recipes/${slug}/edit`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1 text-sm font-medium text-muted-foreground hover:border-lavender hover:text-lavender"
+            >
+              <EditIcon className="h-4 w-4" />
+              Edit
+            </Link>
+            <CoverPhotoButton recipeSlug={slug} />
+          </div>
 
           {/* Header */}
           <header>

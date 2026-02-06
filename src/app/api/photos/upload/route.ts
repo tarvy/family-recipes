@@ -2,7 +2,8 @@
  * POST /api/photos/upload
  *
  * Upload a photo to Vercel Blob storage and associate it with a recipe.
- * Accepts multipart/form-data with a file and recipeId.
+ * Accepts multipart/form-data with a file and either recipeId or recipeSlug.
+ * Optionally set as cover photo with setCover=true.
  *
  * Auth: Session required.
  */
@@ -32,7 +33,7 @@ const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 interface PhotoUploadResponse {
   url: string;
-  recipeId: string;
+  recipeSlug: string;
 }
 
 interface PhotoUploadError {
@@ -41,7 +42,8 @@ interface PhotoUploadError {
 
 interface ValidatedUpload {
   file: File;
-  recipeId: string;
+  recipeSlug: string;
+  setCover: boolean;
 }
 
 function errorResponse(message: string, status: number): Response {
@@ -49,11 +51,12 @@ function errorResponse(message: string, status: number): Response {
 }
 
 /**
- * Extract and validate file and recipeId from form data.
+ * Extract and validate file and recipe identifier from form data.
  */
 function validateFormData(formData: FormData, span: MinimalSpan): ValidatedUpload | Response {
   const file = formData.get('file');
-  const recipeId = formData.get('recipeId');
+  const recipeSlug = formData.get('recipeSlug');
+  const setCover = formData.get('setCover') === 'true';
 
   if (!(file && file instanceof File)) {
     span.setAttribute('error', 'missing_file');
@@ -70,32 +73,38 @@ function validateFormData(formData: FormData, span: MinimalSpan): ValidatedUploa
     return errorResponse('File exceeds 10MB size limit', HTTP_BAD_REQUEST);
   }
 
-  if (!recipeId || typeof recipeId !== 'string') {
-    span.setAttribute('error', 'missing_recipe_id');
-    return errorResponse('Recipe ID is required', HTTP_BAD_REQUEST);
+  if (!recipeSlug || typeof recipeSlug !== 'string') {
+    span.setAttribute('error', 'missing_recipe_slug');
+    return errorResponse('Recipe slug is required', HTTP_BAD_REQUEST);
   }
 
-  return { file, recipeId };
+  return { file, recipeSlug, setCover };
 }
 
 /**
  * Upload file to Vercel Blob and update the recipe in MongoDB.
  */
-async function uploadAndAttach(file: File, recipeId: string, span: MinimalSpan): Promise<Response> {
-  span.setAttribute('recipe_id', recipeId);
+async function uploadAndAttach(
+  file: File,
+  recipeSlug: string,
+  setCover: boolean,
+  span: MinimalSpan,
+): Promise<Response> {
+  span.setAttribute('recipe_slug', recipeSlug);
   span.setAttribute('file_size', file.size);
   span.setAttribute('file_type', file.type);
 
   logger.recipes.info('Photo upload started', {
-    recipeId,
+    recipeSlug,
     fileSize: file.size,
     mimeType: file.type,
+    setCover,
   });
 
   await connectDB();
 
-  const recipe = await traceDbQuery('findById', 'recipes', async () => {
-    return Recipe.findById(recipeId);
+  const recipe = await traceDbQuery('findOne', 'recipes', async () => {
+    return Recipe.findOne({ slug: recipeSlug });
   });
 
   if (!recipe) {
@@ -105,31 +114,34 @@ async function uploadAndAttach(file: File, recipeId: string, span: MinimalSpan):
 
   const timestamp = Date.now();
   const extension = file.type.split('/')[1] ?? 'jpg';
-  const pathname = `recipes/${recipe.slug}/${timestamp}.${extension}`;
+  const pathname = `recipes/${recipeSlug}/${timestamp}.${extension}`;
 
   const blob = await put(pathname, file, {
     access: 'public',
     contentType: file.type,
   });
 
+  const shouldSetCover = setCover || !recipe.primaryPhotoUrl;
+
   await traceDbQuery('updateOne', 'recipes', async () => {
     return Recipe.updateOne(
-      { _id: recipeId },
+      { slug: recipeSlug },
       {
         $push: { photoUrls: blob.url },
-        ...(recipe.primaryPhotoUrl ? {} : { $set: { primaryPhotoUrl: blob.url } }),
+        ...(shouldSetCover ? { $set: { primaryPhotoUrl: blob.url } } : {}),
       },
     );
   });
 
   logger.recipes.info('Photo upload completed', {
-    recipeId,
+    recipeSlug,
     blobUrl: blob.url,
+    setCover: shouldSetCover,
   });
 
   return Response.json({
     url: blob.url,
-    recipeId,
+    recipeSlug,
   } satisfies PhotoUploadResponse);
 }
 
@@ -144,7 +156,7 @@ async function handleUpload(request: Request, span: MinimalSpan): Promise<Respon
     return validation;
   }
 
-  return uploadAndAttach(validation.file, validation.recipeId, span);
+  return uploadAndAttach(validation.file, validation.recipeSlug, validation.setCover, span);
 }
 
 function handleUploadError(error: unknown, span: MinimalSpan): Response {
