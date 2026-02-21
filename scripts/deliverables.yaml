@@ -394,3 +394,32 @@ PR-037:
     # Camera and microphone access via getUserMedia
     # Photo capture and upload to Vercel Blob storage
     # Audio recording for recipe notes
+
+# =============================================================================
+# PHASE 12: MCP Operability Documentation (PR-038)
+# =============================================================================
+
+PR-038:
+  name: "MCP Operability Documentation"
+  checks:
+    - type: file
+      path: docs/ENVIRONMENT.md
+    - type: file
+      path: docs/ARCHITECTURE.md
+    - type: file
+      path: docs/MCP.md
+    # Doc-only: MCP section in ENVIRONMENT aligned with OAuth-only;
+    # ARCHITECTURE Security bullet updated; MCP.md "Making MCP operable" section
+
+# =============================================================================
+# PHASE 13: Recipe Management (PR-039+)
+# =============================================================================
+
+PR-039:
+  name: "Recipe Delete UI & Authorization"
+  checks:
+    - type: file
+      path: src/components/recipes/delete-recipe-button.tsx
+    # Also modifies: src/app/api/recipes/[slug]/route.ts (role guard)
+    # Also modifies: src/components/media/icons.tsx (TrashIcon)
+    # Also modifies: src/app/(main)/recipes/[slug]/page.tsx (render button)

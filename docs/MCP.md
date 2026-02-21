@@ -74,6 +74,59 @@ OAuth metadata is available at:
 | `OAUTH_REGISTRATION_SECRET` | Optional | Secret to protect client registration |
 | `OWNER_EMAIL` | Optional | Default user for shopping list tools |
 
+## Making MCP Operable
+
+This section provides a step-by-step checklist to get MCP working with Cursor or Claude Code.
+
+### 1. Required environment
+
+Ensure these are set in `.env.local` (or Vercel environment variables):
+
+- **`JWT_SECRET`** — Required. Used to sign OAuth access tokens. Generate with `openssl rand -base64 48`.
+- **`NEXT_PUBLIC_APP_URL`** — Required. Base URL of the app (e.g. `http://localhost:3000` for dev, or `https://your-app.vercel.app` for production).
+- **App dependencies** — MongoDB, Resend (for magic links), etc. must be configured so MCP tools (recipes, shopping lists) can run.
+
+### 2. Optional MCP variables
+
+| Variable | Purpose |
+|----------|---------|
+| `OAUTH_ISSUER` | Override OAuth issuer URL (defaults to `NEXT_PUBLIC_APP_URL`) |
+| `OAUTH_REGISTRATION_SECRET` | Protects the client registration endpoint from unauthorized use |
+| `OWNER_EMAIL` | Default user for shopping list tools when `userEmail` is not provided |
+
+### 3. OAuth client registration (one-time)
+
+Register an OAuth client for Cursor or Claude Code. They typically use a localhost callback (e.g. `http://localhost:8080/callback` or similar).
+
+```bash
+curl -X POST https://your-app.vercel.app/api/mcp/oauth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "client_name": "Cursor",
+    "redirect_uris": ["http://localhost:8080/callback"]
+  }'
+```
+
+Response includes `client_id` and `client_secret`. Store these; you will configure the MCP client with them.
+
+For **local development**, use `http://localhost:3000` as the base URL:
+
+```bash
+curl -X POST http://localhost:3000/api/mcp/oauth/register \
+  -H "Content-Type: application/json" \
+  -d '{"client_name": "Cursor", "redirect_uris": ["http://localhost:8080/callback"]}'
+```
+
+### 4. Client configuration
+
+- **MCP endpoint**: `{NEXT_PUBLIC_APP_URL}/mcp` (e.g. `http://localhost:3000/mcp` or `https://your-app.vercel.app/mcp`)
+- **Auth**: OAuth 2.1 with PKCE
+- **Discovery**: `/.well-known/oauth-authorization-server` or `/api/mcp/.well-known/oauth-authorization-server`
+
+**Cursor**: Add the MCP server in Cursor settings (MCP section) with the endpoint URL and OAuth configuration. On first tool use, a browser opens for login and consent.
+
+**Claude Code**: See [Usage with Claude Code](#usage-with-claude-code) below. Run `claude mcp add --transport http family-recipes <APP_URL>/mcp`; the first use triggers browser login.
+
 ## Tools
 
 ### Recipes (Read)

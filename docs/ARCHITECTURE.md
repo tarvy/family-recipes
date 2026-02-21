@@ -232,7 +232,7 @@ recipe_notes
 
 ## Security
 
-- All routes behind auth middleware (except public MCP with API key)
+- All routes behind auth middleware; MCP uses OAuth 2.1 Bearer tokens (see docs/MCP.md)
 - Sessions in httpOnly cookies (not accessible to JS)
 - CSRF protection via SameSite cookie attribute
 - Rate limiting on auth endpoints

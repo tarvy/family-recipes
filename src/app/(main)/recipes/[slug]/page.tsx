@@ -1,11 +1,14 @@
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { CoverPhotoButton } from '@/components/media/cover-photo-button';
 import { CalendarIcon, ClockIcon, EditIcon, ServingsIcon } from '@/components/media/icons';
+import { DeleteRecipeButton } from '@/components/recipes/delete-recipe-button';
 import { PinRecipeButton } from '@/components/recipes/pin-recipe-button';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { Card } from '@/components/ui';
+import { getSessionFromCookies } from '@/lib/auth/session';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
 import { formatUpdatedDate } from '@/lib/format/date';
 import { getRecipeBySlug } from '@/lib/recipes/loader';
@@ -42,11 +45,14 @@ export async function generateMetadata({ params }: RecipeDetailPageProps) {
 
 export default async function RecipeDetailPage({ params }: RecipeDetailPageProps) {
   const { slug } = await params;
-  const recipe = await loadRecipeDetail(slug);
+  const [recipe, cookieStore] = await Promise.all([loadRecipeDetail(slug), cookies()]);
 
   if (!recipe) {
     notFound();
   }
+
+  const user = await getSessionFromCookies(cookieStore);
+  const canDelete = user?.role === 'owner' || user?.role === 'family';
 
   return (
     <MainLayout>
@@ -63,6 +69,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             </Link>
             <PinRecipeButton recipeSlug={slug} recipeTitle={recipe.title} />
             <CoverPhotoButton recipeSlug={slug} />
+            {canDelete && <DeleteRecipeButton recipeSlug={slug} recipeTitle={recipe.title} />}
           </div>
 
           {/* Header */}

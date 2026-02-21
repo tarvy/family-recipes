@@ -97,18 +97,26 @@ Vercel Blob storage token for recipe photos.
 
 ---
 
-### MCP Server
+### MCP Server (OAuth 2.1)
 
-#### `MCP_API_KEY`
-API key for authenticating MCP tool calls from Claude Code and Cursor.
+MCP authentication uses OAuth 2.1 Bearer tokens only. No API key is implemented.
 
-**How to obtain:**
-Generate a random string:
-```bash
-openssl rand -hex 32
-```
+**Required for MCP** (in addition to standard app env so tools work):
 
-**Usage:** Include as `x-api-key` header when calling MCP endpoints.
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `JWT_SECRET` | Yes | Signs OAuth access tokens |
+| `NEXT_PUBLIC_APP_URL` | Yes | Base URL for OAuth and MCP endpoint |
+
+**Optional MCP variables:**
+
+| Variable | Purpose |
+|----------|---------|
+| `OAUTH_ISSUER` | OAuth issuer URL (defaults to `NEXT_PUBLIC_APP_URL`) |
+| `OAUTH_REGISTRATION_SECRET` | Protects dynamic client registration endpoint |
+| `OWNER_EMAIL` | Default user for shopping list tools |
+
+For full MCP setup (env checklist, OAuth client registration, client configuration), see **docs/MCP.md**.
 
 ---
 
