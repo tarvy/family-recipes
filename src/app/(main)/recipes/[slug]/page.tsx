@@ -2,11 +2,12 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { CoverPhotoButton } from '@/components/media/cover-photo-button';
-import { ClockIcon, EditIcon, ServingsIcon } from '@/components/media/icons';
+import { CalendarIcon, ClockIcon, EditIcon, ServingsIcon } from '@/components/media/icons';
 import { PinRecipeButton } from '@/components/recipes/pin-recipe-button';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { Card } from '@/components/ui';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
+import { formatUpdatedDate } from '@/lib/format/date';
 import { getRecipeBySlug } from '@/lib/recipes/loader';
 import type { RecipeDetail } from '@/lib/recipes/repository';
 import { getRecipeDetail } from '@/lib/recipes/repository';
@@ -81,32 +82,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
             )}
 
             {/* Meta info */}
-            <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
-              {recipe.prepTime !== undefined && (
-                <span className="flex items-center gap-1">
-                  <ClockIcon />
-                  Prep: {formatTime(recipe.prepTime)}
-                </span>
-              )}
-              {recipe.cookTime !== undefined && (
-                <span className="flex items-center gap-1">
-                  <ClockIcon />
-                  Cook: {formatTime(recipe.cookTime)}
-                </span>
-              )}
-              {recipe.totalTime !== undefined && (
-                <span className="flex items-center gap-1">
-                  <ClockIcon />
-                  Total: {formatTime(recipe.totalTime)}
-                </span>
-              )}
-              {recipe.servings !== undefined && (
-                <span className="flex items-center gap-1">
-                  <ServingsIcon />
-                  {recipe.servings} serving{recipe.servings !== 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
+            <RecipeMetaRow recipe={recipe} />
 
             {/* Tags */}
             {recipe.tags.length > 0 && (
@@ -149,12 +125,15 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           </div>
 
           {/* Footer meta */}
-          {(recipe.cuisine || recipe.course || recipe.difficulty) && (
+          {(recipe.cuisine || recipe.course || recipe.difficulty || recipe.updatedAt) && (
             <footer className="mt-10 border-t border-border pt-6">
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                 {recipe.cuisine && <span>Cuisine: {recipe.cuisine}</span>}
                 {recipe.course && <span>Course: {recipe.course}</span>}
                 {recipe.difficulty && <span>Difficulty: {recipe.difficulty}</span>}
+                {recipe.updatedAt && (
+                  <span>Last updated: {formatUpdatedDate(recipe.updatedAt)}</span>
+                )}
               </div>
             </footer>
           )}
@@ -177,4 +156,44 @@ function formatTime(minutes: number): string {
     return `${hours} hr`;
   }
   return `${hours} hr ${remainingMinutes} min`;
+}
+
+/**
+ * Meta info row showing times, servings, and updated date
+ */
+function RecipeMetaRow({ recipe }: { recipe: RecipeDetail }) {
+  return (
+    <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground">
+      {recipe.prepTime !== undefined && (
+        <span className="flex items-center gap-1">
+          <ClockIcon />
+          Prep: {formatTime(recipe.prepTime)}
+        </span>
+      )}
+      {recipe.cookTime !== undefined && (
+        <span className="flex items-center gap-1">
+          <ClockIcon />
+          Cook: {formatTime(recipe.cookTime)}
+        </span>
+      )}
+      {recipe.totalTime !== undefined && (
+        <span className="flex items-center gap-1">
+          <ClockIcon />
+          Total: {formatTime(recipe.totalTime)}
+        </span>
+      )}
+      {recipe.servings !== undefined && (
+        <span className="flex items-center gap-1">
+          <ServingsIcon />
+          {recipe.servings} serving{recipe.servings !== 1 ? 's' : ''}
+        </span>
+      )}
+      {recipe.updatedAt && (
+        <span className="flex items-center gap-1">
+          <CalendarIcon />
+          Updated {formatUpdatedDate(recipe.updatedAt)}
+        </span>
+      )}
+    </div>
+  );
 }

@@ -130,6 +130,30 @@ export function ServingsIcon({ className = 'h-4 w-4' }: IconProps) {
   );
 }
 
+/** Calendar viewBox dimensions */
+const CALENDAR_X = 3;
+const CALENDAR_Y = 4;
+const CALENDAR_SIZE = 18;
+
+export function CalendarIcon({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <StrokeIcon className={className}>
+      <rect
+        x={CALENDAR_X}
+        y={CALENDAR_Y}
+        width={CALENDAR_SIZE}
+        height={CALENDAR_SIZE}
+        rx={ICON_STROKE_WIDTH}
+        ry={ICON_STROKE_WIDTH}
+        strokeWidth={ICON_STROKE_WIDTH}
+      />
+      <line x1="16" y1="2" x2="16" y2="6" strokeWidth={ICON_STROKE_WIDTH} />
+      <line x1="8" y1="2" x2="8" y2="6" strokeWidth={ICON_STROKE_WIDTH} />
+      <line x1="3" y1="10" x2="21" y2="10" strokeWidth={ICON_STROKE_WIDTH} />
+    </StrokeIcon>
+  );
+}
+
 export function EditIcon({ className = 'h-4 w-4' }: IconProps) {
   return (
     <StrokeIcon className={className}>
