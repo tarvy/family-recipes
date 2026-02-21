@@ -130,10 +130,16 @@ export function ServingsIcon({ className = 'h-4 w-4' }: IconProps) {
   );
 }
 
-/** Calendar viewBox dimensions */
+/** Calendar coordinate constants (within 24x24 viewBox) */
 const CALENDAR_X = 3;
 const CALENDAR_Y = 4;
 const CALENDAR_SIZE = 18;
+const CALENDAR_PEG_LEFT = 8;
+const CALENDAR_PEG_RIGHT = 16;
+const CALENDAR_PEG_TOP = 2;
+const CALENDAR_PEG_BOTTOM = 6;
+const CALENDAR_DIVIDER_Y = 10;
+const CALENDAR_RIGHT_EDGE = 21;
 
 export function CalendarIcon({ className = 'h-4 w-4' }: IconProps) {
   return (
@@ -147,9 +153,35 @@ export function CalendarIcon({ className = 'h-4 w-4' }: IconProps) {
         ry={ICON_STROKE_WIDTH}
         strokeWidth={ICON_STROKE_WIDTH}
       />
-      <line x1="16" y1="2" x2="16" y2="6" strokeWidth={ICON_STROKE_WIDTH} />
-      <line x1="8" y1="2" x2="8" y2="6" strokeWidth={ICON_STROKE_WIDTH} />
-      <line x1="3" y1="10" x2="21" y2="10" strokeWidth={ICON_STROKE_WIDTH} />
+      <line
+        x1={CALENDAR_PEG_RIGHT}
+        y1={CALENDAR_PEG_TOP}
+        x2={CALENDAR_PEG_RIGHT}
+        y2={CALENDAR_PEG_BOTTOM}
+        strokeWidth={ICON_STROKE_WIDTH}
+      />
+      <line
+        x1={CALENDAR_PEG_LEFT}
+        y1={CALENDAR_PEG_TOP}
+        x2={CALENDAR_PEG_LEFT}
+        y2={CALENDAR_PEG_BOTTOM}
+        strokeWidth={ICON_STROKE_WIDTH}
+      />
+      <line
+        x1={CALENDAR_X}
+        y1={CALENDAR_DIVIDER_Y}
+        x2={CALENDAR_RIGHT_EDGE}
+        y2={CALENDAR_DIVIDER_Y}
+        strokeWidth={ICON_STROKE_WIDTH}
+      />
+    </StrokeIcon>
+  );
+}
+
+export function TrashIcon({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <StrokeIcon className={className}>
+      <StrokePath d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
     </StrokeIcon>
   );
 }

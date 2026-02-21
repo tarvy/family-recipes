@@ -11,6 +11,7 @@ import { getSessionFromCookies } from '@/lib/auth/session';
 import {
   HTTP_BAD_REQUEST,
   HTTP_CONFLICT,
+  HTTP_FORBIDDEN,
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_NOT_FOUND,
   HTTP_UNAUTHORIZED,
@@ -250,6 +251,17 @@ export async function DELETE(request: Request, { params }: RouteParams): Promise
       }
 
       span.setAttribute('user_id', user.id);
+      span.setAttribute('user_role', user.role);
+
+      if (user.role === 'friend') {
+        logger.recipes.warn('Delete forbidden for friend role', {
+          slug,
+          userId: user.id,
+          role: user.role,
+        });
+        span.setAttribute('error', 'forbidden');
+        return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
+      }
 
       try {
         const result = await deleteRecipe(slug);
@@ -262,6 +274,7 @@ export async function DELETE(request: Request, { params }: RouteParams): Promise
         logger.recipes.info('Recipe deleted via API', {
           slug,
           userId: user.id,
+          role: user.role,
         });
 
         return Response.json({ success: true });
