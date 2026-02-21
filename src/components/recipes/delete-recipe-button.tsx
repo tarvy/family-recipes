@@ -21,11 +21,12 @@ interface DeleteRecipeButtonProps {
 type DeleteState = 'idle' | 'confirming' | 'deleting' | 'error';
 
 /** Duration in ms to show the error state before reverting to idle */
-const ERROR_DISPLAY_MS = 3000;
+const ERROR_DISPLAY_MS = 5000;
 
 export function DeleteRecipeButton({ recipeSlug, recipeTitle }: DeleteRecipeButtonProps) {
   const router = useRouter();
   const [state, setState] = useState<DeleteState>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close confirmation dropdown when clicking outside
@@ -56,17 +57,22 @@ export function DeleteRecipeButton({ recipeSlug, recipeTitle }: DeleteRecipeButt
 
   const handleDelete = useCallback(async () => {
     setState('deleting');
+    setErrorMessage('');
 
     try {
       const response = await fetch(`/api/recipes/${recipeSlug}`, { method: 'DELETE' });
 
       if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        const msg = (body as { error?: string } | null)?.error ?? 'Delete failed';
+        setErrorMessage(msg);
         setState('error');
         return;
       }
 
       router.push('/recipes');
     } catch {
+      setErrorMessage('Network error');
       setState('error');
     }
   }, [recipeSlug, router]);
@@ -105,6 +111,13 @@ export function DeleteRecipeButton({ recipeSlug, recipeTitle }: DeleteRecipeButt
               Cancel
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Error tooltip */}
+      {state === 'error' && errorMessage && (
+        <div className="absolute right-0 top-full z-10 mt-1 w-56 rounded-lg border border-destructive/30 bg-card px-3 py-2 text-xs text-destructive shadow-lg">
+          {errorMessage}
         </div>
       )}
     </div>
