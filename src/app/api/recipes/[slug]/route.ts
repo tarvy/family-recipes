@@ -234,7 +234,7 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
 /**
  * DELETE /api/recipes/[slug]
  *
- * Delete a recipe. Auth required.
+ * Delete a recipe. Auth required. Only owner and family roles.
  */
 export async function DELETE(request: Request, { params }: RouteParams): Promise<Response> {
   return withRequestContext(request, () =>
@@ -254,29 +254,19 @@ export async function DELETE(request: Request, { params }: RouteParams): Promise
       span.setAttribute('user_role', user.role);
 
       if (user.role === 'friend') {
-        logger.recipes.warn('Delete forbidden for friend role', {
-          slug,
-          userId: user.id,
-          role: user.role,
-        });
+        logger.recipes.warn('Delete forbidden for friend role', { slug, userId: user.id });
         span.setAttribute('error', 'forbidden');
         return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
       }
 
       try {
         const result = await deleteRecipe(slug);
-
         if (!result.success) {
-          span.setAttribute('error', 'not_found');
+          span.setAttribute('error', result.code ?? 'delete_failed');
           return Response.json({ error: result.error }, { status: HTTP_NOT_FOUND });
         }
 
-        logger.recipes.info('Recipe deleted via API', {
-          slug,
-          userId: user.id,
-          role: user.role,
-        });
-
+        logger.recipes.info('Recipe deleted via API', { slug, userId: user.id, role: user.role });
         return Response.json({ success: true });
       } catch (error) {
         logger.recipes.error('Failed to delete recipe', toError(error));

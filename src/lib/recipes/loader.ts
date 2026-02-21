@@ -1,7 +1,8 @@
 /**
  * Recipe loader for UI display.
  *
- * Reads .cook files from filesystem and returns preview data.
+ * Reads from MongoDB only. Filesystem (.cook files) is for sync only (git push →
+ * parse → MongoDB); UI always reads from MongoDB.
  *
  * Usage:
  *   import { getAllRecipes, getCategories } from '@/lib/recipes/loader';
@@ -10,18 +11,13 @@
  *   const categories = getCategories();
  */
 
-import { promises as fs } from 'node:fs';
-import type { IRecipe } from '@/db/types';
-import { parseCooklang } from '@/lib/cooklang/parser';
-import { type CookFile, scanCooklangFiles } from '@/lib/git-recipes/file-scanner';
+import type { IRecipeDocument } from '@/db/types';
 import { logger } from '@/lib/logger';
+import { getAllRecipes as getAllRecipesFromDb } from '@/lib/recipes/repository';
 import { withTrace } from '@/lib/telemetry';
 
 /** Maximum description length for preview cards */
 const MAX_DESCRIPTION_LENGTH = 150;
-
-/** Default recipes directory relative to project root */
-const RECIPES_DIRECTORY = 'recipes';
 
 /**
  * Lightweight recipe data for card display
@@ -90,89 +86,48 @@ function truncateDescription(description?: string): string | undefined {
 }
 
 /**
- * Parse a single .cook file and convert to RecipePreview
+ * Convert MongoDB recipe document to RecipePreview
  */
-async function parseRecipeFile(file: CookFile): Promise<RecipePreview | null> {
-  try {
-    const content = await fs.readFile(file.absolutePath, 'utf-8');
-    const result = await parseCooklang(content, {
-      filePath: file.relativePath,
-      gitCommitHash: 'preview',
-    });
+function docToRecipePreview(doc: IRecipeDocument): RecipePreview {
+  const totalTime = computeTotalTime(doc.totalTime, doc.prepTime, doc.cookTime);
+  const category = doc.category ?? (doc.filePath ? extractCategory(doc.filePath) : 'uncategorized');
+  const description = truncateDescription(doc.description);
 
-    if (!result.success) {
-      logger.recipes.warn('Failed to parse recipe', {
-        file: file.relativePath,
-        error: result.error,
-      });
-      return null;
-    }
+  const preview: RecipePreview = {
+    slug: doc.slug,
+    title: doc.title,
+    category,
+    ingredientCount: doc.ingredients?.length ?? 0,
+  };
 
-    const { recipe } = result;
-    const preview: RecipePreview = {
-      slug: recipe.slug,
-      title: recipe.title,
-      category: extractCategory(file.relativePath),
-      ingredientCount: recipe.ingredients.length,
-    };
-
-    if (recipe.prepTime !== undefined) {
-      preview.prepTime = recipe.prepTime;
-    }
-    if (recipe.cookTime !== undefined) {
-      preview.cookTime = recipe.cookTime;
-    }
-    const totalTime = computeTotalTime(recipe.totalTime, recipe.prepTime, recipe.cookTime);
-    if (totalTime !== undefined) {
-      preview.totalTime = totalTime;
-    }
-    const description = truncateDescription(recipe.description);
-    if (description !== undefined) {
-      preview.description = description;
-    }
-
-    return preview;
-  } catch (error) {
-    logger.recipes.error('Error reading recipe file', error instanceof Error ? error : undefined, {
-      file: file.relativePath,
-    });
-    return null;
+  if (doc.prepTime !== undefined) {
+    preview.prepTime = doc.prepTime;
   }
+  if (doc.cookTime !== undefined) {
+    preview.cookTime = doc.cookTime;
+  }
+  if (totalTime !== undefined) {
+    preview.totalTime = totalTime;
+  }
+  if (description !== undefined) {
+    preview.description = description;
+  }
+
+  return preview;
 }
 
 /**
- * Load all recipes from the filesystem
+ * Load all recipes from MongoDB.
  *
  * @returns Array of RecipePreview objects sorted by title
  */
 export async function getAllRecipes(): Promise<RecipePreview[]> {
   return withTrace('recipes.getAllRecipes', async (span) => {
-    const files = await scanCooklangFiles(RECIPES_DIRECTORY);
-    span.setAttribute('files_found', files.length);
-
-    if (files.length === 0) {
-      logger.recipes.warn('No recipe files found', { directory: RECIPES_DIRECTORY });
-      return [];
-    }
-
-    const previews: RecipePreview[] = [];
-
-    for (const file of files) {
-      const preview = await parseRecipeFile(file);
-      if (preview) {
-        previews.push(preview);
-      }
-    }
-
-    // Sort by title for consistent display
+    const docs = await getAllRecipesFromDb();
+    const previews = docs.map(docToRecipePreview);
     previews.sort((a, b) => a.title.localeCompare(b.title));
-
     span.setAttribute('recipes_loaded', previews.length);
-    logger.recipes.info('Loaded recipe previews', {
-      total: previews.length,
-      failed: files.length - previews.length,
-    });
-
+    logger.recipes.info('Loaded recipe previews', { total: previews.length });
     return previews;
   });
 }
@@ -184,219 +139,4 @@ export async function getAllRecipes(): Promise<RecipePreview[]> {
  */
 export function getCategories(): string[] {
   return ['breakfast', 'cocktails', 'desserts', 'entrees', 'salads', 'sides', 'soups'];
-}
-
-/**
- * Full recipe data for detail view
- */
-export interface RecipeDetail {
-  slug: string;
-  title: string;
-  category: string;
-  description?: string;
-  servings?: number;
-  prepTime?: number;
-  cookTime?: number;
-  totalTime?: number;
-  difficulty?: string;
-  cuisine?: string;
-  course?: string;
-  ingredients: Array<{
-    name: string;
-    quantity?: string;
-    unit?: string;
-  }>;
-  cookware: Array<{
-    name: string;
-    quantity?: number;
-  }>;
-  steps: Array<{
-    text: string;
-    timers?: Array<{ duration: number; unit: string }>;
-    ingredients?: Array<{ name: string; quantity?: string; unit?: string }>;
-  }>;
-  tags: string[];
-  updatedAt?: string;
-}
-
-/**
- * Convert IRecipe steps to RecipeDetail steps
- */
-function convertStepsForDetail(
-  steps: Array<{
-    text: string;
-    timers?: Array<{ duration: number; unit: string }>;
-    ingredients?: Array<{ name: string; quantity?: string; unit?: string }>;
-  }>,
-): RecipeDetail['steps'] {
-  return steps.map((step) => {
-    const mapped: RecipeDetail['steps'][number] = {
-      text: step.text,
-    };
-    if (step.timers && step.timers.length > 0) {
-      mapped.timers = step.timers;
-    }
-    if (step.ingredients && step.ingredients.length > 0) {
-      mapped.ingredients = step.ingredients;
-    }
-    return mapped;
-  });
-}
-
-/**
- * Apply optional fields from IRecipe to RecipeDetail
- */
-function applyOptionalDetailFields(detail: RecipeDetail, recipe: IRecipe): void {
-  if (recipe.description) {
-    detail.description = recipe.description;
-  }
-  if (recipe.servings !== undefined) {
-    detail.servings = recipe.servings;
-  }
-  if (recipe.prepTime !== undefined) {
-    detail.prepTime = recipe.prepTime;
-  }
-  if (recipe.cookTime !== undefined) {
-    detail.cookTime = recipe.cookTime;
-  }
-  if (recipe.totalTime !== undefined) {
-    detail.totalTime = recipe.totalTime;
-  }
-  if (recipe.difficulty) {
-    detail.difficulty = recipe.difficulty;
-  }
-  if (recipe.cuisine) {
-    detail.cuisine = recipe.cuisine;
-  }
-  if (recipe.course) {
-    detail.course = recipe.course;
-  }
-}
-
-/**
- * Build RecipeDetail from IRecipe and file info
- */
-function buildRecipeDetail(recipe: IRecipe, relativePath: string): RecipeDetail {
-  const detail: RecipeDetail = {
-    slug: recipe.slug,
-    title: recipe.title,
-    category: extractCategory(relativePath),
-    ingredients: recipe.ingredients,
-    cookware: recipe.cookware,
-    steps: convertStepsForDetail(recipe.steps),
-    tags: recipe.tags ?? [],
-  };
-
-  applyOptionalDetailFields(detail, recipe);
-  return detail;
-}
-
-/**
- * Load a single recipe by slug
- *
- * @param slug - URL-safe recipe identifier
- * @returns RecipeDetail or null if not found
- */
-export async function getRecipeBySlug(slug: string): Promise<RecipeDetail | null> {
-  return withTrace('recipes.getRecipeBySlug', async (span) => {
-    span.setAttribute('slug', slug);
-
-    const files = await scanCooklangFiles(RECIPES_DIRECTORY);
-
-    for (const file of files) {
-      const detail = await tryParseRecipeFile(file, slug);
-      if (detail) {
-        logger.recipes.info('Loaded recipe detail', { slug, title: detail.title });
-        return detail;
-      }
-    }
-
-    logger.recipes.warn('Recipe not found', { slug });
-    return null;
-  });
-}
-
-/**
- * Try to parse a file and return RecipeDetail if it matches the slug
- */
-async function tryParseRecipeFile(
-  file: CookFile,
-  targetSlug: string,
-): Promise<RecipeDetail | null> {
-  try {
-    const content = await fs.readFile(file.absolutePath, 'utf-8');
-    const result = await parseCooklang(content, {
-      filePath: file.relativePath,
-      gitCommitHash: 'detail',
-    });
-
-    if (!result.success || result.recipe.slug !== targetSlug) {
-      return null;
-    }
-
-    return buildRecipeDetail(result.recipe, file.relativePath);
-  } catch (error) {
-    logger.recipes.error('Error reading recipe file', error instanceof Error ? error : undefined, {
-      file: file.relativePath,
-    });
-    return null;
-  }
-}
-
-/**
- * Raw Cooklang content with category info for editing
- */
-export interface RawRecipeContent {
-  /** Raw .cook file content */
-  content: string;
-  /** Category directory the recipe is in */
-  category: string;
-  /** Recipe slug */
-  slug: string;
-}
-
-/**
- * Load raw Cooklang content by slug
- *
- * Returns the exact file content without transformation,
- * supporting the Cooklang-first editing approach.
- *
- * @param slug - URL-safe recipe identifier
- * @returns Raw content and category, or null if not found
- */
-export async function getRawCooklangContent(slug: string): Promise<RawRecipeContent | null> {
-  return withTrace('recipes.getRawCooklangContent', async (span) => {
-    span.setAttribute('slug', slug);
-
-    const files = await scanCooklangFiles(RECIPES_DIRECTORY);
-
-    for (const file of files) {
-      // Check if filename matches slug
-      const filename = file.relativePath.split('/').pop() ?? '';
-      const fileSlug = filename.replace(/\.cook$/, '');
-
-      if (fileSlug !== slug) {
-        continue;
-      }
-
-      try {
-        const content = await fs.readFile(file.absolutePath, 'utf-8');
-        const category = extractCategory(file.relativePath);
-
-        logger.recipes.info('Loaded raw Cooklang content', { slug, category });
-
-        return { content, category, slug };
-      } catch (error) {
-        logger.recipes.error(
-          'Error reading recipe file',
-          error instanceof Error ? error : undefined,
-          { file: file.relativePath },
-        );
-        return null;
-      }
-    }
-
-    logger.recipes.warn('Recipe not found for raw content', { slug });
-    return null;
-  });
 }
