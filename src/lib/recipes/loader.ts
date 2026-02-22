@@ -11,6 +11,8 @@
  *   const categories = getCategories();
  */
 
+import { connectDB } from '@/db/connection';
+import { Recipe } from '@/db/models/recipe.model';
 import type { IRecipeDocument } from '@/db/types';
 import { logger } from '@/lib/logger';
 import {
@@ -19,7 +21,7 @@ import {
   getRecipeBySlug,
   type RecipeDetail,
 } from '@/lib/recipes/repository';
-import { withTrace } from '@/lib/telemetry';
+import { traceDbQuery, withTrace } from '@/lib/telemetry';
 
 // Re-export repository functions used by consumers that import from loader
 export { getRecipeBySlug, getRawCooklangContent, type RecipeDetail };
@@ -147,4 +149,78 @@ export async function getAllRecipes(): Promise<RecipePreview[]> {
  */
 export function getCategories(): string[] {
   return ['breakfast', 'cocktails', 'desserts', 'entrees', 'salads', 'sides', 'soups'];
+}
+
+// -----------------------------------------------------------------------------
+// Recipe Sections (PR-044)
+// -----------------------------------------------------------------------------
+
+/** Default number of recipes per section */
+const SECTION_LIMIT = 6;
+
+/**
+ * Data for curated recipe sections on the main page
+ */
+export interface RecipeSectionsData {
+  mostUsed: RecipePreview[];
+  recentlyUsed: RecipePreview[];
+  recentlyAdded: RecipePreview[];
+  random: RecipePreview[];
+}
+
+/**
+ * Load curated recipe sections for the main page.
+ *
+ * Runs 4 queries in parallel via Promise.all:
+ * - Most Used: top recipes by useCount (excludes zero)
+ * - Recently Used: most recently viewed recipes
+ * - Recently Added: newest recipes by createdAt
+ * - Random: random sample via MongoDB $sample
+ */
+export async function getRecipeSections(limit = SECTION_LIMIT): Promise<RecipeSectionsData> {
+  return withTrace('recipes.getRecipeSections', async (span) => {
+    await connectDB();
+
+    const [mostUsedDocs, recentlyUsedDocs, recentlyAddedDocs, randomDocs] = await Promise.all([
+      traceDbQuery('find', 'recipes', () =>
+        Recipe.find({ useCount: { $gt: 0 } })
+          .sort({ useCount: -1 })
+          .limit(limit)
+          .exec(),
+      ),
+      traceDbQuery('find', 'recipes', () =>
+        Recipe.find({ lastUsedAt: { $ne: null } })
+          .sort({ lastUsedAt: -1 })
+          .limit(limit)
+          .exec(),
+      ),
+      traceDbQuery('find', 'recipes', () =>
+        Recipe.find().sort({ createdAt: -1 }).limit(limit).exec(),
+      ),
+      traceDbQuery('aggregate', 'recipes', () =>
+        Recipe.aggregate<IRecipeDocument>([{ $sample: { size: limit } }]).exec(),
+      ),
+    ]);
+
+    const sections: RecipeSectionsData = {
+      mostUsed: mostUsedDocs.map(docToRecipePreview),
+      recentlyUsed: recentlyUsedDocs.map(docToRecipePreview),
+      recentlyAdded: recentlyAddedDocs.map(docToRecipePreview),
+      random: randomDocs.map(docToRecipePreview),
+    };
+
+    span.setAttribute('mostUsed', sections.mostUsed.length);
+    span.setAttribute('recentlyUsed', sections.recentlyUsed.length);
+    span.setAttribute('recentlyAdded', sections.recentlyAdded.length);
+    span.setAttribute('random', sections.random.length);
+
+    logger.recipes.debug('Loaded recipe sections', {
+      mostUsed: sections.mostUsed.length,
+      recentlyUsed: sections.recentlyUsed.length,
+      recentlyAdded: sections.recentlyAdded.length,
+      random: sections.random.length,
+    });
+
+    return sections;
+  });
 }

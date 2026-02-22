@@ -11,7 +11,7 @@ import { MINUTES_PER_HOUR } from '@/lib/constants/time';
 import { formatUpdatedDate } from '@/lib/format/date';
 import { getRecipeBySlug } from '@/lib/recipes/loader';
 import type { RecipeDetail } from '@/lib/recipes/repository';
-import { getRecipeDetail } from '@/lib/recipes/repository';
+import { getRecipeDetail, recordRecipeUse } from '@/lib/recipes/repository';
 
 interface RecipeDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -53,6 +53,9 @@ export default async function RecipeDetailPage({ params, searchParams }: RecipeD
   if (!recipe) {
     notFound();
   }
+
+  // Fire-and-forget: record usage for Most Used / Recently Used sections
+  recordRecipeUse(slug).catch(() => {});
 
   const user = await getSessionFromCookies(cookieStore);
   const canDelete = user?.role === 'owner' || user?.role === 'family';

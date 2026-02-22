@@ -2,8 +2,9 @@ import { cookies } from 'next/headers';
 import { Suspense } from 'react';
 import { MainLayout } from '@/components/layout';
 import { RecipeBrowser } from '@/components/recipes/recipe-browser';
+import { RecipeSections } from '@/components/recipes/recipe-sections';
 import { getSessionFromCookies } from '@/lib/auth/session';
-import { getAllRecipes, getCategories } from '@/lib/recipes/loader';
+import { getAllRecipes, getCategories, getRecipeSections } from '@/lib/recipes/loader';
 
 /** Skeleton pill keys for loading state */
 const SKELETON_PILLS = ['pill-1', 'pill-2', 'pill-3', 'pill-4', 'pill-5'] as const;
@@ -50,7 +51,11 @@ function RecipeBrowserSkeleton() {
 }
 
 export default async function RecipesPage() {
-  const [recipes, cookieStore] = await Promise.all([getAllRecipes(), cookies()]);
+  const [recipes, sections, cookieStore] = await Promise.all([
+    getAllRecipes(),
+    getRecipeSections(),
+    cookies(),
+  ]);
   const categories = getCategories();
   const user = await getSessionFromCookies(cookieStore);
   const canDelete = user?.role === 'owner' || user?.role === 'family';
@@ -65,6 +70,8 @@ export default async function RecipesPage() {
               Browse {recipes.length} family recipes
             </p>
           </div>
+
+          <RecipeSections sections={sections} canDelete={canDelete} />
 
           <Suspense fallback={<RecipeBrowserSkeleton />}>
             <RecipeBrowser recipes={recipes} categories={categories} canDelete={canDelete} />

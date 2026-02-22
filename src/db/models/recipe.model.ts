@@ -138,6 +138,14 @@ const recipeSchema = new Schema<IRecipeDocument>(
       type: String,
       enum: ['mcp', 'api', 'sync', 'import'],
     },
+    // Usage tracking (PR-044)
+    useCount: {
+      type: Number,
+      default: 0,
+    },
+    lastUsedAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -150,6 +158,10 @@ recipeSchema.index({ cuisine: 1 });
 recipeSchema.index({ course: 1 });
 recipeSchema.index({ category: 1 });
 recipeSchema.index({ 'ingredients.name': 1 });
+// Usage tracking indexes (PR-044)
+recipeSchema.index({ useCount: -1 });
+recipeSchema.index({ lastUsedAt: -1 });
+recipeSchema.index({ createdAt: -1 });
 
 // Text search weights - higher numbers = more relevance in search results
 const SEARCH_WEIGHT_TITLE = 10;

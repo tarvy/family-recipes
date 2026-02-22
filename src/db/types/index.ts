@@ -132,6 +132,11 @@ export interface IRecipe {
   category?: string;
   /** Source of this recipe data */
   source?: RecipeSource;
+  // Usage tracking (PR-044)
+  /** Number of times this recipe has been viewed */
+  useCount?: number;
+  /** Last time this recipe was viewed */
+  lastUsedAt?: Date;
 }
 
 export interface IRecipeDocument extends IRecipe, Document {}

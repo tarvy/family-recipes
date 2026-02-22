@@ -618,3 +618,56 @@ export async function backfillRawCooklang(
     return updated;
   });
 }
+
+// -----------------------------------------------------------------------------
+// Usage Tracking (PR-044)
+// -----------------------------------------------------------------------------
+
+/** Minutes in the dedup window */
+const USE_DEDUP_MINUTES = 5;
+
+/** Milliseconds per minute */
+const MS_PER_MINUTE = 60_000;
+
+/** Minimum interval between usage increments for the same recipe */
+const USE_DEDUP_WINDOW_MS = USE_DEDUP_MINUTES * MS_PER_MINUTE;
+
+/**
+ * Record a recipe view, incrementing useCount and updating lastUsedAt.
+ *
+ * Uses a 5-minute dedup window to avoid inflating counts from rapid
+ * page loads, refreshes, or accidental taps. If the recipe was viewed
+ * within the window, this is a no-op.
+ */
+export async function recordRecipeUse(slug: string): Promise<void> {
+  return withTrace('repository.recordRecipeUse', async (span) => {
+    span.setAttribute('slug', slug);
+
+    await connectDB();
+
+    const cutoff = new Date(Date.now() - USE_DEDUP_WINDOW_MS);
+
+    const result = await traceDbQuery('updateOne', COLLECTION_NAME, async () => {
+      return Recipe.updateOne(
+        {
+          slug,
+          $or: [
+            { lastUsedAt: null },
+            { lastUsedAt: { $exists: false } },
+            { lastUsedAt: { $lt: cutoff } },
+          ],
+        },
+        {
+          $inc: { useCount: 1 },
+          $set: { lastUsedAt: new Date() },
+        },
+      ).exec();
+    });
+
+    if (result.modifiedCount > 0) {
+      logger.recipes.debug('Recorded recipe use', { slug });
+    } else {
+      logger.recipes.debug('Recipe use skipped (dedup window)', { slug });
+    }
+  });
+}
