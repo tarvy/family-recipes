@@ -8,7 +8,6 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { logger } from '@/lib/logger';
 import { StarRating } from './star-rating';
 
 /** Maximum star rating value */
@@ -69,11 +68,11 @@ export function RecipeInteractions({
 
         if (!response.ok) {
           setRating(previousRating);
-          logger.recipes.error('Failed to save rating');
+          // Rating save failed — API returned error
         }
       } catch {
         setRating(previousRating);
-        logger.recipes.error('Failed to save rating');
+        // Rating save failed — network error
       } finally {
         setRatingLoading(false);
       }
@@ -104,10 +103,10 @@ export function RecipeInteractions({
         setCookNote('');
         setShowCookForm(false);
       } else {
-        logger.recipes.error('Failed to add cook log entry');
+        // Cook log save failed — API returned error
       }
     } catch {
-      logger.recipes.error('Failed to add cook log entry');
+      // Cook log save failed — network error
     } finally {
       setCookLoading(false);
     }
