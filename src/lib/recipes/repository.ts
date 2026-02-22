@@ -297,6 +297,31 @@ export async function getRawCooklangContent(
   });
 }
 
+/**
+ * Get recipes that need rawCooklang backfill (missing, null, or empty)
+ */
+export async function getRecipesNeedingRawCooklangBackfill(): Promise<
+  Array<Pick<IRecipeDocument, 'slug' | 'filePath' | 'category'>>
+> {
+  return withTrace('repository.getRecipesNeedingRawCooklangBackfill', async (span) => {
+    await connectDB();
+
+    const recipes = await traceDbQuery('find', COLLECTION_NAME, async () => {
+      return Recipe.find(
+        {
+          $or: [{ rawCooklang: { $exists: false } }, { rawCooklang: '' }, { rawCooklang: null }],
+        },
+        { slug: 1, filePath: 1, category: 1 },
+      )
+        .lean()
+        .exec();
+    });
+
+    span.setAttribute('count', recipes.length);
+    return recipes as Array<Pick<IRecipeDocument, 'slug' | 'filePath' | 'category'>>;
+  });
+}
+
 // -----------------------------------------------------------------------------
 // Write Operations
 // -----------------------------------------------------------------------------
@@ -577,7 +602,10 @@ export async function backfillRawCooklang(
 
     const result = await traceDbQuery('updateOne', COLLECTION_NAME, async () => {
       return Recipe.updateOne(
-        { slug, rawCooklang: { $exists: false } },
+        {
+          slug,
+          $or: [{ rawCooklang: { $exists: false } }, { rawCooklang: '' }, { rawCooklang: null }],
+        },
         { $set: { rawCooklang: content, category, source: 'sync' } },
       ).exec();
     });

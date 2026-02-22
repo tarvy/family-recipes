@@ -464,3 +464,35 @@ PR-042:
     # Also modifies: src/components/media/icons.tsx (ArrowLeftIcon)
     # Also modifies: src/components/recipes/recipe-card.tsx (?from=browse)
     # Also modifies: src/app/(main)/recipes/[slug]/page.tsx (conditional render)
+
+# =============================================================================
+# PHASE 17: Data Integrity (PR-043)
+# =============================================================================
+
+PR-043:
+  name: "Raw Cooklang Backfill"
+  checks:
+    - type: file
+      path: src/app/api/recipes/backfill-raw-cooklang/route.ts
+    - type: file
+      path: src/lib/recipes/repository.ts
+    - type: file
+      path: src/lib/git-recipes/sync.ts
+
+# =============================================================================
+# PHASE 18: Recipe List Sections (PR-044)
+# =============================================================================
+
+PR-044:
+  name: "Recipe List Sections (Most Used, Recently Added, Recently Used, Random)"
+  checks:
+    - type: file
+      path: src/components/recipes/recipe-section.tsx
+    - type: file
+      path: src/components/recipes/recipe-sections.tsx
+    # Also modifies: src/db/models/recipe.model.ts (useCount, lastUsedAt)
+    # Also modifies: src/db/types/index.ts
+    # Also modifies: src/lib/recipes/repository.ts (recordRecipeUse)
+    # Also modifies: src/lib/recipes/loader.ts (getRecipeSections)
+    # Also modifies: src/app/(main)/recipes/page.tsx
+    # Also modifies: src/app/(main)/recipes/[slug]/page.tsx (recordRecipeUse)

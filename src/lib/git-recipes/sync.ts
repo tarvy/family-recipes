@@ -98,6 +98,7 @@ async function processFile(
 
     const recipe: IRecipe = {
       ...parseResult.recipe,
+      rawCooklang: source,
       photoUrls: photoUrls.photoUrls,
     };
 
