@@ -13,8 +13,16 @@
 
 import type { IRecipeDocument } from '@/db/types';
 import { logger } from '@/lib/logger';
-import { getAllRecipes as getAllRecipesFromDb } from '@/lib/recipes/repository';
+import {
+  getAllRecipes as getAllRecipesFromDb,
+  getRawCooklangContent,
+  getRecipeBySlug,
+  type RecipeDetail,
+} from '@/lib/recipes/repository';
 import { withTrace } from '@/lib/telemetry';
+
+// Re-export repository functions used by consumers that import from loader
+export { getRecipeBySlug, getRawCooklangContent, type RecipeDetail };
 
 /** Maximum description length for preview cards */
 const MAX_DESCRIPTION_LENGTH = 150;
