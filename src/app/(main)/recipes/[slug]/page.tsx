@@ -5,6 +5,7 @@ import { CalendarIcon, ClockIcon, ServingsIcon } from '@/components/media/icons'
 import { RecipeActions } from '@/components/recipes/recipe-actions';
 import { RecipeBackButton } from '@/components/recipes/recipe-back-button';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
+import { RecipeInteractions } from '@/components/recipes/recipe-interactions';
 import { Card } from '@/components/ui';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
@@ -135,6 +136,13 @@ export default async function RecipeDetailPage({ params, searchParams }: RecipeD
               }
             />
           </div>
+
+          {/* Rating & Cook Log */}
+          <RecipeInteractions
+            slug={slug}
+            initialRating={recipe.rating ?? null}
+            initialCookLog={recipe.cookLog ?? []}
+          />
 
           {/* Footer meta */}
           {(recipe.cuisine || recipe.course || recipe.difficulty || recipe.updatedAt) && (

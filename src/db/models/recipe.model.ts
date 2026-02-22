@@ -9,6 +9,9 @@
 import mongoose, { type Model, Schema } from 'mongoose';
 import type { IRecipeDocument } from '../types';
 
+/** Maximum allowed star rating value */
+const MAX_STAR_RATING = 5;
+
 // Sub-schemas for embedded documents
 const ingredientSchema = new Schema(
   {
@@ -43,6 +46,15 @@ const stepSchema = new Schema(
     timers: { type: [timerSchema], default: [] },
   },
   { _id: false },
+);
+
+// Cook log entry sub-schema (PR-046)
+const cookLogEntrySchema = new Schema(
+  {
+    cookedAt: { type: Date, required: true },
+    note: { type: String },
+  },
+  { _id: true },
 );
 
 const recipeSchema = new Schema<IRecipeDocument>(
@@ -145,6 +157,16 @@ const recipeSchema = new Schema<IRecipeDocument>(
     },
     lastUsedAt: {
       type: Date,
+    },
+    // Rating & Cook Log (PR-046)
+    rating: {
+      type: Number,
+      min: 1,
+      max: MAX_STAR_RATING,
+    },
+    cookLog: {
+      type: [cookLogEntrySchema],
+      default: [],
     },
   },
   {

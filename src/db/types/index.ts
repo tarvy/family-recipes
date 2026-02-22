@@ -137,6 +137,14 @@ export interface IRecipe {
   useCount?: number;
   /** Last time this recipe was viewed */
   lastUsedAt?: Date;
+  // Rating & Cook Log (PR-046)
+  /** Family star rating (1-5), undefined if unrated */
+  rating?: number;
+  /** Cook log entries */
+  cookLog?: Array<{
+    cookedAt: Date;
+    note?: string;
+  }>;
 }
 
 export interface IRecipeDocument extends IRecipe, Document {}

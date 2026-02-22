@@ -82,6 +82,12 @@ export interface RecipeDetail {
   }>;
   tags: string[];
   updatedAt?: string;
+  rating?: number;
+  cookLog?: Array<{
+    id: string;
+    cookedAt: string;
+    note?: string;
+  }>;
 }
 
 // -----------------------------------------------------------------------------
@@ -192,6 +198,21 @@ function toRecipeDetail(doc: IRecipeDocument): RecipeDetail {
   }
   if (doc.updatedAt) {
     detail.updatedAt = doc.updatedAt.toISOString();
+  }
+  if (doc.rating !== undefined) {
+    detail.rating = doc.rating;
+  }
+  if (doc.cookLog && doc.cookLog.length > 0) {
+    detail.cookLog = doc.cookLog.map((e) => {
+      const entry: RecipeDetail['cookLog'] extends Array<infer T> | undefined ? T : never = {
+        id: (e as unknown as { _id?: { toString(): string } })._id?.toString() ?? '',
+        cookedAt: e.cookedAt.toISOString(),
+      };
+      if (e.note) {
+        entry.note = e.note;
+      }
+      return entry;
+    });
   }
 
   return detail;
@@ -669,5 +690,69 @@ export async function recordRecipeUse(slug: string): Promise<void> {
     } else {
       logger.recipes.debug('Recipe use skipped (dedup window)', { slug });
     }
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Rating & Cook Log (PR-046)
+// -----------------------------------------------------------------------------
+
+/**
+ * Set or clear the family rating for a recipe.
+ *
+ * Pass a number 1-5 to set, or null to clear the rating.
+ */
+export async function rateRecipe(slug: string, rating: number | null): Promise<boolean> {
+  return withTrace('repository.rateRecipe', async (span) => {
+    span.setAttribute('slug', slug);
+    span.setAttribute('rating', rating ?? 0);
+
+    await connectDB();
+
+    const update = rating !== null ? { $set: { rating } } : { $unset: { rating: 1 } };
+
+    const result = await traceDbQuery('updateOne', COLLECTION_NAME, async () => {
+      return Recipe.updateOne({ slug }, update).exec();
+    });
+
+    const updated = result.matchedCount > 0;
+    if (updated) {
+      logger.recipes.info('Recipe rated', { slug, rating });
+    } else {
+      logger.recipes.warn('Recipe not found for rating', { slug });
+    }
+
+    return updated;
+  });
+}
+
+/**
+ * Add a cook log entry to a recipe.
+ *
+ * Records the current timestamp and an optional note.
+ */
+export async function addCookLogEntry(slug: string, note?: string): Promise<boolean> {
+  return withTrace('repository.addCookLogEntry', async (span) => {
+    span.setAttribute('slug', slug);
+
+    await connectDB();
+
+    const entry: { cookedAt: Date; note?: string } = { cookedAt: new Date() };
+    if (note) {
+      entry.note = note;
+    }
+
+    const result = await traceDbQuery('updateOne', COLLECTION_NAME, async () => {
+      return Recipe.updateOne({ slug }, { $push: { cookLog: entry } }).exec();
+    });
+
+    const updated = result.matchedCount > 0;
+    if (updated) {
+      logger.recipes.info('Cook log entry added', { slug });
+    } else {
+      logger.recipes.warn('Recipe not found for cook log', { slug });
+    }
+
+    return updated;
   });
 }

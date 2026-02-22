@@ -496,3 +496,31 @@ PR-044:
     # Also modifies: src/lib/recipes/loader.ts (getRecipeSections)
     # Also modifies: src/app/(main)/recipes/page.tsx
     # Also modifies: src/app/(main)/recipes/[slug]/page.tsx (recordRecipeUse)
+
+# =============================================================================
+# PHASE 19: Recipe Tile Styling Consistency (PR-045)
+# =============================================================================
+
+PR-045:
+  name: "Recipe Tile Styling Consistency"
+  checks:
+    - type: file
+      path: src/components/recipes/recipe-grid.tsx
+    - type: file
+      path: src/components/recipes/recipe-section.tsx
+
+# =============================================================================
+# PHASE 20: Recipe Rating & Cook Log (PR-046)
+# =============================================================================
+
+PR-046:
+  name: "Recipe Rating & Cook Log"
+  checks:
+    - type: file
+      path: src/app/api/recipes/[slug]/rate/route.ts
+    - type: file
+      path: src/app/api/recipes/[slug]/cook-log/route.ts
+    - type: file
+      path: src/components/recipes/star-rating.tsx
+    - type: file
+      path: src/components/recipes/recipe-interactions.tsx
