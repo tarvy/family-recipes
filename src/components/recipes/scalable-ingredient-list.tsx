@@ -7,7 +7,7 @@ import {
   MIN_MULTIPLIER,
   MULTIPLIER_STEP,
 } from '@/lib/constants/multiplier';
-import { formatAmount, parseQuantity } from '@/lib/shopping/aggregator';
+import { scaleAndFormatQuantity } from '@/lib/shopping/aggregator';
 
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
@@ -28,20 +28,6 @@ interface ScalableIngredientListProps {
 }
 
 /**
- * Scale a quantity string by a multiplier
- */
-function scaleQuantity(quantity: string | undefined, multiplier: number): string | undefined {
-  if (!quantity || multiplier === DEFAULT_MULTIPLIER) {
-    return quantity;
-  }
-  const parsed = parseQuantity(quantity);
-  if (!parsed) {
-    return quantity;
-  }
-  return formatAmount(parsed.amount * multiplier);
-}
-
-/**
  * Create a stable key for an ingredient
  */
 function createIngredientKey(ingredient: Ingredient): string {
@@ -55,7 +41,7 @@ function formatIngredient(ingredient: Ingredient, multiplier: number): string {
   const parts: string[] = [];
 
   if (ingredient.quantity) {
-    const scaledQuantity = scaleQuantity(ingredient.quantity, multiplier);
+    const scaledQuantity = scaleAndFormatQuantity(ingredient.quantity, ingredient.unit, multiplier);
     if (scaledQuantity) {
       parts.push(scaledQuantity);
     }

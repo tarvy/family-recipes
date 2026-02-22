@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { formatAmount, parseQuantity } from '@/lib/shopping/aggregator';
+import { scaleAndFormatQuantity } from '@/lib/shopping/aggregator';
 
 interface Ingredient {
   name: string;
@@ -17,27 +17,13 @@ interface IngredientTooltipProps {
 }
 
 /**
- * Scale a quantity string by a multiplier
- */
-function scaleQuantity(quantity: string | undefined, multiplier: number): string | undefined {
-  if (!quantity || multiplier === 1) {
-    return quantity;
-  }
-  const parsed = parseQuantity(quantity);
-  if (!parsed) {
-    return quantity;
-  }
-  return formatAmount(parsed.amount * multiplier);
-}
-
-/**
  * Format an ingredient for tooltip display with scaled quantity
  */
 function formatIngredientForTooltip(ingredient: Ingredient, multiplier: number): string {
   const parts: string[] = [];
 
   if (ingredient.quantity) {
-    const scaledQuantity = scaleQuantity(ingredient.quantity, multiplier);
+    const scaledQuantity = scaleAndFormatQuantity(ingredient.quantity, ingredient.unit, multiplier);
     if (scaledQuantity) {
       parts.push(scaledQuantity);
     }

@@ -437,3 +437,17 @@ PR-040:
       path: src/lib/audit.ts
     - type: file
       path: scripts/logs.ts
+
+# =============================================================================
+# PHASE 15: Recipe Display Polish (PR-041)
+# =============================================================================
+
+PR-041:
+  name: "Recipe Quantity Fraction Display"
+  checks:
+    - type: file
+      path: src/lib/shopping/aggregator.ts
+    - type: file
+      path: src/components/recipes/scalable-ingredient-list.tsx
+    - type: file
+      path: src/components/recipes/ingredient-tooltip.tsx

@@ -154,6 +154,9 @@ const REGEX_GROUP_SIMPLE = 8;
 /** Divisor for calculating range average */
 const RANGE_AVERAGE_DIVISOR = 2;
 
+/** Imperial volume units that use fraction notation (¼ ½ ¾) instead of decimals */
+const FRACTION_UNITS = new Set(['teaspoon', 'tablespoon', 'cup']);
+
 /** Tolerance for fraction matching in formatAmount */
 const FRACTION_TOLERANCE = 0.01;
 
@@ -473,6 +476,62 @@ export function formatAmount(amount: number): string {
 
   // Fall back to decimal with max 1 decimal place
   return amount.toFixed(1).replace(/\.0$/, '');
+}
+
+/**
+ * Format a numeric amount as decimal (for metric and non-fraction units).
+ * Integers as-is; decimals with up to 2 places, trailing zeros stripped.
+ *
+ * @param amount - Numeric amount
+ * @returns Formatted string
+ */
+function formatAmountDecimal(amount: number): string {
+  if (Number.isInteger(amount)) {
+    return amount.toString();
+  }
+  return amount.toFixed(2).replace(/\.?0+$/, '');
+}
+
+/**
+ * Format a numeric amount for recipe display.
+ * Uses Unicode fractions (¼ ½ ¾) for imperial volume units; decimals for metric/other.
+ *
+ * @param amount - Numeric amount
+ * @param unit - Optional unit (normalized) to decide formatting
+ * @returns Formatted string
+ */
+export function formatQuantityForDisplay(amount: number, unit?: string | null): string {
+  const normalized = unit ? normalizeUnit(unit) : '';
+  if (normalized && FRACTION_UNITS.has(normalized)) {
+    return formatAmount(amount);
+  }
+  return formatAmountDecimal(amount);
+}
+
+/**
+ * Parse, scale, and format a quantity for recipe display.
+ * Always formats (including at 1×) with unit-aware fraction/decimal choice.
+ *
+ * @param quantity - Quantity string (e.g. "0.5", "1/2")
+ * @param unit - Unit from ingredient (e.g. "cup", "tsp")
+ * @param multiplier - Scale factor
+ * @returns Formatted display string
+ */
+export function scaleAndFormatQuantity(
+  quantity: string | undefined,
+  unit: string | undefined,
+  multiplier: number,
+): string {
+  if (!quantity || quantity.trim() === '') {
+    return '';
+  }
+  const parsed = parseQuantity(quantity);
+  if (!parsed) {
+    return quantity;
+  }
+  const scaledAmount = parsed.amount * multiplier;
+  const displayUnit = unit ? normalizeUnit(unit) : parsed.unit;
+  return formatQuantityForDisplay(scaledAmount, displayUnit || parsed.unit || undefined);
 }
 
 /**
