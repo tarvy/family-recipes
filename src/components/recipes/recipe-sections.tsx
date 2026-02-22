@@ -7,6 +7,7 @@
 
 import type { RecipeSectionsData } from '@/lib/recipes/loader';
 import { RecipeSection } from './recipe-section';
+import { ShuffleButton } from './shuffle-button';
 
 interface RecipeSectionsProps {
   sections: RecipeSectionsData;
@@ -33,7 +34,12 @@ export function RecipeSections({ sections, canDelete }: RecipeSectionsProps) {
         recipes={sections.recentlyAdded}
         canDelete={canDelete}
       />
-      <RecipeSection title="Random" recipes={sections.random} canDelete={canDelete} />
+      <RecipeSection
+        title="Random"
+        recipes={sections.random}
+        canDelete={canDelete}
+        action={<ShuffleButton />}
+      />
     </div>
   );
 }

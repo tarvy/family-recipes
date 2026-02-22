@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Input } from '@/components/ui';
 import type { RecipePreview, RecipeSectionsData } from '@/lib/recipes/loader';
+import { RandomRecipeCookieSetter } from './random-recipe-cookie';
 import { RecipeCategoryPills } from './recipe-filters';
 import { RecipeGrid } from './recipe-grid';
 import { RecipeSections } from './recipe-sections';
@@ -22,6 +23,8 @@ interface RecipeBrowserProps {
   categories: string[];
   canDelete: boolean;
   sections: RecipeSectionsData;
+  /** Whether to set the random-recipes cookie (true when no cookie existed on load) */
+  needsRandomCookie: boolean;
 }
 
 /**
@@ -29,7 +32,13 @@ interface RecipeBrowserProps {
  *
  * Layout: Search → Sections (hidden when searching) → Category pills → Grid
  */
-export function RecipeBrowser({ recipes, categories, canDelete, sections }: RecipeBrowserProps) {
+export function RecipeBrowser({
+  recipes,
+  categories,
+  canDelete,
+  sections,
+  needsRandomCookie,
+}: RecipeBrowserProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -93,6 +102,11 @@ export function RecipeBrowser({ recipes, categories, canDelete, sections }: Reci
 
       {/* Sections — hidden when searching */}
       {!isSearching && <RecipeSections sections={sections} canDelete={canDelete} />}
+
+      {/* Set random-recipes cookie when server generated a fresh set */}
+      {needsRandomCookie && sections.randomSlugs.length > 0 && (
+        <RandomRecipeCookieSetter slugs={sections.randomSlugs} />
+      )}
 
       {/* Category pills + grid */}
       <RecipeCategoryPills categories={categories} />

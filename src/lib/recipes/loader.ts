@@ -14,6 +14,10 @@
 import { connectDB } from '@/db/connection';
 import { Recipe } from '@/db/models/recipe.model';
 import type { IRecipeDocument } from '@/db/types';
+import {
+  RANDOM_COOKIE_MAX_AGE_SECONDS,
+  RANDOM_RECIPES_COOKIE_NAME,
+} from '@/lib/constants/random-recipes';
 import { logger } from '@/lib/logger';
 import {
   getAllRecipes as getAllRecipesFromDb,
@@ -158,6 +162,9 @@ export function getCategories(): string[] {
 /** Default number of recipes per section */
 const SECTION_LIMIT = 6;
 
+// Re-export cookie constants for consumers that import from loader
+export { RANDOM_COOKIE_MAX_AGE_SECONDS, RANDOM_RECIPES_COOKIE_NAME };
+
 /**
  * Data for curated recipe sections on the main page
  */
@@ -166,6 +173,40 @@ export interface RecipeSectionsData {
   recentlyUsed: RecipePreview[];
   recentlyAdded: RecipePreview[];
   random: RecipePreview[];
+  /** Slugs of random recipes for cookie persistence */
+  randomSlugs: string[];
+}
+
+/**
+ * Load random recipes, using cached slugs if available.
+ *
+ * When cachedSlugs are provided, fetches those specific recipes by slug.
+ * Falls back to $sample if no cache or cached recipes no longer exist.
+ */
+async function getRandomRecipes(
+  cachedSlugs: string[] | null,
+  limit: number,
+): Promise<{ recipes: RecipePreview[]; slugs: string[] }> {
+  return withTrace('recipes.getRandomRecipes', async (span) => {
+    if (cachedSlugs && cachedSlugs.length > 0) {
+      span.setAttribute('source', 'cache');
+      const docs = await traceDbQuery('find', 'recipes', () =>
+        Recipe.find({ slug: { $in: cachedSlugs } }).exec(),
+      );
+
+      if (docs.length > 0) {
+        const recipes = docs.map(docToRecipePreview);
+        return { recipes, slugs: recipes.map((r) => r.slug) };
+      }
+    }
+
+    span.setAttribute('source', 'sample');
+    const docs = await traceDbQuery('aggregate', 'recipes', () =>
+      Recipe.aggregate<IRecipeDocument>([{ $sample: { size: limit } }]).exec(),
+    );
+    const recipes = docs.map(docToRecipePreview);
+    return { recipes, slugs: recipes.map((r) => r.slug) };
+  });
 }
 
 /**
@@ -175,13 +216,19 @@ export interface RecipeSectionsData {
  * - Most Used: top recipes by useCount (excludes zero)
  * - Recently Used: most recently viewed recipes
  * - Recently Added: newest recipes by createdAt
- * - Random: random sample via MongoDB $sample
+ * - Random: cached slugs or random sample via MongoDB $sample
+ *
+ * @param cachedRandomSlugs - Previously cached random recipe slugs, or null
+ * @param limit - Number of recipes per section
  */
-export async function getRecipeSections(limit = SECTION_LIMIT): Promise<RecipeSectionsData> {
+export async function getRecipeSections(
+  cachedRandomSlugs: string[] | null = null,
+  limit = SECTION_LIMIT,
+): Promise<RecipeSectionsData> {
   return withTrace('recipes.getRecipeSections', async (span) => {
     await connectDB();
 
-    const [mostUsedDocs, recentlyUsedDocs, recentlyAddedDocs, randomDocs] = await Promise.all([
+    const [mostUsedDocs, recentlyUsedDocs, recentlyAddedDocs, randomResult] = await Promise.all([
       traceDbQuery('find', 'recipes', () =>
         Recipe.find({ useCount: { $gt: 0 } })
           .sort({ useCount: -1 })
@@ -197,16 +244,15 @@ export async function getRecipeSections(limit = SECTION_LIMIT): Promise<RecipeSe
       traceDbQuery('find', 'recipes', () =>
         Recipe.find().sort({ createdAt: -1 }).limit(limit).exec(),
       ),
-      traceDbQuery('aggregate', 'recipes', () =>
-        Recipe.aggregate<IRecipeDocument>([{ $sample: { size: limit } }]).exec(),
-      ),
+      getRandomRecipes(cachedRandomSlugs, limit),
     ]);
 
     const sections: RecipeSectionsData = {
       mostUsed: mostUsedDocs.map(docToRecipePreview),
       recentlyUsed: recentlyUsedDocs.map(docToRecipePreview),
       recentlyAdded: recentlyAddedDocs.map(docToRecipePreview),
-      random: randomDocs.map(docToRecipePreview),
+      random: randomResult.recipes,
+      randomSlugs: randomResult.slugs,
     };
 
     span.setAttribute('mostUsed', sections.mostUsed.length);

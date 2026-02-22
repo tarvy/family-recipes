@@ -524,3 +524,15 @@ PR-046:
       path: src/components/recipes/star-rating.tsx
     - type: file
       path: src/components/recipes/recipe-interactions.tsx
+
+# =============================================================================
+# PHASE 21: Stable Random Recipes (PR-047)
+# =============================================================================
+
+PR-047:
+  name: "Stable Random Recipes"
+  checks:
+    - type: file
+      path: src/components/recipes/shuffle-button.tsx
+    - type: file
+      path: src/components/recipes/random-recipe-cookie.tsx

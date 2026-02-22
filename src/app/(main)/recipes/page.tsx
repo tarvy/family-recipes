@@ -3,7 +3,12 @@ import { Suspense } from 'react';
 import { MainLayout } from '@/components/layout';
 import { RecipeBrowser } from '@/components/recipes/recipe-browser';
 import { getSessionFromCookies } from '@/lib/auth/session';
-import { getAllRecipes, getCategories, getRecipeSections } from '@/lib/recipes/loader';
+import {
+  getAllRecipes,
+  getCategories,
+  getRecipeSections,
+  RANDOM_RECIPES_COOKIE_NAME,
+} from '@/lib/recipes/loader';
 
 /** Skeleton pill keys for loading state */
 const SKELETON_PILLS = ['pill-1', 'pill-2', 'pill-3', 'pill-4', 'pill-5'] as const;
@@ -49,12 +54,29 @@ function RecipeBrowserSkeleton() {
   );
 }
 
+/**
+ * Parse random recipe slugs from cookie value.
+ * Returns null if the value is missing, malformed, or not a string array.
+ */
+function parseRandomSlugs(raw: string): string[] | null {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.every((s) => typeof s === 'string')) {
+      return parsed as string[];
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function RecipesPage() {
-  const [recipes, sections, cookieStore] = await Promise.all([
-    getAllRecipes(),
-    getRecipeSections(),
-    cookies(),
-  ]);
+  const cookieStore = await cookies();
+  const randomCookie = cookieStore.get(RANDOM_RECIPES_COOKIE_NAME)?.value ?? null;
+  const cachedSlugs = randomCookie ? parseRandomSlugs(randomCookie) : null;
+  const needsRandomCookie = cachedSlugs === null;
+
+  const [recipes, sections] = await Promise.all([getAllRecipes(), getRecipeSections(cachedSlugs)]);
   const categories = getCategories();
   const user = await getSessionFromCookies(cookieStore);
   const canDelete = user?.role === 'owner' || user?.role === 'family';
@@ -76,6 +98,7 @@ export default async function RecipesPage() {
               categories={categories}
               canDelete={canDelete}
               sections={sections}
+              needsRandomCookie={needsRandomCookie}
             />
           </Suspense>
         </div>

@@ -12,16 +12,21 @@ interface RecipeSectionProps {
   title: string;
   recipes: RecipePreview[];
   canDelete: boolean;
+  /** Optional action element rendered in the section header (e.g. shuffle button) */
+  action?: React.ReactNode;
 }
 
-export function RecipeSection({ title, recipes, canDelete }: RecipeSectionProps) {
+export function RecipeSection({ title, recipes, canDelete, action }: RecipeSectionProps) {
   if (recipes.length === 0) {
     return null;
   }
 
   return (
     <section>
-      <h2 className="mb-4 text-xl font-semibold text-foreground">{title}</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+        {action}
+      </div>
       <div className="relative">
         <div
           className="flex gap-4 overflow-x-auto pb-2 pr-4 snap-x snap-mandatory scrollbar-thin"
