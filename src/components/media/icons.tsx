@@ -187,7 +187,7 @@ export function TrashIcon({ className = 'h-4 w-4' }: IconProps) {
 }
 
 /** Vertical three-dot icon constants (within 24x24 viewBox) */
-const DOT_RADIUS = 1;
+const DOT_RADIUS = 2;
 const DOT_CENTER_X = 12;
 const DOT_TOP_Y = 5;
 const DOT_MIDDLE_Y = 12;
