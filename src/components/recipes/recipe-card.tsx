@@ -175,7 +175,7 @@ export function RecipeCard({ recipe, canDelete }: RecipeCardProps) {
   return (
     <>
       <Link
-        href={`/recipes/${recipe.slug}`}
+        href={`/recipes/${recipe.slug}?from=browse`}
         className="group flex flex-col overflow-hidden rounded-lg bg-card shadow-sm ring-1 ring-border transition-all hover:shadow-md hover:ring-pink-dark focus:outline-none focus:ring-2 focus:ring-lavender focus:ring-offset-2"
         {...longPressHandlers}
       >

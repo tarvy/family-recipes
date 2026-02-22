@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { CalendarIcon, ClockIcon, ServingsIcon } from '@/components/media/icons';
 import { RecipeActions } from '@/components/recipes/recipe-actions';
+import { RecipeBackButton } from '@/components/recipes/recipe-back-button';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { Card } from '@/components/ui';
 import { getSessionFromCookies } from '@/lib/auth/session';
@@ -14,6 +15,7 @@ import { getRecipeDetail } from '@/lib/recipes/repository';
 
 interface RecipeDetailPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ from?: string }>;
 }
 
 /** Load recipe for detail page: MongoDB first, then file-based loader fallback. */
@@ -40,9 +42,13 @@ export async function generateMetadata({ params }: RecipeDetailPageProps) {
   };
 }
 
-export default async function RecipeDetailPage({ params }: RecipeDetailPageProps) {
+export default async function RecipeDetailPage({ params, searchParams }: RecipeDetailPageProps) {
   const { slug } = await params;
-  const [recipe, cookieStore] = await Promise.all([loadRecipeDetail(slug), cookies()]);
+  const [recipe, cookieStore, resolvedSearchParams] = await Promise.all([
+    loadRecipeDetail(slug),
+    cookies(),
+    searchParams,
+  ]);
 
   if (!recipe) {
     notFound();
@@ -50,11 +56,19 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
   const user = await getSessionFromCookies(cookieStore);
   const canDelete = user?.role === 'owner' || user?.role === 'family';
+  const showBack = resolvedSearchParams.from === 'browse';
 
   return (
     <MainLayout>
       <div className="px-6 py-6">
         <Card className="relative mx-auto w-full max-w-3xl md:max-w-4xl lg:max-w-5xl p-6 sm:p-8">
+          {/* Back button — top left (only from browse) */}
+          {showBack && (
+            <div className="absolute left-4 top-4 sm:left-6 sm:top-6">
+              <RecipeBackButton />
+            </div>
+          )}
+
           {/* Action menu — top right */}
           <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
             <RecipeActions slug={slug} recipeTitle={recipe.title} canDelete={canDelete} />

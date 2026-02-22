@@ -203,6 +203,14 @@ export function MoreVerticalIcon({ className = 'h-5 w-5' }: IconProps) {
   );
 }
 
+export function ArrowLeftIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <StrokeIcon className={className}>
+      <StrokePath d="M19 12H5m0 0l7 7m-7-7l7-7" />
+    </StrokeIcon>
+  );
+}
+
 export function EditIcon({ className = 'h-4 w-4' }: IconProps) {
   return (
     <StrokeIcon className={className}>

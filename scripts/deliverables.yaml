@@ -451,3 +451,16 @@ PR-041:
       path: src/components/recipes/scalable-ingredient-list.tsx
     - type: file
       path: src/components/recipes/ingredient-tooltip.tsx
+
+# =============================================================================
+# PHASE 16: Navigation (PR-042)
+# =============================================================================
+
+PR-042:
+  name: "Back Button on Recipe Detail Page"
+  checks:
+    - type: file
+      path: src/components/recipes/recipe-back-button.tsx
+    # Also modifies: src/components/media/icons.tsx (ArrowLeftIcon)
+    # Also modifies: src/components/recipes/recipe-card.tsx (?from=browse)
+    # Also modifies: src/app/(main)/recipes/[slug]/page.tsx (conditional render)
