@@ -18,6 +18,7 @@ import {
   type LongPressPosition,
   useLongPress,
 } from '@/components/gestures';
+import { TrashIcon } from '@/components/media/icons';
 import type { RecipePreview } from '@/lib/recipes/loader';
 
 /** Minutes per hour for time conversion */
@@ -97,6 +98,7 @@ function formatCategory(category: string): string {
 
 interface RecipeCardProps {
   recipe: RecipePreview;
+  canDelete: boolean;
 }
 
 /**
@@ -110,7 +112,7 @@ interface RecipeCardProps {
  * - Hover and focus states for accessibility
  * - Long-press/right-click context menu
  */
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, canDelete }: RecipeCardProps) {
   const router = useRouter();
   const colors = getCategoryColors(recipe.category);
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
@@ -124,6 +126,21 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
   const longPressHandlers = useLongPress({
     onLongPress: handleLongPress,
   });
+
+  const handleDelete = useCallback(async () => {
+    const confirmed = window.confirm(`Delete "${recipe.title}"? This can't be undone.`);
+    if (!confirmed) {
+      return;
+    }
+    try {
+      const response = await fetch(`/api/recipes/${recipe.slug}`, { method: 'DELETE' });
+      if (response.ok) {
+        router.refresh();
+      }
+    } catch {
+      // Silently fail — user can retry
+    }
+  }, [recipe.slug, recipe.title, router]);
 
   const contextMenuItems: ContextMenuItem[] = [
     {
@@ -142,6 +159,17 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         router.push(`/shopping-list?add=${recipe.slug}`);
       },
     },
+    ...(canDelete
+      ? [
+          {
+            id: 'delete',
+            label: 'Delete Recipe',
+            icon: <TrashIcon className="h-5 w-5" />,
+            onClick: handleDelete,
+            destructive: true,
+          },
+        ]
+      : []),
   ];
 
   return (

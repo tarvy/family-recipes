@@ -3,6 +3,7 @@ import { RecipeCard } from './recipe-card';
 
 interface RecipeGridProps {
   recipes: RecipePreview[];
+  canDelete: boolean;
 }
 
 /**
@@ -14,7 +15,7 @@ interface RecipeGridProps {
  * - Desktop (1024-1280px): 3 columns
  * - Large (>1280px): 4 columns
  */
-export function RecipeGrid({ recipes }: RecipeGridProps) {
+export function RecipeGrid({ recipes, canDelete }: RecipeGridProps) {
   if (recipes.length === 0) {
     return (
       <div className="py-12 text-center">
@@ -27,7 +28,7 @@ export function RecipeGrid({ recipes }: RecipeGridProps) {
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {recipes.map((recipe) => (
-        <RecipeCard key={recipe.slug} recipe={recipe} />
+        <RecipeCard key={recipe.slug} recipe={recipe} canDelete={canDelete} />
       ))}
     </div>
   );

@@ -9,6 +9,7 @@ import { RecipeGrid } from './recipe-grid';
 interface RecipeBrowserProps {
   recipes: RecipePreview[];
   categories: string[];
+  canDelete: boolean;
 }
 
 /**
@@ -17,7 +18,7 @@ interface RecipeBrowserProps {
  * Reads filter state from URL and applies client-side filtering
  * to the recipe list provided by the server.
  */
-export function RecipeBrowser({ recipes, categories }: RecipeBrowserProps) {
+export function RecipeBrowser({ recipes, categories, canDelete }: RecipeBrowserProps) {
   const searchParams = useSearchParams();
 
   // Read filter state from URL
@@ -45,7 +46,7 @@ export function RecipeBrowser({ recipes, categories }: RecipeBrowserProps) {
   return (
     <div className="space-y-6">
       <RecipeFilters categories={categories} />
-      <RecipeGrid recipes={filteredRecipes} />
+      <RecipeGrid recipes={filteredRecipes} canDelete={canDelete} />
     </div>
   );
 }
