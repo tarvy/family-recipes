@@ -31,6 +31,11 @@ const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 500;
 const HOURS_PER_DAY = 24;
 const MS_PER_HOUR = 3600000;
+const RADIX_DECIMAL = 10;
+const REGEX_UNIT_GROUP = 2;
+const FLAG_VALUE_STEP = 2;
+const ISO_DATETIME_LENGTH = 19;
+const JSON_INDENT_SPACES = 2;
 
 type Command = (typeof COMMANDS)[number];
 type OutputFormat = 'table' | 'json';
@@ -80,13 +85,13 @@ function handleHelp(): never {
 
 function parseSince(value: string): Date {
   const match = /^(\d+)(h|d)$/.exec(value);
-  if (!(match?.[1] && match[2])) {
+  if (!(match?.[1] && match[REGEX_UNIT_GROUP])) {
     throw new Error(
       `Invalid --since format: "${value}". Use Nh (hours) or Nd (days), e.g. 24h, 7d`,
     );
   }
-  const amount = Number.parseInt(match[1], 10);
-  const unit = match[2];
+  const amount = Number.parseInt(match[1], RADIX_DECIMAL);
+  const unit = match[REGEX_UNIT_GROUP];
   const hours = unit === 'd' ? amount * HOURS_PER_DAY : amount;
   return new Date(Date.now() - hours * MS_PER_HOUR);
 }
@@ -127,7 +132,10 @@ function parseOptions(args: string[]): CliOptions {
       options.slug = requireValue('--slug', v);
     },
     '--limit': (v) => {
-      options.limit = Math.min(Number.parseInt(requireValue('--limit', v), 10), MAX_LIMIT);
+      options.limit = Math.min(
+        Number.parseInt(requireValue('--limit', v), RADIX_DECIMAL),
+        MAX_LIMIT,
+      );
     },
     '--format': (v) => {
       options.format = validateEnum('format', requireValue('--format', v), VALID_FORMATS);
@@ -152,7 +160,7 @@ function parseOptions(args: string[]): CliOptions {
     }
 
     handler(args[index + 1]);
-    index += 2;
+    index += FLAG_VALUE_STEP;
   }
 
   return options;
@@ -163,7 +171,7 @@ function parseOptions(args: string[]): CliOptions {
 // ---------------------------------------------------------------------------
 
 function formatTimestamp(date: Date): string {
-  return date.toISOString().replace('T', ' ').slice(0, 19);
+  return date.toISOString().replace('T', ' ').slice(0, ISO_DATETIME_LENGTH);
 }
 
 function padEnd(str: string, len: number): string {
@@ -205,7 +213,7 @@ function printJson(docs: IAuditLogDocument[]): void {
     timestamp: d.timestamp,
   }));
   // Use logger to output JSON — no console.log
-  scriptLogger.info(JSON.stringify(plain, null, 2));
+  scriptLogger.info(JSON.stringify(plain, null, JSON_INDENT_SPACES));
 }
 
 // ---------------------------------------------------------------------------
