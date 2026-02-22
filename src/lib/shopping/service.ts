@@ -8,7 +8,8 @@
 import type { Types as MongooseTypes } from 'mongoose';
 import { ShoppingList } from '@/db/models/shopping-list.model';
 import type { IShoppingListDocument, IShoppingListItem } from '@/db/types';
-import { getRecipeBySlug, type RecipeDetail } from '@/lib/recipes/loader';
+import type { RecipeDetail } from '@/lib/recipes/loader';
+import { getRecipeDetail } from '@/lib/recipes/repository';
 import {
   type AggregatedIngredient,
   aggregateIngredients,
@@ -112,7 +113,7 @@ export async function createShoppingList(input: ShoppingListInput): Promise<Shop
   // Fetch all recipe details
   const recipes: RecipeIngredients[] = [];
   for (const slug of recipeSlugs) {
-    const recipe = await getRecipeBySlug(slug);
+    const recipe = await getRecipeDetail(slug);
     if (recipe) {
       const multiplier = servingsMultipliers[slug] ?? 1;
       recipes.push(recipeDetailToIngredients(recipe, multiplier));
