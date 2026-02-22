@@ -23,9 +23,15 @@ export function RecipeSection({ title, recipes, canDelete }: RecipeSectionProps)
     <section>
       <h2 className="mb-4 text-xl font-semibold text-foreground">{title}</h2>
       <div className="relative">
-        <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-thin">
+        <div
+          className="flex gap-4 overflow-x-auto pb-2 pr-4 snap-x snap-mandatory scrollbar-thin"
+          style={{
+            maskImage: 'linear-gradient(to right, black 95%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, black 95%, transparent 100%)',
+          }}
+        >
           {recipes.map((recipe) => (
-            <div key={recipe.slug} className="w-64 flex-shrink-0 snap-start">
+            <div key={recipe.slug} className="w-64 shrink-0 snap-start">
               <RecipeCard recipe={recipe} canDelete={canDelete} />
             </div>
           ))}

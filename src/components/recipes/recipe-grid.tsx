@@ -9,11 +9,8 @@ interface RecipeGridProps {
 /**
  * Responsive grid layout for recipe cards
  *
- * Breakpoints:
- * - Mobile (<640px): 1 column
- * - Tablet (640-1024px): 2 columns
- * - Desktop (1024-1280px): 3 columns
- * - Large (>1280px): 4 columns
+ * Uses auto-fill with minmax(16rem, 1fr) to match RecipeSection card width (w-64).
+ * Same gap-4 as RecipeSection for consistency.
  */
 export function RecipeGrid({ recipes, canDelete }: RecipeGridProps) {
   if (recipes.length === 0) {
@@ -26,7 +23,7 @@ export function RecipeGrid({ recipes, canDelete }: RecipeGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-4">
       {recipes.map((recipe) => (
         <RecipeCard key={recipe.slug} recipe={recipe} canDelete={canDelete} />
       ))}
