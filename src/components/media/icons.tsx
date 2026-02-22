@@ -186,6 +186,23 @@ export function TrashIcon({ className = 'h-4 w-4' }: IconProps) {
   );
 }
 
+/** Vertical three-dot icon constants (within 24x24 viewBox) */
+const DOT_RADIUS = 1;
+const DOT_CENTER_X = 12;
+const DOT_TOP_Y = 5;
+const DOT_MIDDLE_Y = 12;
+const DOT_BOTTOM_Y = 19;
+
+export function MoreVerticalIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx={DOT_CENTER_X} cy={DOT_TOP_Y} r={DOT_RADIUS} />
+      <circle cx={DOT_CENTER_X} cy={DOT_MIDDLE_Y} r={DOT_RADIUS} />
+      <circle cx={DOT_CENTER_X} cy={DOT_BOTTOM_Y} r={DOT_RADIUS} />
+    </svg>
+  );
+}
+
 export function EditIcon({ className = 'h-4 w-4' }: IconProps) {
   return (
     <StrokeIcon className={className}>

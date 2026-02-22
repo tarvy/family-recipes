@@ -1,11 +1,8 @@
 import { cookies } from 'next/headers';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
-import { CoverPhotoButton } from '@/components/media/cover-photo-button';
-import { CalendarIcon, ClockIcon, EditIcon, ServingsIcon } from '@/components/media/icons';
-import { DeleteRecipeButton } from '@/components/recipes/delete-recipe-button';
-import { PinRecipeButton } from '@/components/recipes/pin-recipe-button';
+import { CalendarIcon, ClockIcon, ServingsIcon } from '@/components/media/icons';
+import { RecipeActions } from '@/components/recipes/recipe-actions';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { Card } from '@/components/ui';
 import { getSessionFromCookies } from '@/lib/auth/session';
@@ -58,23 +55,14 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     <MainLayout>
       <div className="px-6 py-6">
         <Card className="relative mx-auto w-full max-w-3xl md:max-w-4xl lg:max-w-5xl p-6 sm:p-8">
-          {/* Action buttons — top right */}
-          <div className="absolute right-4 top-4 flex flex-col gap-2 sm:right-6 sm:top-6">
-            <Link
-              href={`/recipes/${slug}/edit`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1 text-sm font-medium text-muted-foreground hover:border-lavender hover:text-lavender"
-            >
-              <EditIcon className="h-4 w-4" />
-              Edit
-            </Link>
-            <PinRecipeButton recipeSlug={slug} recipeTitle={recipe.title} />
-            <CoverPhotoButton recipeSlug={slug} />
-            {canDelete && <DeleteRecipeButton recipeSlug={slug} recipeTitle={recipe.title} />}
+          {/* Action menu — top right */}
+          <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+            <RecipeActions slug={slug} recipeTitle={recipe.title} canDelete={canDelete} />
           </div>
 
           {/* Header */}
           <header>
-            <h1 className="pr-20 text-3xl font-semibold text-foreground">{recipe.title}</h1>
+            <h1 className="pr-10 text-3xl font-semibold text-foreground">{recipe.title}</h1>
 
             {/* Category badge */}
             <div className="mt-3">

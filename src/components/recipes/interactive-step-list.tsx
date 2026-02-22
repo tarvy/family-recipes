@@ -167,10 +167,10 @@ function IngredientTrigger({
         onClick={onClick}
         aria-expanded={isActive}
         className={`
-          cursor-pointer underline decoration-pink decoration-dotted underline-offset-2
-          hover:decoration-solid hover:text-pink
-          focus:outline-none focus:ring-2 focus:ring-pink focus:ring-offset-1 focus:rounded
-          ${isActive ? 'text-pink decoration-solid' : ''}
+          cursor-pointer underline decoration-lavender decoration-2 underline-offset-2
+          hover:text-lavender-dark hover:decoration-lavender-dark
+          focus:outline-none focus:ring-2 focus:ring-lavender focus:ring-offset-1 focus:rounded
+          ${isActive ? 'text-lavender-dark decoration-lavender-dark' : 'text-foreground'}
         `}
       >
         {displayText}
