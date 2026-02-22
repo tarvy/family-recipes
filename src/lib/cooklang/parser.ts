@@ -387,7 +387,9 @@ export async function parseCooklang(source: string, context: ParseContext): Prom
       const cooklang = new CooklangRecipe(source);
       const metadata = normalizeMetadata(cooklang.metadata);
       const title = metadata[METADATA_KEYS.TITLE] || titleFromFilePath(context.filePath);
-      const slug = generateSlug(metadata[METADATA_KEYS.TITLE] || context.filePath);
+      const slug = generateSlug(
+        metadata[METADATA_KEYS.TITLE] || titleFromFilePath(context.filePath),
+      );
 
       // Convert steps
       const steps: IStep[] = cooklang.steps.map(convertStep);
