@@ -143,6 +143,51 @@ await withTrace('api.recipes.list', async () => {
 
 ---
 
+## Audit Logging
+
+Recipe CRUD operations are tracked in a MongoDB `audit_logs` collection with
+automatic TTL expiry (30 days). Audit events are written fire-and-forget so
+they never block recipe operations.
+
+### What Gets Logged
+
+| Operation | Source | When |
+|-----------|--------|------|
+| `recipe:create` | `mcp`, `api` | After successful recipe creation |
+| `recipe:update` | `mcp`, `api` | After successful recipe update |
+| `recipe:delete` | `mcp`, `api` | After successful recipe deletion |
+
+Each event records: operation, source, message, resource (type/slug/category),
+optional actor info, optional metadata, and timestamp.
+
+### Storage Impact
+
+- TTL index auto-deletes events after 30 days
+- Typical event size: ~200-500 bytes
+- At moderate usage (~50 events/day), monthly storage: ~750 KB
+
+### CLI Usage
+
+```bash
+# List recent events
+npm run logs -- list
+npm run logs -- list --source mcp --since 24h --limit 20
+npm run logs -- list --operation recipe:create --format json
+
+# Search by recipe slug
+npm run logs -- search --slug baked-ziti
+
+# Summary statistics
+npm run logs -- stats
+```
+
+### Failure Handling
+
+Audit write failures are logged via Pino but never thrown. A failed audit write
+does not affect the recipe operation that triggered it.
+
+---
+
 ## Future Observability (Optional)
 
 If this application ever needs end-to-end observability, tracing can be
