@@ -1,40 +1,74 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
-import type { RecipePreview } from '@/lib/recipes/loader';
-import { RecipeFilters } from './recipe-filters';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Input } from '@/components/ui';
+import type { RecipePreview, RecipeSectionsData } from '@/lib/recipes/loader';
+import { RecipeCategoryPills } from './recipe-filters';
 import { RecipeGrid } from './recipe-grid';
+import { RecipeSections } from './recipe-sections';
+
+/** Debounce delay for search input in milliseconds */
+const SEARCH_DEBOUNCE_MS = 300;
+
+/** SVG stroke width for icons */
+const ICON_STROKE_WIDTH = 2;
+
+/** Search icon size in pixels */
+const SEARCH_ICON_SIZE_PX = 20;
 
 interface RecipeBrowserProps {
   recipes: RecipePreview[];
   categories: string[];
   canDelete: boolean;
+  sections: RecipeSectionsData;
 }
 
 /**
- * Client-side recipe browser with filtering
+ * Client-side recipe browser with search, sections, and filtering
  *
- * Reads filter state from URL and applies client-side filtering
- * to the recipe list provided by the server.
+ * Layout: Search → Sections (hidden when searching) → Category pills → Grid
  */
-export function RecipeBrowser({ recipes, categories, canDelete }: RecipeBrowserProps) {
+export function RecipeBrowser({ recipes, categories, canDelete, sections }: RecipeBrowserProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Read filter state from URL
   const selectedCategory = searchParams.get('category') ?? '';
-  const searchQuery = searchParams.get('q') ?? '';
+  const initialQuery = searchParams.get('q') ?? '';
 
-  // Apply filters client-side
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const isSearching = searchQuery.length > 0;
+
+  const updateSearchUrl = useCallback(
+    (query: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (query) {
+        params.set('q', query);
+      } else {
+        params.delete('q');
+      }
+      const queryString = params.toString();
+      const url = queryString ? `/recipes?${queryString}` : '/recipes';
+      router.push(url, { scroll: false });
+    },
+    [router, searchParams],
+  );
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      updateSearchUrl(searchQuery);
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, updateSearchUrl]);
+
   const filteredRecipes = useMemo(() => {
     let result = recipes;
 
-    // Filter by category
     if (selectedCategory) {
       result = result.filter((recipe) => recipe.category === selectedCategory);
     }
 
-    // Filter by search query (case-insensitive, matches title)
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter((recipe) => recipe.title.toLowerCase().includes(query));
@@ -45,8 +79,48 @@ export function RecipeBrowser({ recipes, categories, canDelete }: RecipeBrowserP
 
   return (
     <div className="space-y-6">
-      <RecipeFilters categories={categories} />
+      {/* Search input — always at top */}
+      <div className="relative">
+        <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="Search recipes..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="py-2 pl-10 pr-4"
+        />
+      </div>
+
+      {/* Sections — hidden when searching */}
+      {!isSearching && <RecipeSections sections={sections} canDelete={canDelete} />}
+
+      {/* Category pills + grid */}
+      <RecipeCategoryPills categories={categories} />
       <RecipeGrid recipes={filteredRecipes} canDelete={canDelete} />
     </div>
+  );
+}
+
+/**
+ * Search icon component
+ */
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width={SEARCH_ICON_SIZE_PX}
+      height={SEARCH_ICON_SIZE_PX}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={ICON_STROKE_WIDTH}
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      />
+    </svg>
   );
 }

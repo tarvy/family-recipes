@@ -2,7 +2,6 @@ import { cookies } from 'next/headers';
 import { Suspense } from 'react';
 import { MainLayout } from '@/components/layout';
 import { RecipeBrowser } from '@/components/recipes/recipe-browser';
-import { RecipeSections } from '@/components/recipes/recipe-sections';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import { getAllRecipes, getCategories, getRecipeSections } from '@/lib/recipes/loader';
 
@@ -71,10 +70,13 @@ export default async function RecipesPage() {
             </p>
           </div>
 
-          <RecipeSections sections={sections} canDelete={canDelete} />
-
           <Suspense fallback={<RecipeBrowserSkeleton />}>
-            <RecipeBrowser recipes={recipes} categories={categories} canDelete={canDelete} />
+            <RecipeBrowser
+              recipes={recipes}
+              categories={categories}
+              canDelete={canDelete}
+              sections={sections}
+            />
           </Suspense>
         </div>
       </div>

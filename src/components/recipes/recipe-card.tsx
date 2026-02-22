@@ -176,7 +176,7 @@ export function RecipeCard({ recipe, canDelete }: RecipeCardProps) {
     <>
       <Link
         href={`/recipes/${recipe.slug}?from=browse`}
-        className="group flex flex-col overflow-hidden rounded-lg bg-card shadow-sm ring-1 ring-border transition-all hover:shadow-md hover:ring-pink-dark focus:outline-none focus:ring-2 focus:ring-lavender focus:ring-offset-2"
+        className="group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-all hover:shadow-md hover:border-pink-dark focus:outline-none focus:ring-2 focus:ring-lavender focus:ring-offset-2"
         {...longPressHandlers}
       >
         {/* Colored placeholder header */}
