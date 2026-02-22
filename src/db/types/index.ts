@@ -242,3 +242,36 @@ export interface IOAuthRefreshToken {
 }
 
 export interface IOAuthRefreshTokenDocument extends IOAuthRefreshToken, Document {}
+
+// -----------------------------------------------------------------------------
+// Audit Logging
+// -----------------------------------------------------------------------------
+
+export type AuditOperation = 'recipe:create' | 'recipe:update' | 'recipe:delete';
+export type AuditSource = 'mcp' | 'api' | 'web' | 'sync' | 'cli' | 'import';
+export type AuditLevel = 'info' | 'warn' | 'error';
+
+export interface IAuditActor {
+  clientId?: string;
+  userId?: string;
+  email?: string;
+}
+
+export interface IAuditResource {
+  type: 'recipe';
+  slug: string;
+  category?: string;
+}
+
+export interface IAuditLog {
+  operation: AuditOperation;
+  source: AuditSource;
+  level: AuditLevel;
+  message: string;
+  actor: IAuditActor;
+  resource: IAuditResource;
+  metadata?: Record<string, unknown>;
+  timestamp: Date;
+}
+
+export interface IAuditLogDocument extends IAuditLog, Document {}

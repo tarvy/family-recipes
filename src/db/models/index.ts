@@ -12,8 +12,15 @@
 // Re-export types for convenience
 export type {
   AllowedEmailRole,
+  AuditLevel,
+  AuditOperation,
+  AuditSource,
   IAllowedEmail,
   IAllowedEmailDocument,
+  IAuditActor,
+  IAuditLog,
+  IAuditLogDocument,
+  IAuditResource,
   ICookware,
   IIngredient,
   IMagicLink,
@@ -47,6 +54,7 @@ export type {
   UserRole,
 } from '../types';
 export { AllowedEmail } from './allowed-email.model';
+export { AuditLog } from './audit-log.model';
 export { MagicLink } from './magic-link.model';
 export { OAuthClient } from './oauth-client.model';
 export { OAuthCode } from './oauth-code.model';

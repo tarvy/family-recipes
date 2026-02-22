@@ -423,3 +423,17 @@ PR-039:
     # Also modifies: src/app/api/recipes/[slug]/route.ts (role guard)
     # Also modifies: src/components/media/icons.tsx (TrashIcon)
     # Also modifies: src/app/(main)/recipes/[slug]/page.tsx (render button)
+
+# =============================================================================
+# PHASE 14: Observability (PR-040+)
+# =============================================================================
+
+PR-040:
+  name: "Audit Logging System"
+  checks:
+    - type: file
+      path: src/db/models/audit-log.model.ts
+    - type: file
+      path: src/lib/audit.ts
+    - type: file
+      path: scripts/logs.ts

@@ -14,6 +14,7 @@
 import { connectDB } from '@/db/connection';
 import { Recipe } from '@/db/models/recipe.model';
 import type { IRecipe, IRecipeDocument, RecipeSource } from '@/db/types';
+import { audit } from '@/lib/audit';
 import { parseCooklang } from '@/lib/cooklang/parser';
 import { logger } from '@/lib/logger';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
@@ -364,6 +365,13 @@ export async function createRecipe(
 
     logger.recipes.info('Recipe created', { slug, category, source });
 
+    audit({
+      operation: 'recipe:create',
+      source,
+      message: `Recipe created: ${slug}`,
+      resource: { type: 'recipe', slug, category },
+    });
+
     return {
       success: true,
       slug,
@@ -379,6 +387,7 @@ export async function updateRecipe(
   slug: string,
   content: string,
   category: string,
+  source: RecipeSource = 'api',
 ): Promise<RecipeWriteResult> {
   return withTrace('repository.updateRecipe', async (span) => {
     span.setAttribute('slug', slug);
@@ -464,6 +473,17 @@ export async function updateRecipe(
       category,
     });
 
+    const updateAuditEvent: Parameters<typeof audit>[0] = {
+      operation: 'recipe:update',
+      source,
+      message: `Recipe updated: ${newSlug}`,
+      resource: { type: 'recipe', slug: newSlug, category },
+    };
+    if (slug !== newSlug) {
+      updateAuditEvent.metadata = { oldSlug: slug };
+    }
+    audit(updateAuditEvent);
+
     return {
       success: true,
       slug: newSlug,
@@ -475,7 +495,10 @@ export async function updateRecipe(
 /**
  * Delete a recipe from MongoDB
  */
-export async function deleteRecipe(slug: string): Promise<RecipeDeleteResult> {
+export async function deleteRecipe(
+  slug: string,
+  source: RecipeSource = 'api',
+): Promise<RecipeDeleteResult> {
   return withTrace('repository.deleteRecipe', async (span) => {
     span.setAttribute('slug', slug);
 
@@ -495,6 +518,13 @@ export async function deleteRecipe(slug: string): Promise<RecipeDeleteResult> {
     }
 
     logger.recipes.info('Recipe deleted', { slug });
+
+    audit({
+      operation: 'recipe:delete',
+      source,
+      message: `Recipe deleted: ${slug}`,
+      resource: { type: 'recipe', slug },
+    });
 
     return { success: true };
   });

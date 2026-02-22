@@ -13,6 +13,7 @@
     "progress": "python scripts/progress.py",
     "convert-paprika": "npx tsx scripts/convert-paprika.ts",
     "allowlist": "npx tsx scripts/allowlist.ts",
+    "logs": "npx tsx scripts/logs.ts",
     "prepare": "husky"
   },
   "lint-staged": {

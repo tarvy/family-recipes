@@ -437,7 +437,7 @@ export function registerRecipeTools(server: McpServer): void {
         }
 
         // Use repository to update recipe in MongoDB
-        const result = await updateRecipe(slug, content, category);
+        const result = await updateRecipe(slug, content, category, 'mcp');
 
         if (!result.success) {
           logger.mcp.warn('MCP recipe_update failed', { error: result.error });
@@ -479,7 +479,7 @@ export function registerRecipeTools(server: McpServer): void {
         span.setAttribute('slug', slug);
 
         // Use repository to delete recipe from MongoDB
-        const result = await deleteRecipe(slug);
+        const result = await deleteRecipe(slug, 'mcp');
 
         if (!result.success) {
           logger.mcp.warn('MCP recipe_delete failed', { error: result.error });
