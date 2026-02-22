@@ -8,6 +8,9 @@
 import type { IIngredient } from '@/db/types';
 import { categorizeIngredient, type GroceryCategory } from './categories';
 
+/** Decimal places for formatting non-integer amounts */
+const DECIMAL_PRECISION = 2;
+
 /**
  * Parsed quantity from an ingredient string
  */
@@ -489,7 +492,7 @@ function formatAmountDecimal(amount: number): string {
   if (Number.isInteger(amount)) {
     return amount.toString();
   }
-  return amount.toFixed(2).replace(/\.?0+$/, '');
+  return amount.toFixed(DECIMAL_PRECISION).replace(/\.?0+$/, '');
 }
 
 /**
