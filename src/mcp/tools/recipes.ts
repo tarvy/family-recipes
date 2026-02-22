@@ -8,13 +8,13 @@ import { connectDB } from '@/db/connection';
 import { findRecipesByIngredient, searchRecipes } from '@/db/models/recipe.model';
 import type { IRecipeDocument } from '@/db/types';
 import { logger } from '@/lib/logger';
+import { getAllRecipes, getCategories, type RecipePreview } from '@/lib/recipes/loader';
 import {
-  getAllRecipes,
-  getCategories,
-  getRecipeBySlug,
-  type RecipePreview,
-} from '@/lib/recipes/loader';
-import { createRecipe, deleteRecipe, updateRecipe } from '@/lib/recipes/repository';
+  createRecipe,
+  deleteRecipe,
+  getRecipeDetail,
+  updateRecipe,
+} from '@/lib/recipes/repository';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
 import { buildToolResult } from '@/mcp/tools/utils';
 
@@ -205,7 +205,7 @@ export function registerRecipeTools(server: McpServer): void {
     async ({ slug }) => {
       return withTrace('mcp.tool.recipe_get', async (span) => {
         span.setAttribute('slug', slug);
-        const recipe = await getRecipeBySlug(slug);
+        const recipe = await getRecipeDetail(slug);
         const response = {
           found: recipe !== null,
           recipe: recipe ?? undefined,

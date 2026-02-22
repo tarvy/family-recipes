@@ -80,7 +80,7 @@ function handleHelp(): never {
 
 function parseSince(value: string): Date {
   const match = /^(\d+)(h|d)$/.exec(value);
-  if (!(match && match[1] && match[2])) {
+  if (!(match?.[1] && match[2])) {
     throw new Error(
       `Invalid --since format: "${value}". Use Nh (hours) or Nd (days), e.g. 24h, 7d`,
     );
