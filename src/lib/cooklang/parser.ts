@@ -42,6 +42,96 @@ export interface ParseError {
 
 export type ParseOutput = ParseResult | ParseError;
 
+/** Known Cooklang metadata keys for normalization */
+const KNOWN_METADATA_KEYS = new Set([
+  'title',
+  'description',
+  'servings',
+  'serves',
+  'yield',
+  'prep time',
+  'cook time',
+  'total time',
+  'time',
+  'duration',
+  'difficulty',
+  'cuisine',
+  'course',
+  'source',
+  'tags',
+  'author',
+  'diet',
+  'locale',
+]);
+
+/**
+ * Try to convert a line to Cooklang `>> key: value` metadata format.
+ *
+ * Returns the converted line if the line contains a known metadata key,
+ * or null if it's not a metadata line.
+ */
+function tryConvertMetadataLine(trimmed: string): string | null {
+  const colonIndex = trimmed.indexOf(':');
+  if (colonIndex <= 0) {
+    return null;
+  }
+  const key = trimmed.slice(0, colonIndex).trim().toLowerCase();
+  const value = trimmed.slice(colonIndex + 1).trim();
+  if (value && KNOWN_METADATA_KEYS.has(key)) {
+    return `>> ${key}: ${value}`;
+  }
+  return null;
+}
+
+/**
+ * Normalize content metadata to Cooklang `>> key: value` format.
+ *
+ * MCP clients often send metadata as bare `key: value` lines or YAML
+ * frontmatter instead of Cooklang's `>> key: value` syntax. This function
+ * detects and converts those formats so the parser can extract metadata.
+ */
+function normalizeCooklangMetadata(source: string): string {
+  const lines = source.split('\n');
+  const normalized: string[] = [];
+  let inYamlFrontmatter = false;
+  let isFirstLine = true;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Handle YAML frontmatter delimiters
+    if (isFirstLine && trimmed === '---') {
+      inYamlFrontmatter = true;
+      isFirstLine = false;
+      continue;
+    }
+    if (inYamlFrontmatter && trimmed === '---') {
+      inYamlFrontmatter = false;
+      continue;
+    }
+    isFirstLine = false;
+
+    // Already valid Cooklang metadata — keep as-is
+    if (trimmed.startsWith('>>')) {
+      normalized.push(line);
+      continue;
+    }
+
+    // Try converting bare or YAML-style metadata lines
+    if (inYamlFrontmatter || trimmed) {
+      const converted = tryConvertMetadataLine(trimmed);
+      if (converted) {
+        normalized.push(converted);
+        continue;
+      }
+    }
+
+    normalized.push(line);
+  }
+
+  return normalized.join('\n');
+}
+
 /**
  * Generate a URL-safe slug from a filename or title
  *
@@ -384,7 +474,8 @@ export async function parseCooklang(source: string, context: ParseContext): Prom
     span.setAttribute('file_path', context.filePath);
 
     try {
-      const cooklang = new CooklangRecipe(source);
+      const normalizedSource = normalizeCooklangMetadata(source);
+      const cooklang = new CooklangRecipe(normalizedSource);
       const metadata = normalizeMetadata(cooklang.metadata);
       const title = metadata[METADATA_KEYS.TITLE] || titleFromFilePath(context.filePath);
       const slug = generateSlug(

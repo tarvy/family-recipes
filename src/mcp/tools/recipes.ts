@@ -38,7 +38,7 @@ const recipePreviewSchema = z.object({
 const recipeDetailSchema = z.object({
   slug: z.string(),
   title: z.string(),
-  category: z.string(),
+  category: z.string().optional(),
   description: z.string().optional(),
   servings: z.number().optional(),
   prepTime: z.number().optional(),
