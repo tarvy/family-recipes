@@ -76,6 +76,7 @@ export async function POST(request: Request): Promise<Response> {
       logger.api.info('Passkey registration requested', { path: REGISTER_PATH });
 
       const cookieStore = await cookies();
+      const requestOrigin = getRequestOrigin(request);
       const authCheck = await checkUserAllowed(cookieStore);
       if (!authCheck.authorized) {
         span.setAttribute('error', authCheck.error);
@@ -97,7 +98,7 @@ export async function POST(request: Request): Promise<Response> {
           return Response.json({ error: 'invalid_payload' }, { status: HTTP_BAD_REQUEST });
         }
 
-        return handleVerification(body.response, user.id, cookieStore);
+        return handleVerification(body.response, user.id, cookieStore, requestOrigin);
       }
 
       return handleOptions(user, cookieStore);
@@ -154,6 +155,7 @@ async function handleVerification(
   response: RegistrationResponseJSON,
   userId: string,
   cookieStore: Awaited<ReturnType<typeof cookies>>,
+  requestOrigin: string | null,
 ): Promise<Response> {
   const challengeToken = cookieStore.get(getPasskeyChallengeCookieName())?.value;
   const challenge = challengeToken ? parsePasskeyChallengeCookie(challengeToken) : null;
@@ -165,7 +167,11 @@ async function handleVerification(
   }
 
   try {
-    const verification = await verifyPasskeyRegistration(response, challenge.challenge);
+    const verification = await verifyPasskeyRegistration(
+      response,
+      challenge.challenge,
+      requestOrigin,
+    );
 
     if (!(verification.verified && verification.registrationInfo)) {
       logger.auth.warn('Passkey registration verification failed');
@@ -209,5 +215,18 @@ async function handleVerification(
     logger.auth.error('Passkey registration verification error', toError(error));
     cookieStore.delete(getPasskeyChallengeCookieName());
     return Response.json({ error: 'verification_failed' }, { status: HTTP_INTERNAL_SERVER_ERROR });
+  }
+}
+
+function getRequestOrigin(request: Request): string | null {
+  const headerOrigin = request.headers.get('origin');
+  if (headerOrigin) {
+    return headerOrigin;
+  }
+
+  try {
+    return new URL(request.url).origin;
+  } catch {
+    return null;
   }
 }

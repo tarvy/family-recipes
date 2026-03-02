@@ -357,6 +357,8 @@ The sender email address is derived from `NEXT_PUBLIC_APP_URL`:
    OWNER_EMAIL=you@example.com
    ```
 
+   Note: If port `3000` is busy and Next.js starts on another localhost port (for example `http://localhost:3001`), passkey verification accepts that localhost origin during development.
+
 2. Visit `/login` and enter your email or choose passkey sign-in
 
 3. Check your inbox for the magic link (or check Resend dashboard for test emails)

@@ -536,3 +536,19 @@ PR-047:
       path: src/components/recipes/shuffle-button.tsx
     - type: file
       path: src/components/recipes/random-recipe-cookie.tsx
+
+# =============================================================================
+# PHASE 22: Authentication Reliability (PR-048)
+# =============================================================================
+
+PR-048:
+  name: "Passkey Localhost Origin Compatibility"
+  checks:
+    - type: file
+      path: src/lib/auth/passkey.ts
+    - type: file
+      path: src/app/api/auth/passkey/authenticate/route.ts
+    - type: file
+      path: src/app/api/auth/passkey/register/route.ts
+    - type: file
+      path: docs/AUTH.md

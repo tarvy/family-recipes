@@ -30,6 +30,9 @@ const PASSKEY_CHALLENGE_TTL_SECONDS = PASSKEY_CHALLENGE_TTL_MINUTES * SECONDS_PE
 
 /** Token format: payload.signature (2 parts separated by dot) */
 const TOKEN_PARTS_COUNT = 2;
+const LOCALHOST_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+
+type WebAuthnExpectedOrigin = string | string[];
 
 const PASSKEY_CHALLENGE_COOKIE_OPTIONS: Partial<ResponseCookie> = {
   httpOnly: true,
@@ -129,8 +132,9 @@ export function buildAuthenticationOptions(): Promise<PublicKeyCredentialRequest
 export async function verifyPasskeyRegistration(
   response: RegistrationResponseJSON,
   expectedChallenge: string,
+  requestOrigin?: string | null,
 ): Promise<Awaited<ReturnType<typeof verifyRegistrationResponse>>> {
-  const { expectedOrigin, rpId } = getWebAuthnConfig();
+  const { expectedOrigin, rpId } = getWebAuthnConfig(requestOrigin);
 
   return verifyRegistrationResponse({
     response,
@@ -145,8 +149,9 @@ export async function verifyPasskeyAuthentication(
   response: AuthenticationResponseJSON,
   credential: WebAuthnCredential,
   expectedChallenge: string,
+  requestOrigin?: string | null,
 ): Promise<Awaited<ReturnType<typeof verifyAuthenticationResponse>>> {
-  const { expectedOrigin, rpId } = getWebAuthnConfig();
+  const { expectedOrigin, rpId } = getWebAuthnConfig(requestOrigin);
 
   return verifyAuthenticationResponse({
     response,
@@ -194,11 +199,51 @@ export function getExpectedOrigin(): string {
   return new URL(appUrl).origin;
 }
 
-function getWebAuthnConfig(): { expectedOrigin: string; rpId: string } {
+function getWebAuthnConfig(requestOrigin?: string | null): {
+  expectedOrigin: WebAuthnExpectedOrigin;
+  rpId: string;
+} {
   return {
-    expectedOrigin: getExpectedOrigin(),
+    expectedOrigin: getExpectedOrigins(requestOrigin),
     rpId: getRpId(),
   };
+}
+
+function getExpectedOrigins(requestOrigin?: string | null): WebAuthnExpectedOrigin {
+  const configuredOrigin = getExpectedOrigin();
+  const requestOriginUrl = parseOrigin(requestOrigin);
+  const configuredOriginUrl = parseOrigin(configuredOrigin);
+
+  if (!(requestOriginUrl && configuredOriginUrl)) {
+    return configuredOrigin;
+  }
+
+  const isSameLoopbackHostname =
+    requestOriginUrl.hostname === configuredOriginUrl.hostname &&
+    LOCALHOST_HOSTNAMES.has(requestOriginUrl.hostname);
+  const hasMatchingProtocol = requestOriginUrl.protocol === configuredOriginUrl.protocol;
+
+  if (!(isSameLoopbackHostname && hasMatchingProtocol)) {
+    return configuredOrigin;
+  }
+
+  if (requestOriginUrl.origin === configuredOrigin) {
+    return configuredOrigin;
+  }
+
+  return [configuredOrigin, requestOriginUrl.origin];
+}
+
+function parseOrigin(origin: string | null | undefined): URL | null {
+  if (!origin) {
+    return null;
+  }
+
+  try {
+    return new URL(origin);
+  } catch {
+    return null;
+  }
 }
 
 function normalizeTransports(transports?: string[]): AllowedTransport[] | undefined {

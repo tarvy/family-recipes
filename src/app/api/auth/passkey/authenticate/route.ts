@@ -48,6 +48,7 @@ export async function POST(request: Request): Promise<Response> {
       }
 
       const cookieStore = await cookies();
+      const requestOrigin = getRequestOrigin(request);
 
       if (body.response) {
         if (!isAuthenticationResponse(body.response)) {
@@ -55,7 +56,7 @@ export async function POST(request: Request): Promise<Response> {
           return Response.json({ error: 'invalid_payload' }, { status: HTTP_BAD_REQUEST });
         }
 
-        return handleVerification(body.response, cookieStore);
+        return handleVerification(body.response, cookieStore, requestOrigin);
       }
 
       return handleOptions(cookieStore);
@@ -90,6 +91,7 @@ async function handleOptions(cookieStore: Awaited<ReturnType<typeof cookies>>): 
 async function handleVerification(
   response: AuthenticationResponseJSON,
   cookieStore: Awaited<ReturnType<typeof cookies>>,
+  requestOrigin: string | null,
 ): Promise<Response> {
   const challengeToken = cookieStore.get(getPasskeyChallengeCookieName())?.value;
   const challenge = challengeToken ? parsePasskeyChallengeCookie(challengeToken) : null;
@@ -158,6 +160,7 @@ async function handleVerification(
       response,
       credential,
       challenge.challenge,
+      requestOrigin,
     );
 
     if (!verification.verified) {
@@ -201,6 +204,19 @@ async function handleVerification(
       { error: 'authentication_failed' },
       { status: HTTP_INTERNAL_SERVER_ERROR },
     );
+  }
+}
+
+function getRequestOrigin(request: Request): string | null {
+  const headerOrigin = request.headers.get('origin');
+  if (headerOrigin) {
+    return headerOrigin;
+  }
+
+  try {
+    return new URL(request.url).origin;
+  } catch {
+    return null;
   }
 }
 
