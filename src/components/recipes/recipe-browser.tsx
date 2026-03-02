@@ -30,7 +30,7 @@ interface RecipeBrowserProps {
 /**
  * Client-side recipe browser with search, sections, and filtering
  *
- * Layout: Search → Sections (hidden when searching) → Category pills → Grid
+ * Layout: Search → Category pills → Sections (hidden when searching) → Grid
  */
 export function RecipeBrowser({
   recipes,
@@ -100,6 +100,9 @@ export function RecipeBrowser({
         />
       </div>
 
+      {/* Category pills — always visible under search */}
+      <RecipeCategoryPills categories={categories} />
+
       {/* Sections — hidden when searching */}
       {!isSearching && <RecipeSections sections={sections} canDelete={canDelete} />}
 
@@ -108,8 +111,7 @@ export function RecipeBrowser({
         <RandomRecipeCookieSetter slugs={sections.randomSlugs} />
       )}
 
-      {/* Category pills + grid */}
-      <RecipeCategoryPills categories={categories} />
+      {/* Full recipe grid */}
       <RecipeGrid recipes={filteredRecipes} canDelete={canDelete} />
     </div>
   );

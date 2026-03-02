@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "family-recipes": {
+      "url": "https://family-recipes.vercel.app/mcp",
+      "type": "http"
+    }
+  }
+}

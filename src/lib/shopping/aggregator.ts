@@ -533,8 +533,9 @@ export function scaleAndFormatQuantity(
     return quantity;
   }
   const scaledAmount = parsed.amount * multiplier;
+  const roundedAmount = Math.round(scaledAmount * 100) / 100;
   const displayUnit = unit ? normalizeUnit(unit) : parsed.unit;
-  return formatQuantityForDisplay(scaledAmount, displayUnit || parsed.unit || undefined);
+  return formatQuantityForDisplay(roundedAmount, displayUnit || parsed.unit || undefined);
 }
 
 /**

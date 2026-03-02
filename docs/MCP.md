@@ -123,7 +123,12 @@ curl -X POST http://localhost:3000/api/mcp/oauth/register \
 - **Auth**: OAuth 2.1 with PKCE
 - **Discovery**: `/.well-known/oauth-authorization-server` or `/api/mcp/.well-known/oauth-authorization-server`
 
-**Cursor**: Add the MCP server in Cursor settings (MCP section) with the endpoint URL and OAuth configuration. On first tool use, a browser opens for login and consent.
+**Cursor**: This project includes `.cursor/mcp.json` with the `family-recipes` server pointing to `http://localhost:3000/mcp`. To test:
+
+1. Start the dev server: `npm run dev`
+2. Register an OAuth client (one-time): `curl -X POST http://localhost:3000/api/mcp/oauth/register -H "Content-Type: application/json" -d '{"client_name": "Cursor", "redirect_uris": ["http://localhost:8080/callback"]}'`
+3. Restart Cursor (or reload the window) so it picks up the MCP config
+4. In Cursor: Settings → Tools & MCP → the `family-recipes` server should appear. Click "Connect" (or equivalent); a browser opens for login and consent.
 
 **Claude Code**: See [Usage with Claude Code](#usage-with-claude-code) below. Run `claude mcp add --transport http family-recipes <APP_URL>/mcp`; the first use triggers browser login.
 

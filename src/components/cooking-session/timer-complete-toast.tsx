@@ -30,6 +30,9 @@ const CHIME_DURATION_S = 0.5;
 /** Gain value for fade-out end */
 const CHIME_FADE_END = 0.01;
 
+/** Vibration pattern for timer alarm: [vibrate, pause, vibrate, pause, vibrate] in ms */
+const VIBRATE_PATTERN_MS = [200, 100, 200, 100, 200];
+
 /** SVG icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
 
@@ -83,35 +86,54 @@ function XIcon(): ReactNode {
 export function TimerCompleteToast({ timer }: TimerCompleteToastProps): ReactNode {
   const { dismissCompletedTimer, soundEnabled } = useCookingSession();
 
-  // Play sound on mount
+  // Play sound and vibrate on mount (when timer completes)
   useEffect(() => {
+    // Vibration: works on mobile even when ringer is silent
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(VIBRATE_PATTERN_MS);
+    }
+
     if (soundEnabled) {
-      // Use Web Audio API for a simple chime
-      try {
-        const audioContext = new (
-          window.AudioContext ||
-          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-        )();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+      const playChime = async (): Promise<void> => {
+        try {
+          const AudioContextClass =
+            window.AudioContext ||
+            (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+          if (!AudioContextClass) {
+            return;
+          }
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+          const audioContext = new AudioContextClass();
 
-        oscillator.frequency.setValueAtTime(CHIME_FREQUENCY_HZ, audioContext.currentTime);
-        oscillator.type = 'sine';
+          // Mobile browsers (iOS Safari, Chrome) start AudioContext suspended
+          if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+          }
 
-        gainNode.gain.setValueAtTime(CHIME_VOLUME, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(
-          CHIME_FADE_END,
-          audioContext.currentTime + CHIME_DURATION_S,
-        );
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
 
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + CHIME_DURATION_S);
-      } catch {
-        // Audio not supported, fail silently
-      }
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillator.frequency.setValueAtTime(CHIME_FREQUENCY_HZ, audioContext.currentTime);
+          oscillator.type = 'sine';
+
+          gainNode.gain.setValueAtTime(CHIME_VOLUME, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(
+            CHIME_FADE_END,
+            audioContext.currentTime + CHIME_DURATION_S,
+          );
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + CHIME_DURATION_S);
+        } catch {
+          // Audio not supported, fail silently
+        }
+      };
+      playChime().catch(() => {
+        /* Audio not supported, fail silently */
+      });
     }
   }, [soundEnabled]);
 
