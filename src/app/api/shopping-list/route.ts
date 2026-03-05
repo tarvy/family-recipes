@@ -13,9 +13,11 @@
 
 import { Types } from 'mongoose';
 import { cookies } from 'next/headers';
+import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import {
   HTTP_BAD_REQUEST,
+  HTTP_FORBIDDEN,
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
@@ -82,6 +84,15 @@ export async function POST(request: Request): Promise<Response> {
       if (!user) {
         span.setAttribute('error', 'unauthorized');
         return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
+      }
+
+      if (!isFamilyRole(user.role)) {
+        logger.auth.warn('[create_shopping_list] forbidden for non-family role', {
+          userId: user.id,
+          role: user.role,
+        });
+        span.setAttribute('error', 'forbidden');
+        return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
       }
 
       span.setAttribute('user_id', user.id);

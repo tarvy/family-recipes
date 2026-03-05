@@ -12,9 +12,11 @@ import { put } from '@vercel/blob';
 import { cookies } from 'next/headers';
 import { connectDB } from '@/db/connection';
 import { Recipe } from '@/db/models/recipe.model';
+import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import {
   HTTP_BAD_REQUEST,
+  HTTP_FORBIDDEN,
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_NOT_FOUND,
   HTTP_UNAUTHORIZED,
@@ -180,6 +182,15 @@ export async function POST(request: Request): Promise<Response> {
       if (!user) {
         span.setAttribute('error', 'unauthorized');
         return errorResponse('Authentication required', HTTP_UNAUTHORIZED);
+      }
+
+      if (!isFamilyRole(user.role)) {
+        logger.auth.warn('[upload_photo] forbidden for non-family role', {
+          userId: user.id,
+          role: user.role,
+        });
+        span.setAttribute('error', 'forbidden');
+        return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
       }
 
       span.setAttribute('user_id', user.id);

@@ -7,9 +7,11 @@
  */
 
 import { cookies } from 'next/headers';
+import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import {
   HTTP_BAD_REQUEST,
+  HTTP_FORBIDDEN,
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_NOT_FOUND,
   HTTP_UNAUTHORIZED,
@@ -48,6 +50,15 @@ export async function GET(request: Request, context: RouteContext): Promise<Resp
       if (!user) {
         span.setAttribute('error', 'unauthorized');
         return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
+      }
+
+      if (!isFamilyRole(user.role)) {
+        logger.auth.warn('[get_shopping_list] forbidden for non-family role', {
+          userId: user.id,
+          role: user.role,
+        });
+        span.setAttribute('error', 'forbidden');
+        return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
       }
 
       const { id } = await context.params;
@@ -154,6 +165,15 @@ export async function PATCH(request: Request, context: RouteContext): Promise<Re
         return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
       }
 
+      if (!isFamilyRole(user.role)) {
+        logger.auth.warn('[update_shopping_list] forbidden for non-family role', {
+          userId: user.id,
+          role: user.role,
+        });
+        span.setAttribute('error', 'forbidden');
+        return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
+      }
+
       const { id } = await context.params;
       span.setAttribute('list_id', id);
 
@@ -192,6 +212,15 @@ export async function DELETE(request: Request, context: RouteContext): Promise<R
       if (!user) {
         span.setAttribute('error', 'unauthorized');
         return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
+      }
+
+      if (!isFamilyRole(user.role)) {
+        logger.auth.warn('[delete_shopping_list] forbidden for non-family role', {
+          userId: user.id,
+          role: user.role,
+        });
+        span.setAttribute('error', 'forbidden');
+        return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
       }
 
       const { id } = await context.params;
