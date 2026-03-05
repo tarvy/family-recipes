@@ -4,6 +4,7 @@ import { MainLayout } from '@/components/layout';
 import { connectDB } from '@/db/connection';
 import { Passkey } from '@/db/models';
 import { getSessionFromCookies } from '@/lib/auth';
+import { isFamilyRole } from '@/lib/auth/authorization';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
 
 interface PasskeySummary {
@@ -23,6 +24,8 @@ export default async function SettingsPage() {
   if (!user) {
     throw new Error('User not authenticated - layout redirect failed');
   }
+
+  const isFamily = isFamilyRole(user.role);
 
   const passkeys = await withTrace('page.settings.passkeys', async (span) => {
     span.setAttribute('user_id', user.id);
@@ -51,7 +54,7 @@ export default async function SettingsPage() {
   });
 
   return (
-    <MainLayout>
+    <MainLayout isFamily={isFamily}>
       <div className="px-6 py-6">
         <div className="mx-auto w-full max-w-3xl">
           <div className="mb-8">

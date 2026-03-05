@@ -7,12 +7,14 @@ import { RecipeBackButton } from '@/components/recipes/recipe-back-button';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { RecipeInteractions } from '@/components/recipes/recipe-interactions';
 import { Card } from '@/components/ui';
+import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
 import { formatUpdatedDate } from '@/lib/format/date';
 import { getRecipeBySlug } from '@/lib/recipes/loader';
 import type { RecipeDetail } from '@/lib/recipes/repository';
 import { getRecipeDetail, recordRecipeUse } from '@/lib/recipes/repository';
+import { cn } from '@/lib/utils';
 
 interface RecipeDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -59,58 +61,21 @@ export default async function RecipeDetailPage({ params, searchParams }: RecipeD
   recordRecipeUse(slug).catch(() => {});
 
   const user = await getSessionFromCookies(cookieStore);
-  const canDelete = user?.role === 'owner' || user?.role === 'family';
+  const canDelete = user?.role === 'owner';
+  const isFamily = user ? isFamilyRole(user.role) : false;
   const showBack = resolvedSearchParams.from === 'browse';
 
   return (
-    <MainLayout>
+    <MainLayout isFamily={isFamily}>
       <div className="px-6 py-6">
         <Card className="relative mx-auto w-full max-w-3xl md:max-w-4xl lg:max-w-5xl p-6 sm:p-8">
-          {/* Back button — top left (only from browse) */}
-          {showBack && (
-            <div className="absolute left-4 top-4 sm:left-6 sm:top-6">
-              <RecipeBackButton />
-            </div>
-          )}
-
-          {/* Action menu — top right */}
-          <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
-            <RecipeActions slug={slug} recipeTitle={recipe.title} canDelete={canDelete} />
-          </div>
-
-          {/* Header */}
-          <header>
-            <h1 className="pr-10 text-3xl font-semibold text-foreground">{recipe.title}</h1>
-
-            {/* Category badge */}
-            <div className="mt-3">
-              <span className="rounded-full bg-pink px-3 py-1 text-sm font-medium capitalize text-foreground">
-                {recipe.category}
-              </span>
-            </div>
-
-            {/* Description */}
-            {recipe.description && (
-              <p className="mt-4 text-muted-foreground">{recipe.description}</p>
-            )}
-
-            {/* Meta info */}
-            <RecipeMetaRow recipe={recipe} />
-
-            {/* Tags */}
-            {recipe.tags.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {recipe.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-yellow-light px-2.5 py-0.5 text-xs font-medium text-foreground"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </header>
+          <RecipeDetailHeader
+            slug={slug}
+            recipe={recipe}
+            showBack={showBack}
+            canDelete={canDelete}
+            isFamily={isFamily}
+          />
 
           {/* Recipe Content: Responsive two-column layout in landscape */}
           <div className="mt-10">
@@ -160,6 +125,68 @@ export default async function RecipeDetailPage({ params, searchParams }: RecipeD
         </Card>
       </div>
     </MainLayout>
+  );
+}
+
+interface RecipeDetailHeaderProps {
+  slug: string;
+  recipe: RecipeDetail;
+  showBack: boolean;
+  canDelete: boolean;
+  isFamily: boolean;
+}
+
+function RecipeDetailHeader({
+  slug,
+  recipe,
+  showBack,
+  canDelete,
+  isFamily,
+}: RecipeDetailHeaderProps) {
+  return (
+    <>
+      {showBack && (
+        <div className="absolute left-4 top-4 sm:left-6 sm:top-6">
+          <RecipeBackButton />
+        </div>
+      )}
+
+      <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+        <RecipeActions
+          slug={slug}
+          recipeTitle={recipe.title}
+          canDelete={canDelete}
+          isFamily={isFamily}
+        />
+      </div>
+
+      <header className={cn(showBack && 'pl-10 sm:pl-12')}>
+        <h1 className="pr-10 text-3xl font-semibold text-foreground">{recipe.title}</h1>
+
+        <div className="mt-3">
+          <span className="rounded-full bg-pink px-3 py-1 text-sm font-medium capitalize text-foreground">
+            {recipe.category}
+          </span>
+        </div>
+
+        {recipe.description && <p className="mt-4 text-muted-foreground">{recipe.description}</p>}
+
+        <RecipeMetaRow recipe={recipe} />
+
+        {recipe.tags.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {recipe.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-yellow-light px-2.5 py-0.5 text-xs font-medium text-foreground"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </header>
+    </>
   );
 }
 
