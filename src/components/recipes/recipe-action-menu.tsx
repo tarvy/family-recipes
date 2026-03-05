@@ -22,6 +22,7 @@ interface RecipeActionMenuProps {
   slug: string;
   recipeTitle: string;
   canDelete: boolean;
+  isFamily: boolean;
   onCoverPhoto: () => void;
   onDelete: () => void;
 }
@@ -30,6 +31,7 @@ export function RecipeActionMenu({
   slug,
   recipeTitle,
   canDelete,
+  isFamily,
   onCoverPhoto,
   onDelete,
 }: RecipeActionMenuProps) {
@@ -88,14 +90,16 @@ export function RecipeActionMenu({
       {isOpen && (
         <div className="absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-xl border border-border bg-card shadow-lg">
           <div className="py-1">
-            <Link
-              href={`/recipes/${slug}/edit`}
-              className="flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-pink-light"
-              onClick={() => setIsOpen(false)}
-            >
-              <EditIcon className="h-4 w-4 text-muted-foreground" />
-              Edit
-            </Link>
+            {isFamily && (
+              <Link
+                href={`/recipes/${slug}/edit`}
+                className="flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-pink-light"
+                onClick={() => setIsOpen(false)}
+              >
+                <EditIcon className="h-4 w-4 text-muted-foreground" />
+                Edit
+              </Link>
+            )}
 
             <button
               type="button"
@@ -106,14 +110,16 @@ export function RecipeActionMenu({
               {pinned ? 'Unpin Recipe' : 'Pin Recipe'}
             </button>
 
-            <button
-              type="button"
-              onClick={handleCoverPhoto}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-foreground hover:bg-pink-light"
-            >
-              <CameraIcon className="h-4 w-4 text-muted-foreground" />
-              Cover Photo
-            </button>
+            {isFamily && (
+              <button
+                type="button"
+                onClick={handleCoverPhoto}
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-foreground hover:bg-pink-light"
+              >
+                <CameraIcon className="h-4 w-4 text-muted-foreground" />
+                Cover Photo
+              </button>
+            )}
 
             {canDelete && (
               <>

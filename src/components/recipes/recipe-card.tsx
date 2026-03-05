@@ -99,6 +99,7 @@ function formatCategory(category: string): string {
 interface RecipeCardProps {
   recipe: RecipePreview;
   canDelete: boolean;
+  isFamily: boolean;
 }
 
 /**
@@ -112,7 +113,7 @@ interface RecipeCardProps {
  * - Hover and focus states for accessibility
  * - Long-press/right-click context menu
  */
-export function RecipeCard({ recipe, canDelete }: RecipeCardProps) {
+export function RecipeCard({ recipe, canDelete, isFamily }: RecipeCardProps) {
   const router = useRouter();
   const colors = getCategoryColors(recipe.category);
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
@@ -143,22 +144,26 @@ export function RecipeCard({ recipe, canDelete }: RecipeCardProps) {
   }, [recipe.slug, recipe.title, router]);
 
   const contextMenuItems: ContextMenuItem[] = [
-    {
-      id: 'edit',
-      label: 'Edit Recipe',
-      icon: <EditIcon />,
-      onClick: () => {
-        router.push(`/recipes/${recipe.slug}/edit`);
-      },
-    },
-    {
-      id: 'add-to-list',
-      label: 'Add to Shopping List',
-      icon: <AddToCartIcon />,
-      onClick: () => {
-        router.push(`/shopping-list?add=${recipe.slug}`);
-      },
-    },
+    ...(isFamily
+      ? [
+          {
+            id: 'edit',
+            label: 'Edit Recipe',
+            icon: <EditIcon />,
+            onClick: () => {
+              router.push(`/recipes/${recipe.slug}/edit`);
+            },
+          },
+          {
+            id: 'add-to-list',
+            label: 'Add to Shopping List',
+            icon: <AddToCartIcon />,
+            onClick: () => {
+              router.push(`/shopping-list?add=${recipe.slug}`);
+            },
+          },
+        ]
+      : []),
     ...(canDelete
       ? [
           {

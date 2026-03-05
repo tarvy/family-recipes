@@ -12,11 +12,12 @@ interface RecipeSectionProps {
   title: string;
   recipes: RecipePreview[];
   canDelete: boolean;
+  isFamily: boolean;
   /** Optional action element rendered in the section header (e.g. shuffle button) */
   action?: React.ReactNode;
 }
 
-export function RecipeSection({ title, recipes, canDelete, action }: RecipeSectionProps) {
+export function RecipeSection({ title, recipes, canDelete, isFamily, action }: RecipeSectionProps) {
   if (recipes.length === 0) {
     return null;
   }
@@ -37,7 +38,7 @@ export function RecipeSection({ title, recipes, canDelete, action }: RecipeSecti
         >
           {recipes.map((recipe) => (
             <div key={recipe.slug} className="w-64 shrink-0 snap-start">
-              <RecipeCard recipe={recipe} canDelete={canDelete} />
+              <RecipeCard recipe={recipe} canDelete={canDelete} isFamily={isFamily} />
             </div>
           ))}
         </div>
