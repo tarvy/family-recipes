@@ -10,7 +10,7 @@
 import Link from 'next/link';
 import { HEADER_HEIGHT_PX, NAV_Z_INDEX } from '@/lib/constants/navigation';
 import { useNavigation } from './header-context';
-import { NAV_LINKS, NavLinkItem } from './nav-links';
+import { getFilteredNavLinks, NavLinkItem } from './nav-links';
 
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
@@ -21,8 +21,9 @@ const ICON_SIZE_MD_PX = 24;
 /**
  * Main header component
  */
-export function Header() {
+export function Header({ isFamily = true }: { isFamily?: boolean }) {
   const { isHeaderCollapsed, openDrawer, openSearch } = useNavigation();
+  const navLinks = getFilteredNavLinks(isFamily);
 
   return (
     <header
@@ -56,7 +57,7 @@ export function Header() {
 
         {/* Center: desktop nav links */}
         <nav className="hidden items-center gap-6 md:flex">
-          {NAV_LINKS.map((link) => (
+          {navLinks.map((link) => (
             <NavLinkItem key={link.href} link={link} variant="header" />
           ))}
         </nav>

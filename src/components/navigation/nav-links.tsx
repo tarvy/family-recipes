@@ -39,6 +39,13 @@ export const NAV_LINKS: NavLink[] = [
   },
 ];
 
+export function getFilteredNavLinks(isFamily: boolean): NavLink[] {
+  if (isFamily) {
+    return NAV_LINKS;
+  }
+  return NAV_LINKS.filter((link) => link.href !== '/shopping-list');
+}
+
 interface NavLinkItemProps {
   link: NavLink;
   onClick?: () => void;

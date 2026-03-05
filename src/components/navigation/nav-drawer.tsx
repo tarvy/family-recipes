@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { NAV_Z_INDEX } from '@/lib/constants/navigation';
 import { useNavigation } from './header-context';
-import { NAV_LINKS, NavLinkItem } from './nav-links';
+import { getFilteredNavLinks, NavLinkItem } from './nav-links';
 
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
@@ -22,11 +22,12 @@ const DRAWER_WIDTH_PX = 280;
 /**
  * Navigation drawer component
  */
-export function NavDrawer() {
+export function NavDrawer({ isFamily = true }: { isFamily?: boolean }) {
   const { isDrawerOpen, closeDrawer } = useNavigation();
   const [mounted, setMounted] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const firstFocusableRef = useRef<HTMLButtonElement>(null);
+  const navLinks = getFilteredNavLinks(isFamily);
 
   // Only render portal after client-side mount
   useEffect(() => {
@@ -106,7 +107,7 @@ export function NavDrawer() {
         {/* Navigation links */}
         <nav className="p-4">
           <ul className="space-y-1">
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <li key={link.href}>
                 <NavLinkItem link={link} onClick={closeDrawer} variant="drawer" />
               </li>

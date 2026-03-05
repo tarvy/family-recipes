@@ -17,12 +17,13 @@ interface MainLayoutProps {
   children: ReactNode;
   /** Additional class name for the main content area */
   className?: string;
+  isFamily?: boolean;
 }
 
 /**
  * Main layout wrapper with navigation
  */
-export function MainLayout({ children, className = '' }: MainLayoutProps) {
+export function MainLayout({ children, className = '', isFamily = true }: MainLayoutProps) {
   const { openDrawer } = useNavigation();
 
   // Enable edge swipe to open drawer (mobile only)
@@ -33,8 +34,8 @@ export function MainLayout({ children, className = '' }: MainLayoutProps) {
 
   return (
     <>
-      <Header />
-      <NavDrawer />
+      <Header isFamily={isFamily} />
+      <NavDrawer isFamily={isFamily} />
       <SearchModal />
 
       {/* Main content with header offset */}
