@@ -1,5 +1,9 @@
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { MainLayout } from '@/components/layout';
+import { isFamilyRole } from '@/lib/auth/authorization';
+import { getSessionFromCookies } from '@/lib/auth/session';
 import { getAllRecipes } from '@/lib/recipes/loader';
 import { ShoppingListClient } from './shopping-list-client';
 
@@ -40,9 +44,18 @@ async function ShoppingListContent() {
   return <ShoppingListClient recipes={recipes} />;
 }
 
-export default function ShoppingListPage() {
+export default async function ShoppingListPage() {
+  const cookieStore = await cookies();
+  const user = await getSessionFromCookies(cookieStore);
+
+  if (!(user && isFamilyRole(user.role))) {
+    redirect('/recipes');
+  }
+
+  const isFamily = isFamilyRole(user.role);
+
   return (
-    <MainLayout>
+    <MainLayout isFamily={isFamily}>
       <div className="px-6 py-6">
         <div className="mx-auto w-full max-w-3xl">
           <div className="mb-8">

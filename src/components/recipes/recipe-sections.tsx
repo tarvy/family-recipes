@@ -12,9 +12,10 @@ import { ShuffleButton } from './shuffle-button';
 interface RecipeSectionsProps {
   sections: RecipeSectionsData;
   canDelete: boolean;
+  isFamily: boolean;
 }
 
-export function RecipeSections({ sections, canDelete }: RecipeSectionsProps) {
+export function RecipeSections({ sections, canDelete, isFamily }: RecipeSectionsProps) {
   const hasAnySections =
     sections.mostUsed.length > 0 ||
     sections.recentlyUsed.length > 0 ||
@@ -27,17 +28,29 @@ export function RecipeSections({ sections, canDelete }: RecipeSectionsProps) {
 
   return (
     <div className="mb-8 space-y-8">
-      <RecipeSection title="Most Used" recipes={sections.mostUsed} canDelete={canDelete} />
-      <RecipeSection title="Recently Used" recipes={sections.recentlyUsed} canDelete={canDelete} />
+      <RecipeSection
+        title="Most Used"
+        recipes={sections.mostUsed}
+        canDelete={canDelete}
+        isFamily={isFamily}
+      />
+      <RecipeSection
+        title="Recently Used"
+        recipes={sections.recentlyUsed}
+        canDelete={canDelete}
+        isFamily={isFamily}
+      />
       <RecipeSection
         title="Recently Added"
         recipes={sections.recentlyAdded}
         canDelete={canDelete}
+        isFamily={isFamily}
       />
       <RecipeSection
         title="Random"
         recipes={sections.random}
         canDelete={canDelete}
+        isFamily={isFamily}
         action={<ShuffleButton />}
       />
     </div>

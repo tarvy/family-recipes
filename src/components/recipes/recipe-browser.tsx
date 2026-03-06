@@ -22,6 +22,7 @@ interface RecipeBrowserProps {
   recipes: RecipePreview[];
   categories: string[];
   canDelete: boolean;
+  isFamily: boolean;
   sections: RecipeSectionsData;
   /** Whether to set the random-recipes cookie (true when no cookie existed on load) */
   needsRandomCookie: boolean;
@@ -36,6 +37,7 @@ export function RecipeBrowser({
   recipes,
   categories,
   canDelete,
+  isFamily,
   sections,
   needsRandomCookie,
 }: RecipeBrowserProps) {
@@ -104,7 +106,9 @@ export function RecipeBrowser({
       <RecipeCategoryPills categories={categories} />
 
       {/* Sections — hidden when searching */}
-      {!isSearching && <RecipeSections sections={sections} canDelete={canDelete} />}
+      {!isSearching && (
+        <RecipeSections sections={sections} canDelete={canDelete} isFamily={isFamily} />
+      )}
 
       {/* Set random-recipes cookie when server generated a fresh set */}
       {needsRandomCookie && sections.randomSlugs.length > 0 && (
@@ -112,7 +116,7 @@ export function RecipeBrowser({
       )}
 
       {/* Full recipe grid */}
-      <RecipeGrid recipes={filteredRecipes} canDelete={canDelete} />
+      <RecipeGrid recipes={filteredRecipes} canDelete={canDelete} isFamily={isFamily} />
     </div>
   );
 }

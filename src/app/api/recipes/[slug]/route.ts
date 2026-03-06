@@ -7,7 +7,8 @@
  */
 
 import { cookies } from 'next/headers';
-import { getSessionFromCookies } from '@/lib/auth/session';
+import { isFamilyRole } from '@/lib/auth/authorization';
+import { getSessionFromCookies, type SessionUser } from '@/lib/auth/session';
 import {
   HTTP_BAD_REQUEST,
   HTTP_CONFLICT,
@@ -166,6 +167,29 @@ async function updateOrCreateRecipe(
   return result;
 }
 
+async function requireFamilyUser(span: {
+  setAttribute: (key: string, value: string) => void;
+}): Promise<Response | SessionUser> {
+  const cookieStore = await cookies();
+  const user = await getSessionFromCookies(cookieStore);
+
+  if (!user) {
+    span.setAttribute('error', 'unauthorized');
+    return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
+  }
+
+  if (!isFamilyRole(user.role)) {
+    logger.auth.warn('[update_recipe] forbidden for non-family role', {
+      userId: user.id,
+      role: user.role,
+    });
+    span.setAttribute('error', 'forbidden');
+    return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
+  }
+
+  return user;
+}
+
 /**
  * PUT /api/recipes/[slug]
  *
@@ -178,12 +202,9 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
       const { slug: originalSlug } = await params;
       span.setAttribute('original_slug', originalSlug);
 
-      const cookieStore = await cookies();
-      const user = await getSessionFromCookies(cookieStore);
-
-      if (!user) {
-        span.setAttribute('error', 'unauthorized');
-        return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
+      const user = await requireFamilyUser(span);
+      if (user instanceof Response) {
+        return user;
       }
 
       span.setAttribute('user_id', user.id);
@@ -234,7 +255,7 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
 /**
  * DELETE /api/recipes/[slug]
  *
- * Delete a recipe. Auth required. Only owner and family roles.
+ * Delete a recipe. Auth required. Owner only.
  */
 export async function DELETE(request: Request, { params }: RouteParams): Promise<Response> {
   return withRequestContext(request, () =>
@@ -253,8 +274,12 @@ export async function DELETE(request: Request, { params }: RouteParams): Promise
       span.setAttribute('user_id', user.id);
       span.setAttribute('user_role', user.role);
 
-      if (user.role === 'friend') {
-        logger.recipes.warn('Delete forbidden for friend role', { slug, userId: user.id });
+      if (user.role !== 'owner') {
+        logger.recipes.warn('Delete forbidden for non-owner role', {
+          slug,
+          userId: user.id,
+          role: user.role,
+        });
         span.setAttribute('error', 'forbidden');
         return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
       }

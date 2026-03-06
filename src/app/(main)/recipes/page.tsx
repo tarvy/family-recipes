@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { Suspense } from 'react';
 import { MainLayout } from '@/components/layout';
 import { RecipeBrowser } from '@/components/recipes/recipe-browser';
+import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import {
   getAllRecipes,
@@ -79,10 +80,11 @@ export default async function RecipesPage() {
   const [recipes, sections] = await Promise.all([getAllRecipes(), getRecipeSections(cachedSlugs)]);
   const categories = getCategories();
   const user = await getSessionFromCookies(cookieStore);
-  const canDelete = user?.role === 'owner' || user?.role === 'family';
+  const canDelete = user?.role === 'owner';
+  const isFamily = user ? isFamilyRole(user.role) : false;
 
   return (
-    <MainLayout>
+    <MainLayout isFamily={isFamily}>
       <div className="px-6 py-6">
         <div className="mx-auto w-full max-w-6xl">
           <div className="mb-8">
@@ -97,6 +99,7 @@ export default async function RecipesPage() {
               recipes={recipes}
               categories={categories}
               canDelete={canDelete}
+              isFamily={isFamily}
               sections={sections}
               needsRandomCookie={needsRandomCookie}
             />

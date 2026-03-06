@@ -17,9 +17,10 @@ interface RecipeActionsProps {
   slug: string;
   recipeTitle: string;
   canDelete: boolean;
+  isFamily: boolean;
 }
 
-export function RecipeActions({ slug, recipeTitle, canDelete }: RecipeActionsProps) {
+export function RecipeActions({ slug, recipeTitle, canDelete, isFamily }: RecipeActionsProps) {
   const router = useRouter();
   const [cameraOpen, setCameraOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -66,6 +67,7 @@ export function RecipeActions({ slug, recipeTitle, canDelete }: RecipeActionsPro
         slug={slug}
         recipeTitle={recipeTitle}
         canDelete={canDelete}
+        isFamily={isFamily}
         onCoverPhoto={handleCoverPhoto}
         onDelete={handleDelete}
       />

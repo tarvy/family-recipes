@@ -5,8 +5,12 @@
  * Uses the Cooklang-first editor for creating new recipes.
  */
 
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { RecipeEditorForm } from '@/components/recipes/recipe-editor-form';
+import { isFamilyRole } from '@/lib/auth/authorization';
+import { getSessionFromCookies } from '@/lib/auth/session';
 
 export const metadata = {
   title: 'Create Recipe | Family Recipes',
@@ -14,8 +18,17 @@ export const metadata = {
 };
 
 export default async function CreateRecipePage() {
+  const cookieStore = await cookies();
+  const user = await getSessionFromCookies(cookieStore);
+
+  if (!(user && isFamilyRole(user.role))) {
+    redirect('/recipes');
+  }
+
+  const isFamily = isFamilyRole(user.role);
+
   return (
-    <MainLayout>
+    <MainLayout isFamily={isFamily}>
       <div className="px-6 py-6">
         <div className="mx-auto w-full max-w-6xl">
           <header className="mb-6">

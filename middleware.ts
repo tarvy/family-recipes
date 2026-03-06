@@ -13,6 +13,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(redirectPath, request.url));
   }
 
+  // Public recipe link: redirect signed-in users to the full experience
+  if (pathname.startsWith('/r/') && isAuthenticated) {
+    const slug = pathname.slice(3); // strip leading "/r/"
+    return NextResponse.redirect(new URL(`/recipes/${slug}`, request.url));
+  }
+
   // Login page: redirect to recipes if already authenticated
   if (pathname === '/login') {
     if (isAuthenticated) {

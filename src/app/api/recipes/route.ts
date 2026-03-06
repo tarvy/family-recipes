@@ -8,10 +8,12 @@
  */
 
 import { cookies } from 'next/headers';
-import { getSessionFromCookies } from '@/lib/auth/session';
+import { isFamilyRole } from '@/lib/auth/authorization';
+import { getSessionFromCookies, type SessionUser } from '@/lib/auth/session';
 import {
   HTTP_BAD_REQUEST,
   HTTP_CONFLICT,
+  HTTP_FORBIDDEN,
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
@@ -124,15 +126,35 @@ async function createRecipe(
   return Response.json({ success: true, slug: result.slug });
 }
 
+async function requireFamilyUser(span: {
+  setAttribute: (key: string, value: string) => void;
+}): Promise<Response | SessionUser> {
+  const cookieStore = await cookies();
+  const user = await getSessionFromCookies(cookieStore);
+
+  if (!user) {
+    span.setAttribute('error', 'unauthorized');
+    return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
+  }
+
+  if (!isFamilyRole(user.role)) {
+    logger.auth.warn('[create_recipe] forbidden for non-family role', {
+      userId: user.id,
+      role: user.role,
+    });
+    span.setAttribute('error', 'forbidden');
+    return Response.json({ error: 'forbidden' }, { status: HTTP_FORBIDDEN });
+  }
+
+  return user;
+}
+
 export async function POST(request: Request): Promise<Response> {
   return withRequestContext(request, () =>
     withTrace('api.recipes.create', async (span) => {
-      const cookieStore = await cookies();
-      const user = await getSessionFromCookies(cookieStore);
-
-      if (!user) {
-        span.setAttribute('error', 'unauthorized');
-        return Response.json({ error: 'unauthorized' }, { status: HTTP_UNAUTHORIZED });
+      const user = await requireFamilyUser(span);
+      if (user instanceof Response) {
+        return user;
       }
 
       span.setAttribute('user_id', user.id);

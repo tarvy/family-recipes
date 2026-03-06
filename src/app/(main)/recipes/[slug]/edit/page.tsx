@@ -5,9 +5,12 @@
  * Loads raw Cooklang content for editing in the Cooklang-first editor.
  */
 
-import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { RecipeEditorForm } from '@/components/recipes/recipe-editor-form';
+import { isFamilyRole } from '@/lib/auth/authorization';
+import { getSessionFromCookies } from '@/lib/auth/session';
 import { getRawCooklangContent as getFromLoader } from '@/lib/recipes/loader';
 import { getRawCooklangContent as getFromRepository } from '@/lib/recipes/repository';
 
@@ -46,6 +49,15 @@ export async function generateMetadata({ params }: EditRecipePageProps) {
 
 export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const { slug } = await params;
+  const cookieStore = await cookies();
+  const user = await getSessionFromCookies(cookieStore);
+
+  if (!(user && isFamilyRole(user.role))) {
+    redirect(`/recipes/${slug}`);
+  }
+
+  const isFamily = isFamilyRole(user.role);
+
   const recipe = await loadRawCooklangContent(slug);
 
   if (!recipe) {
@@ -53,7 +65,7 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
   }
 
   return (
-    <MainLayout>
+    <MainLayout isFamily={isFamily}>
       <div className="px-6 py-6">
         <div className="mx-auto w-full max-w-6xl">
           <header className="mb-6">
