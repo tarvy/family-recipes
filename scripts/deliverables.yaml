@@ -552,3 +552,141 @@ PR-048:
       path: src/app/api/auth/passkey/register/route.ts
     - type: file
       path: docs/AUTH.md
+
+# =============================================================================
+# PHASE 23: Weekly Meal Planning — Data Foundation (PR-051)
+# =============================================================================
+
+PR-051:
+  name: "Meal Planning Data Foundation + Discovery Pipeline"
+  checks:
+    - type: file
+      path: src/db/models/weekly-menu.model.ts
+    - type: file
+      path: src/db/models/discovery-recipe.model.ts
+    - type: file
+      path: src/db/models/user-discovery-state.model.ts
+    - type: file
+      path: src/lib/discovery/types.ts
+    - type: file
+      path: src/lib/discovery/client.ts
+    - type: file
+      path: src/lib/discovery/cleaner.ts
+    - type: file
+      path: src/lib/discovery/scorer.ts
+    - type: file
+      path: src/lib/discovery/tagger.ts
+    - type: file
+      path: src/lib/discovery/cooklang-import.ts
+    - type: file
+      path: src/lib/discovery/repository.ts
+    - type: file
+      path: src/lib/menu/week-utils.ts
+    - type: file
+      path: scripts/fetch-discovery-recipes.ts
+
+# =============================================================================
+# PHASE 24: Weekly Meal Planning — API Layer (PR-052)
+# =============================================================================
+
+PR-052:
+  name: "Meal Planning API Layer"
+  checks:
+    - type: file
+      path: src/lib/menu/repository.ts
+    - type: file
+      path: src/lib/menu/service.ts
+    - type: file
+      path: src/lib/menu/ingredient-validator.ts
+    - type: file
+      path: src/lib/discovery/service.ts
+    - type: file
+      path: src/app/api/menu/route.ts
+    - type: file
+      path: src/app/api/menu/[id]/route.ts
+    - type: file
+      path: src/app/api/menu/[id]/assignments/route.ts
+    - type: file
+      path: src/app/api/menu/[id]/survey/route.ts
+    - type: file
+      path: src/app/api/menu/[id]/finalize/route.ts
+    - type: file
+      path: src/app/api/menu/[id]/unlock/route.ts
+    - type: file
+      path: src/app/api/vote/[token]/route.ts
+    - type: file
+      path: src/app/api/discovery/route.ts
+    - type: file
+      path: src/app/api/discovery/[id]/state/route.ts
+    - type: file
+      path: src/app/api/discovery/refresh/route.ts
+
+# =============================================================================
+# PHASE 25: Weekly Meal Planning — Planner Page UI (PR-053)
+# =============================================================================
+
+PR-053:
+  name: "Planner Page UI + Drag-and-Drop"
+  checks:
+    - type: file
+      path: src/app/(main)/menu/page.tsx
+    - type: file
+      path: src/components/menu/planner-page.tsx
+    - type: file
+      path: src/components/menu/drag-context.tsx
+    - type: file
+      path: src/components/menu/use-planner-drag.ts
+    - type: file
+      path: src/components/menu/use-drop-target.ts
+    - type: file
+      path: src/components/menu/recipe-source-panel.tsx
+    - type: file
+      path: src/components/menu/recipe-source-tabs.tsx
+    - type: file
+      path: src/components/menu/recipe-search.tsx
+    - type: file
+      path: src/components/menu/recipe-scroll.tsx
+    - type: file
+      path: src/components/menu/draggable-recipe-card.tsx
+    - type: file
+      path: src/components/menu/calendar-grid.tsx
+    - type: file
+      path: src/components/menu/day-row.tsx
+    - type: file
+      path: src/components/menu/meal-slot.tsx
+    - type: file
+      path: src/components/menu/card-fan.tsx
+    - type: file
+      path: src/components/menu/card-fan-overlay.tsx
+    - type: file
+      path: src/components/menu/planner-actions.tsx
+    - type: file
+      path: src/components/menu/status-badge.tsx
+    - type: file
+      path: src/components/menu/week-switcher.tsx
+    - type: file
+      path: src/lib/menu/fuzzy-search.ts
+
+# =============================================================================
+# PHASE 26: Weekly Meal Planning — Voting + Home Widget (PR-054)
+# =============================================================================
+
+PR-054:
+  name: "Public Voting Page + Home Widget"
+  checks:
+    - type: file
+      path: src/app/vote/[token]/page.tsx
+    - type: file
+      path: src/components/voting/voting-page.tsx
+    - type: file
+      path: src/components/voting/recipe-candidate.tsx
+    - type: file
+      path: src/components/voting/voter-name-input.tsx
+    - type: file
+      path: src/components/voting/voting-closed.tsx
+    - type: file
+      path: src/components/menu/home-widget.tsx
+    - type: file
+      path: src/components/menu/home-widget-day.tsx
+    - type: file
+      path: src/lib/fingerprint.ts
