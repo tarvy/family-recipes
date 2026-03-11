@@ -14,6 +14,7 @@
  *   } from '@/lib/auth';
  */
 
+export { isFamilyRole } from './authorization';
 export type { GenerateMagicLinkResult, VerifyMagicLinkResult } from './magic-link';
 export { generateMagicLink, verifyMagicLink } from './magic-link';
 export type { CreateSessionResult, SessionUser, ValidateSessionResult } from './session';

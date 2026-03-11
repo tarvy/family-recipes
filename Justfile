@@ -12,6 +12,10 @@ thai-lint:
   thailint nesting src/
   thailint magic-numbers src/
   thailint perf src/
+  thailint srp src/
+  thailint lazy-ignores src/
+  thailint print-statements src/
+  @echo "Skipping file-header (449 pre-existing violations — see .thailint.yaml file_header_paths)"
 
 check:
   just lint

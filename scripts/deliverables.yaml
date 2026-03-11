@@ -553,8 +553,39 @@ PR-048:
     - type: file
       path: docs/AUTH.md
 
+# PHASE 23: Recipe Detail Header Layout (PR-049)
 # =============================================================================
-# PHASE 23: Weekly Meal Planning — Data Foundation (PR-051)
+
+PR-049:
+  name: "Recipe Detail Header Overlap Fix"
+  checks:
+    - type: file
+      path: src/app/(main)/recipes/[slug]/page.tsx
+
+# =============================================================================
+# PHASE 24: Role-Based Access Control (PR-050)
+# =============================================================================
+
+PR-050:
+  name: "Role-Based Access Control & Public Recipe Sharing"
+  checks:
+    - type: file
+      path: src/lib/auth/authorization.ts
+    - type: file
+      path: src/app/r/[slug]/page.tsx
+    - type: file
+      path: src/app/api/recipes/route.ts
+    - type: file
+      path: src/app/api/recipes/[slug]/route.ts
+    - type: file
+      path: src/app/api/photos/upload/route.ts
+    - type: file
+      path: src/app/api/shopping-list/route.ts
+    - type: file
+      path: src/app/api/shopping-list/[id]/route.ts
+
+# =============================================================================
+# PHASE 25: Weekly Meal Planning — Data Foundation (PR-051)
 # =============================================================================
 
 PR-051:
@@ -586,7 +617,7 @@ PR-051:
       path: scripts/fetch-discovery-recipes.ts
 
 # =============================================================================
-# PHASE 24: Weekly Meal Planning — API Layer (PR-052)
+# PHASE 26: Weekly Meal Planning — API Layer (PR-052)
 # =============================================================================
 
 PR-052:
@@ -622,7 +653,7 @@ PR-052:
       path: src/app/api/discovery/refresh/route.ts
 
 # =============================================================================
-# PHASE 25: Weekly Meal Planning — Planner Page UI (PR-053)
+# PHASE 27: Weekly Meal Planning — Planner Page UI (PR-053)
 # =============================================================================
 
 PR-053:
@@ -668,7 +699,7 @@ PR-053:
       path: src/lib/menu/fuzzy-search.ts
 
 # =============================================================================
-# PHASE 26: Weekly Meal Planning — Voting + Home Widget (PR-054)
+# PHASE 28: Weekly Meal Planning — Voting + Home Widget (PR-054)
 # =============================================================================
 
 PR-054:
