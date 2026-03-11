@@ -10,6 +10,14 @@ import { createLogger } from '@/lib/logger';
 
 const log = createLogger('discovery');
 
+const QUARTER_VALUE = 0.25;
+const HALF_VALUE = 0.5;
+const THREE_QUARTER_VALUE = 0.75;
+const DECIMAL_PLACES = 2;
+const REGEX_GROUP_2 = 2;
+const REGEX_GROUP_3 = 3;
+const REGEX_GROUP_4 = 4;
+
 const PREP_PATTERNS =
   /^(finely |roughly )?(chopped|diced|minced|sliced|crushed|grated|peeled|melted|softened|dried|fresh|frozen|shredded|ground|torn|cubed|halved|quartered|trimmed|deseeded|cored)\s+/i;
 
@@ -45,16 +53,16 @@ const UNIT_ALIASES: Record<string, string> = {
 const NAMED_QUANTITIES = ['pinch', 'handful', 'splash', 'dash', 'to taste'];
 
 const UNICODE_FRACTIONS: Record<string, number> = {
-  '¼': 0.25,
-  '½': 0.5,
-  '¾': 0.75,
+  '¼': QUARTER_VALUE,
+  '½': HALF_VALUE,
+  '¾': THREE_QUARTER_VALUE,
 };
 
 type ParsedMeasure = { quantity: string; unit: string };
 
 function toDecimalString(value: number): string {
   return value
-    .toFixed(2)
+    .toFixed(DECIMAL_PLACES)
     .replace(/\.00$/, '')
     .replace(/(\.\d)0$/, '$1');
 }
@@ -84,9 +92,15 @@ export function separatePrep(ingredientName: string): { name: string; prep?: str
   }
 
   const trailingParenMatch = name.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
-  if (trailingParenMatch?.[1] && trailingParenMatch[2] && isPrepText(trailingParenMatch[2])) {
+  if (
+    trailingParenMatch?.[1] &&
+    trailingParenMatch[REGEX_GROUP_2] &&
+    isPrepText(trailingParenMatch[REGEX_GROUP_2])
+  ) {
     name = trailingParenMatch[1].trim();
-    prep = prep ? `${prep}, ${trailingParenMatch[2].trim()}` : trailingParenMatch[2].trim();
+    prep = prep
+      ? `${prep}, ${trailingParenMatch[REGEX_GROUP_2].trim()}`
+      : trailingParenMatch[REGEX_GROUP_2].trim();
   }
 
   return prep ? { name, prep } : { name };
@@ -94,19 +108,19 @@ export function separatePrep(ingredientName: string): { name: string; prep?: str
 
 function parseMixedUnicode(trimmed: string): ParsedMeasure | null {
   const match = trimmed.match(/^(\d+)\s*([¼½¾])\s*(.*)$/);
-  if (!(match?.[1] && match[2])) {
+  if (!(match?.[1] && match[REGEX_GROUP_2])) {
     return null;
   }
 
   const whole = Number.parseFloat(match[1]);
-  const fraction = UNICODE_FRACTIONS[match[2]];
+  const fraction = UNICODE_FRACTIONS[match[REGEX_GROUP_2]];
   if (Number.isNaN(whole) || fraction === undefined) {
     return null;
   }
 
   return {
     quantity: toDecimalString(whole + fraction),
-    unit: match[3]?.trim() ?? '',
+    unit: match[REGEX_GROUP_3]?.trim() ?? '',
   };
 }
 
@@ -123,19 +137,19 @@ function parseUnicodeFraction(trimmed: string): ParsedMeasure | null {
 
   return {
     quantity: toDecimalString(fraction),
-    unit: match[2]?.trim() ?? '',
+    unit: match[REGEX_GROUP_2]?.trim() ?? '',
   };
 }
 
 function parseMixedFraction(trimmed: string): ParsedMeasure | null {
   const match = trimmed.match(/^(\d+)\s+(\d+)\/(\d+)\s*(.*)$/);
-  if (!(match?.[1] && match[2] && match[3])) {
+  if (!(match?.[1] && match[REGEX_GROUP_2] && match[REGEX_GROUP_3])) {
     return null;
   }
 
   const whole = Number.parseFloat(match[1]);
-  const numerator = Number.parseFloat(match[2]);
-  const denominator = Number.parseFloat(match[3]);
+  const numerator = Number.parseFloat(match[REGEX_GROUP_2]);
+  const denominator = Number.parseFloat(match[REGEX_GROUP_3]);
 
   if (
     Number.isNaN(whole) ||
@@ -148,49 +162,49 @@ function parseMixedFraction(trimmed: string): ParsedMeasure | null {
 
   return {
     quantity: toDecimalString(whole + numerator / denominator),
-    unit: match[4]?.trim() ?? '',
+    unit: match[REGEX_GROUP_4]?.trim() ?? '',
   };
 }
 
 function parseSimpleFraction(trimmed: string): ParsedMeasure | null {
   const match = trimmed.match(/^(\d+)\/(\d+)\s*(.*)$/);
-  if (!(match?.[1] && match[2])) {
+  if (!(match?.[1] && match[REGEX_GROUP_2])) {
     return null;
   }
 
   const numerator = Number.parseFloat(match[1]);
-  const denominator = Number.parseFloat(match[2]);
+  const denominator = Number.parseFloat(match[REGEX_GROUP_2]);
   if (Number.isNaN(numerator) || Number.isNaN(denominator) || denominator === 0) {
     return null;
   }
 
   return {
     quantity: toDecimalString(numerator / denominator),
-    unit: match[3]?.trim() ?? '',
+    unit: match[REGEX_GROUP_3]?.trim() ?? '',
   };
 }
 
 function parseDecimalWithUnit(trimmed: string): ParsedMeasure | null {
   const match = trimmed.match(/^(\d+(?:\.\d+)?)\s+(.+)$/);
-  if (!(match?.[1] && match[2])) {
+  if (!(match?.[1] && match[REGEX_GROUP_2])) {
     return null;
   }
 
   return {
     quantity: match[1],
-    unit: match[2].trim(),
+    unit: match[REGEX_GROUP_2].trim(),
   };
 }
 
 function parseJammedUnit(trimmed: string): ParsedMeasure | null {
   const match = trimmed.match(/^(\d+(?:\.\d+)?)([a-zA-Z]+)$/);
-  if (!(match?.[1] && match[2])) {
+  if (!(match?.[1] && match[REGEX_GROUP_2])) {
     return null;
   }
 
   return {
     quantity: match[1],
-    unit: match[2].trim(),
+    unit: match[REGEX_GROUP_2].trim(),
   };
 }
 

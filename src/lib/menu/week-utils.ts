@@ -4,6 +4,8 @@ const WEEK_LABEL_PATTERN = /^(\d{4})-W(\d{2})$/;
 const DAYS_PER_WEEK = 7;
 const THURSDAY_OFFSET = 3;
 const MS_PER_DAY = 86_400_000;
+const WEEK_LABEL_PAD_WIDTH = 2;
+const WEEK_NUMBER_GROUP = 2;
 
 export function getISOWeekLabel(date: Date): string {
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
@@ -17,7 +19,7 @@ export function getISOWeekLabel(date: Date): string {
   );
 
   const weekYear = d.getUTCFullYear();
-  const paddedWeek = String(weekNumber).padStart(2, '0');
+  const paddedWeek = String(weekNumber).padStart(WEEK_LABEL_PAD_WIDTH, '0');
 
   return `${weekYear}-W${paddedWeek}`;
 }
@@ -47,7 +49,7 @@ export function parseWeekLabel(label: string): { year: number; week: number } {
   }
 
   const year = Number(match[1]);
-  const week = Number(match[2]);
+  const week = Number(match[WEEK_NUMBER_GROUP]);
 
   return { year, week };
 }
