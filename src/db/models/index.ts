@@ -12,9 +12,13 @@
 // Re-export types for convenience
 export type {
   AllowedEmailRole,
+  AssignmentSource,
   AuditLevel,
   AuditOperation,
   AuditSource,
+  DayOfWeek,
+  DiscoveryAction,
+  DiscoverySource,
   IAllowedEmail,
   IAllowedEmailDocument,
   IAuditActor,
@@ -22,6 +26,9 @@ export type {
   IAuditLogDocument,
   IAuditResource,
   ICookware,
+  IDiscoveryRecipe,
+  IDiscoveryRecipeDocument,
+  IDiscoveryRecipeIngredient,
   IIngredient,
   IMagicLink,
   IMagicLinkDocument,
@@ -49,12 +56,21 @@ export type {
   IShoppingListRecipe,
   IStep,
   IUser,
+  IUserDiscoveryState,
+  IUserDiscoveryStateDocument,
   IUserDocument,
+  IWeeklyMenu,
+  IWeeklyMenuAssignment,
+  IWeeklyMenuDocument,
+  IWeeklyMenuVote,
+  MealSlot,
   ShoppingListStatus,
   UserRole,
+  WeeklyMenuStatus,
 } from '../types';
 export { AllowedEmail } from './allowed-email.model';
 export { AuditLog } from './audit-log.model';
+export { DiscoveryRecipe } from './discovery-recipe.model';
 export { MagicLink } from './magic-link.model';
 export { OAuthClient } from './oauth-client.model';
 export { OAuthCode } from './oauth-code.model';
@@ -67,3 +83,5 @@ export { RecipeNote } from './recipe-note.model';
 export { Session } from './session.model';
 export { ShoppingList } from './shopping-list.model';
 export { User } from './user.model';
+export { UserDiscoveryState } from './user-discovery-state.model';
+export { WeeklyMenu } from './weekly-menu.model';

@@ -17,6 +17,20 @@ export type AllowedEmailRole = UserRole;
 
 export type ShoppingListStatus = 'active' | 'completed' | 'archived';
 
+// --- Weekly Meal Planning Enums (PR-051) ---
+
+export type WeeklyMenuStatus = 'building' | 'survey-sent' | 'locked-in';
+
+export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
+export type DayOfWeek = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+
+export type AssignmentSource = 'cookbook' | 'discovery';
+
+export type DiscoverySource = 'themealdb' | 'spoonacular';
+
+export type DiscoveryAction = 'seen' | 'saved' | 'dismissed';
+
 // -----------------------------------------------------------------------------
 // User & Auth
 // -----------------------------------------------------------------------------
@@ -288,3 +302,86 @@ export interface IAuditLog {
 }
 
 export interface IAuditLogDocument extends IAuditLog, Document {}
+
+// -----------------------------------------------------------------------------
+// Weekly Meal Planning (PR-051)
+// -----------------------------------------------------------------------------
+
+export interface IWeeklyMenuAssignment {
+  recipeId?: Types.ObjectId;
+  discoveryRecipeId?: Types.ObjectId;
+  title: string;
+  thumbnailUrl?: string;
+  source: AssignmentSource;
+  day: DayOfWeek;
+  mealSlot: MealSlot;
+  addedAt: Date;
+}
+
+export interface IWeeklyMenuVote {
+  voterName: string;
+  voterToken: string;
+  picks: Types.ObjectId[];
+  votedAt: Date;
+}
+
+export interface IWeeklyMenu {
+  ownerId: Types.ObjectId;
+  weekLabel: string;
+  weekStartDate: Date;
+  status: WeeklyMenuStatus;
+  assignments: IWeeklyMenuAssignment[];
+  votes: IWeeklyMenuVote[];
+  votingToken?: string;
+  votingOpenedAt?: Date;
+  votingClosesAt?: Date;
+  finalizedAt?: Date;
+  shoppingListId?: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IWeeklyMenuDocument extends IWeeklyMenu, Document {}
+
+// -----------------------------------------------------------------------------
+// Discovery Recipes (PR-051)
+// -----------------------------------------------------------------------------
+
+export interface IDiscoveryRecipeIngredient {
+  name: string;
+  quantity?: string;
+  unit?: string;
+}
+
+export interface IDiscoveryRecipe {
+  externalId: string;
+  source: DiscoverySource;
+  title: string;
+  imageUrl?: string;
+  category?: string;
+  cuisine?: string;
+  tags: string[];
+  ingredients: IDiscoveryRecipeIngredient[];
+  instructions?: string;
+  sourceUrl?: string;
+  rawData?: Record<string, unknown>;
+  qualityScore: number;
+  cleanedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IDiscoveryRecipeDocument extends IDiscoveryRecipe, Document {}
+
+// -----------------------------------------------------------------------------
+// User Discovery State (PR-051)
+// -----------------------------------------------------------------------------
+
+export interface IUserDiscoveryState {
+  userId: Types.ObjectId;
+  externalId: string;
+  action: DiscoveryAction;
+  createdAt: Date;
+}
+
+export interface IUserDiscoveryStateDocument extends IUserDiscoveryState, Document {}
