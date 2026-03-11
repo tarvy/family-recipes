@@ -32,5 +32,8 @@ export const HTTP_NOT_FOUND = 404;
 /** 409 Conflict - The request conflicts with the current state */
 export const HTTP_CONFLICT = 409;
 
+/** 410 Gone - The resource is no longer available */
+export const HTTP_GONE = 410;
+
 /** 500 Internal Server Error - An unexpected server error occurred */
 export const HTTP_INTERNAL_SERVER_ERROR = 500;

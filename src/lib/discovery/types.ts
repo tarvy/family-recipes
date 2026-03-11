@@ -14,9 +14,10 @@
 const THEMEALDB_INGREDIENT_SLOTS = 20;
 
 /** Numeric indices 1..20 for TheMealDB ingredient/measure field keys */
-const INGREDIENT_SLOT_INDICES = [
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-] as const;
+const INGREDIENT_SLOT_INDICES: readonly number[] = Array.from(
+  { length: THEMEALDB_INGREDIENT_SLOTS },
+  (_, index) => index + 1,
+);
 
 /**
  * Raw meal object from TheMealDB /lookup.php or /search.php endpoint.

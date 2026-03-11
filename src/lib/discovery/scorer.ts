@@ -13,6 +13,10 @@ const INGREDIENT_COUNT_FAIR = 4;
 const INSTRUCTION_LENGTH_GOOD = 200;
 const INSTRUCTION_LENGTH_FAIR = 50;
 
+const SCORE_TIER_LOW = 10;
+const SCORE_TIER_MID = 20;
+const SCORE_TIER_HIGH = 30;
+
 export const MIN_QUALITY_SCORE = 60;
 
 function scoreIngredients(count: number): number {
@@ -21,11 +25,11 @@ function scoreIngredients(count: number): number {
   }
 
   if (count < INGREDIENT_COUNT_FAIR) {
-    return 20;
+    return SCORE_TIER_MID;
   }
 
   if (count < INGREDIENT_COUNT_GOOD) {
-    return 30;
+    return SCORE_TIER_HIGH;
   }
 
   return INGREDIENT_WEIGHT;
@@ -38,11 +42,11 @@ function scoreInstructions(instructions: string | null): number {
   }
 
   if (text.length < INSTRUCTION_LENGTH_FAIR) {
-    return 10;
+    return SCORE_TIER_LOW;
   }
 
   if (text.length < INSTRUCTION_LENGTH_GOOD) {
-    return 20;
+    return SCORE_TIER_MID;
   }
 
   return INSTRUCTION_WEIGHT;
