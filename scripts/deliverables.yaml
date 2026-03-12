@@ -721,3 +721,25 @@ PR-054:
       path: src/components/menu/home-widget-day.tsx
     - type: file
       path: src/lib/fingerprint.ts
+
+# =============================================================================
+# PHASE 29: Menu Publish Flow & Calendar-Style Navigation (PR-057)
+# =============================================================================
+
+PR-057:
+  name: "Menu Publish Flow & Calendar-Style Menu Navigation"
+  checks:
+    - type: file
+      path: src/app/api/menu/[id]/publish/route.ts
+    - type: file
+      path: src/app/api/menu/[id]/vote/route.ts
+    - type: file
+      path: src/app/api/menu/[id]/shopping-list/route.ts
+    - type: file
+      path: src/app/api/menu/family/route.ts
+    - type: file
+      path: src/components/menu/family-menu-section.tsx
+    - type: file
+      path: src/components/menu/family-menu-card.tsx
+    - type: file
+      path: src/components/menu/vote-button.tsx
