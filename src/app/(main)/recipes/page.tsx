@@ -1,9 +1,12 @@
 import { cookies } from 'next/headers';
 import { Suspense } from 'react';
 import { MainLayout } from '@/components/layout';
+import { HomeWidget } from '@/components/menu/home-widget';
 import { RecipeBrowser } from '@/components/recipes/recipe-browser';
 import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
+import { findByWeek } from '@/lib/menu/repository';
+import { getCurrentWeekLabel } from '@/lib/menu/week-utils';
 import {
   getAllRecipes,
   getCategories,
@@ -25,6 +28,10 @@ const SKELETON_CARDS = [
   'card-7',
   'card-8',
 ] as const;
+
+const UTC_SUNDAY_INDEX = 0;
+const MONDAY_INDEX_FOR_SUNDAY = 6;
+const UTC_TO_MONDAY_OFFSET = 1;
 
 export const metadata = {
   title: 'Recipes | Family Recipes',
@@ -80,6 +87,30 @@ export default async function RecipesPage() {
   const [recipes, sections] = await Promise.all([getAllRecipes(), getRecipeSections(cachedSlugs)]);
   const categories = getCategories();
   const user = await getSessionFromCookies(cookieStore);
+  const currentWeekLabel = getCurrentWeekLabel();
+  const menu = user ? await findByWeek(user.id, currentWeekLabel) : null;
+
+  const slugByTitle = new Map(recipes.map((recipe) => [recipe.title, recipe.slug]));
+  const widgetAssignments =
+    menu?.status === 'locked-in'
+      ? menu.assignments.map((assignment) => {
+          const recipeSlug = slugByTitle.get(assignment.title);
+
+          return {
+            _id: `${assignment.day}-${assignment.mealSlot}-${assignment.title}`,
+            title: assignment.title,
+            day: assignment.day,
+            mealSlot: assignment.mealSlot,
+            ...(assignment.thumbnailUrl ? { thumbnailUrl: assignment.thumbnailUrl } : {}),
+            ...(recipeSlug ? { recipeSlug } : {}),
+          };
+        })
+      : [];
+
+  const utcDay = new Date().getUTCDay();
+  const todayIndex =
+    utcDay === UTC_SUNDAY_INDEX ? MONDAY_INDEX_FOR_SUNDAY : utcDay - UTC_TO_MONDAY_OFFSET;
+
   const canDelete = user?.role === 'owner';
   const isFamily = user ? isFamilyRole(user.role) : false;
 
@@ -87,6 +118,10 @@ export default async function RecipesPage() {
     <MainLayout isFamily={isFamily}>
       <div className="px-6 py-6">
         <div className="mx-auto w-full max-w-6xl">
+          {menu?.status === 'locked-in' ? (
+            <HomeWidget assignments={widgetAssignments} todayIndex={todayIndex} />
+          ) : null}
+
           <div className="mb-8">
             <h1 className="text-3xl font-semibold text-foreground">Recipes</h1>
             <p className="mt-2 text-sm text-muted-foreground">
