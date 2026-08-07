@@ -13,8 +13,8 @@
 |-------|--------|-------|
 | Requirements | [x] Draft | Owner-distributed, single-use links defined |
 | Design | [x] Draft | API, UI, security, and rollout designed |
-| Implementation | [x] In Progress | Core route, UI, CLI, and Resend removal complete |
-| Testing | [x] Unit [ ] Integration [ ] E2E | Lint, typecheck, and build pass; Thai-lint unavailable |
+| Implementation | [x] In Progress | Core route, UI, CLI, Resend removal, and passkey revocation complete |
+| Testing | [x] Unit [ ] Integration [ ] E2E | Lint, typecheck, build, and Thai-lint pass |
 | Documentation | [x] Updated [ ] Reviewed | Auth, environment, MCP, and testing docs updated |
 | Cleanup | [ ] Temp files removed [ ] Ready for merge | |
 
@@ -32,8 +32,8 @@
 - [x] `docs/ENVIRONMENT.md` - Resend configuration removed
 - [x] `package.json` / `package-lock.json` - Resend dependency removed
 - [x] `scripts/create-magic-link.ts` - Recovery CLI
-- [ ] `src/app/api/auth/passkey/[id]/route.ts` - Authenticated passkey revocation
-- [ ] `src/components/auth/passkey-manager.tsx` - Confirmed delete controls
+- [x] `src/app/api/auth/passkey/[id]/route.ts` - Authenticated passkey revocation
+- [x] `src/components/auth/passkey-manager.tsx` - Confirmed delete controls
 - [x] Automated checks - lint, typecheck, build
 
 ---
@@ -109,8 +109,8 @@ and production recovery flow, then record results here.
 
 **Deliverables**:
 
-- [ ] `src/app/api/auth/passkey/[id]/route.ts`
-- [ ] `src/components/auth/passkey-manager.tsx`
+- [x] `src/app/api/auth/passkey/[id]/route.ts`
+- [x] `src/components/auth/passkey-manager.tsx`
 
 **Agent Prompt**:
 
@@ -156,6 +156,8 @@ successful deletion and preserve existing registration behavior.
 - [x] Added CLI recovery path for initial owner access.
 - [x] Removed Resend runtime dependency and email login flow.
 - [x] Passed Biome lint, TypeScript typecheck, and production build.
+- [x] Added user-scoped passkey revocation with confirmation.
+- [x] Passed Thai-lint validation for the revocation changes.
 
 **Next Steps**:
 
