@@ -773,3 +773,19 @@ PR-058:
       path: src/components/ui/button.tsx
     - type: file
       path: src/app/globals.css
+
+# =============================================================================
+# PHASE 31: Content-Width Button Actions (PR-059)
+# =============================================================================
+
+PR-059:
+  name: "Content-Width Button Actions"
+  checks:
+    - type: file
+      path: src/components/ui/button.tsx
+    - type: file
+      path: src/components/auth/passkey-manager.tsx
+    - type: file
+      path: work/PR-059/requirements.md
+    - type: file
+      path: work/PR-059/design.md

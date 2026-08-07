@@ -1,5 +1,12 @@
 'use client';
 
+/**
+ * Passkey Manager
+ *
+ * Lists registered passkeys and starts WebAuthn registration.
+ * Actions stay content-width — never full-bleed destructive bars in wide cards.
+ */
+
 import {
   browserSupportsWebAuthn,
   type PublicKeyCredentialCreationOptionsJSON,
@@ -7,7 +14,7 @@ import {
 } from '@simplewebauthn/browser';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Button, Card } from '@/components/ui';
+import { Badge, Button, Card } from '@/components/ui';
 
 interface PasskeySummary {
   id: string;
@@ -42,6 +49,14 @@ function formatDate(value: string | null | undefined): string {
   }
 
   return date.toLocaleString();
+}
+
+function humanizeError(message: string): string {
+  const normalized = message.trim().toLowerCase();
+  if (normalized === 'not_found' || normalized.includes('not_found')) {
+    return 'We could not complete that passkey request. Try again, or use a different device.';
+  }
+  return message;
 }
 
 export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
@@ -96,7 +111,7 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
       router.refresh();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Passkey registration failed.';
-      setErrorMessage(message);
+      setErrorMessage(humanizeError(message));
     } finally {
       setIsRegistering(false);
     }
@@ -104,8 +119,8 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
 
   return (
     <Card variant="section" className="mt-8">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold text-foreground">Passkeys</h2>
           <p className="text-sm text-muted-foreground">
             Register a passkey to sign in faster on this device.
@@ -129,7 +144,7 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
       )}
 
       {successMessage && (
-        <div className="mt-4 rounded-md border border-border bg-secondary p-3 text-sm text-secondary-foreground">
+        <div className="mt-4 rounded-md border border-success/30 bg-success-soft p-3 text-sm text-success">
           {successMessage}
         </div>
       )}
@@ -138,34 +153,31 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
         {initialPasskeys.length === 0 ? (
           <p className="text-sm text-muted-foreground">No passkeys registered yet.</p>
         ) : (
-          <ul className="space-y-4">
+          <ul className="space-y-3">
             {initialPasskeys.map((passkey) => (
-              <li
-                key={passkey.id}
-                className="flex flex-col gap-2 rounded-lg border border-border bg-card-nested p-4"
-              >
+              <li key={passkey.id} className="rounded-lg border border-border bg-card-nested p-4">
                 <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="rounded-full bg-secondary px-2 py-1 text-xs text-secondary-foreground">
-                    {passkey.deviceType || 'device'}
-                  </span>
+                  <Badge variant="active">{passkey.deviceType || 'device'}</Badge>
                   <span className="text-muted-foreground">
                     Added: <span className="text-foreground">{formatDate(passkey.createdAt)}</span>
                   </span>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  Last used:{' '}
-                  <span className="text-foreground">{formatDate(passkey.lastUsedAt)}</span>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Backed up:{' '}
-                  <span className="text-foreground">{passkey.backedUp ? 'Yes' : 'No'}</span>
-                </div>
-                {passkey.transports.length > 0 && (
-                  <div className="text-xs text-muted-foreground">
-                    Transports:{' '}
-                    <span className="text-foreground">{passkey.transports.join(', ')}</span>
+                <dl className="mt-3 space-y-1 text-xs text-muted-foreground">
+                  <div>
+                    <dt className="inline">Last used: </dt>
+                    <dd className="inline text-foreground">{formatDate(passkey.lastUsedAt)}</dd>
                   </div>
-                )}
+                  <div>
+                    <dt className="inline">Backed up: </dt>
+                    <dd className="inline text-foreground">{passkey.backedUp ? 'Yes' : 'No'}</dd>
+                  </div>
+                  {passkey.transports.length > 0 ? (
+                    <div>
+                      <dt className="inline">Transports: </dt>
+                      <dd className="inline text-foreground">{passkey.transports.join(', ')}</dd>
+                    </div>
+                  ) : null}
+                </dl>
               </li>
             ))}
           </ul>
