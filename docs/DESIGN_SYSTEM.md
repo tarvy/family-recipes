@@ -22,6 +22,7 @@ Family Recipes uses an Impeccable-backed design system so humans and AI agents s
 3. Use semantic Tailwind tokens (`bg-primary`, `text-muted-foreground`, `bg-success-soft`) — never raw `gray-*` / default `green-*`.
 4. Keep primary controls ≥ **44×44** (`min-h-touch` / `size-touch`).
 5. Pad fixed top/bottom chrome with `pt-safe` / `pb-safe` (requires `viewport-fit=cover`).
+6. Keep actions content-width by default. Use `fullWidth` only for primary CTAs in narrow stacks — never full-bleed “Revoke/Delete” bars in wide cards.
 
 ```tsx
 import { Button, EmptyState, PageShell } from '@/components/ui';
@@ -32,6 +33,10 @@ export function ExamplePage() {
       <h1 className="text-3xl font-semibold">Recipes</h1>
       <EmptyState title="Nothing here yet" description="Add your first family recipe." />
       <Button type="button">Add recipe</Button>
+      {/* Auth / narrow primary CTA only: */}
+      <Button type="submit" fullWidth>
+        Sign in
+      </Button>
     </PageShell>
   );
 }

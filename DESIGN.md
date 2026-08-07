@@ -231,8 +231,11 @@ Friendly geometry: default control radius `0.75rem` (`rounded-lg`), larger secti
 - **Primary:** Pastry pink fill, cocoa text, soft shadow.
 - **Secondary:** Lavender fill, white text.
 - **Outline / Ghost:** Transparent with linen border or pink-light hover wash.
-- **Destructive:** Berry soft fill, white text.
+- **Destructive:** Berry soft fill, white text — for confirmed destructive commits only.
+- **Width:** Content-sized by default (`w-fit`). Opt in to full width only via `fullWidth`.
 - **Focus:** Lavender ring (`:focus-visible`).
+
+**The Content-Width Action Rule.** Buttons size to their label by default. Full-bleed (`fullWidth`) is reserved for primary submits in *narrow* stacks — auth forms, empty-state CTAs, single-column mobile composers. Never stretch destructive or secondary actions across a wide settings/list card; a “Revoke” / “Delete” control in a row stays compact (prefer outline/ghost + destructive color), aligned with the content, not a salmon bar across the card.
 
 ### Chips / Badges
 - **Style:** Pill radius; pink-light default; lavender fill when active/selected.
@@ -273,4 +276,5 @@ Recipe cards use category-tinted headers and letter placeholders; detail view is
 - **Don't** nest cards inside cards for decoration.
 - **Don't** ship hover-only affordances as the only way to act.
 - **Don't** place controls under the iOS home indicator or status bar.
+- **Don't** stretch destructive or secondary actions to the full width of a wide card.
 - **Don't** treat scalloped/lace ornaments as required — they are optional future garnish, not the system.

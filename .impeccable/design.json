@@ -111,14 +111,33 @@
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Page titles only." },
-      "headline": { "displayName": "Headline", "purpose": "Section headers." },
-      "title": { "displayName": "Title", "purpose": "Card and recipe titles." },
-      "body": { "displayName": "Body", "purpose": "Instructions and descriptions." },
-      "label": { "displayName": "Label", "purpose": "Form labels, meta, helpers." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page titles only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headers."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card and recipe titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Instructions and descriptions."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels, meta, helpers."
+      }
     },
     "shadows": [
-      { "name": "sm", "value": "0 1px 2px rgba(74, 55, 40, 0.05)", "purpose": "Resting cards." },
+      {
+        "name": "sm",
+        "value": "0 1px 2px rgba(74, 55, 40, 0.05)",
+        "purpose": "Resting cards."
+      },
       {
         "name": "default",
         "value": "0 2px 8px rgba(74, 55, 40, 0.08)",
@@ -136,13 +155,21 @@
       }
     ],
     "motion": [
-      { "name": "duration-fast", "value": "150ms", "purpose": "Micro state changes." },
+      {
+        "name": "duration-fast",
+        "value": "150ms",
+        "purpose": "Micro state changes."
+      },
       {
         "name": "duration-normal",
         "value": "300ms",
         "purpose": "Header fold, drawer, most transitions."
       },
-      { "name": "duration-slow", "value": "500ms", "purpose": "Deliberate reveals only." },
+      {
+        "name": "duration-slow",
+        "value": "500ms",
+        "purpose": "Deliberate reveals only."
+      },
       {
         "name": "ease-out-expo",
         "value": "cubic-bezier(0.16, 1, 0.3, 1)",
@@ -155,10 +182,22 @@
       }
     ],
     "breakpoints": [
-      { "name": "sm", "value": "640px" },
-      { "name": "md", "value": "768px" },
-      { "name": "lg", "value": "1024px" },
-      { "name": "xl", "value": "1280px" }
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
     ]
   },
   "components": [
@@ -166,7 +205,7 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Main CTA — pastry pink with cocoa text, 44px min height.",
+      "description": "Main CTA \u2014 pastry pink with cocoa text, 44px min height.",
       "html": "<button class=\"ds-btn-primary\" type=\"button\">Save recipe</button>",
       "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0.625rem 1rem; border: none; border-radius: 0.75rem; background: var(--color-pink, #FED4D9); color: var(--color-cocoa, #4A3728); font: 500 0.875rem/1.25 Nunito, ui-sans-serif, system-ui, sans-serif; box-shadow: 0 2px 8px rgba(74, 55, 40, 0.08); transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; } .ds-btn-primary:hover { background: var(--color-pink-dark, #F5B8C0); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-lavender, #AF93B3); outline-offset: 2px; }"
     },
@@ -190,7 +229,7 @@
       "name": "Text Field",
       "kind": "input",
       "refersTo": "input-default",
-      "description": "Default input — white fill, linen border, lavender focus, 44px height.",
+      "description": "Default input \u2014 white fill, linen border, lavender focus, 44px height.",
       "html": "<input class=\"ds-input\" type=\"email\" placeholder=\"you@family.com\" />",
       "css": ".ds-input { width: 100%; min-height: 44px; padding: 0.5rem 0.75rem; border: 1px solid var(--color-input, #E8E4DC); border-radius: 0.75rem; background: var(--color-card, #fff); color: var(--color-cocoa, #4A3728); font: 400 1rem/1.5 Nunito, ui-sans-serif, system-ui, sans-serif; } .ds-input::placeholder { color: var(--color-muted-foreground, #7A6B5C); } .ds-input:focus { outline: none; border-color: var(--color-lavender, #AF93B3); box-shadow: 0 0 0 1px var(--color-lavender, #AF93B3); }"
     },
@@ -221,14 +260,14 @@
   ],
   "narrative": {
     "northStar": "Grandma's Cozy Kitchen Table",
-    "overview": "Family Recipes looks and feels like a warm kitchen table covered in a butter-gingham cloth — inviting, rounded, and soft-spoken. Soft pink leads brand and chrome; lavender marks selection and progress; yellow accents warmth without shouting. Cocoa brown carries all reading text. Density stays comfortable for thumbs with generous page padding, soft cocoa-tinted shadows, and pill-friendly radii.",
+    "overview": "Family Recipes looks and feels like a warm kitchen table covered in a butter-gingham cloth \u2014 inviting, rounded, and soft-spoken. Soft pink leads brand and chrome; lavender marks selection and progress; yellow accents warmth without shouting. Cocoa brown carries all reading text. Density stays comfortable for thumbs with generous page padding, soft cocoa-tinted shadows, and pill-friendly radii.",
     "keyCharacteristics": [
       "Gingham tablecloth page field with white card surfaces",
       "Soft pink header chrome and primary CTAs",
-      "Nunito everywhere — rounded, friendly, never clinical",
+      "Nunito everywhere \u2014 rounded, friendly, never clinical",
       "Cocoa-tinted shadows and borders (never cold gray UI chrome)",
       "iPhone-first layout with safe areas and 44px touch targets",
-      "Three-layer surface stack: page → card → nested inset"
+      "Three-layer surface stack: page \u2192 card \u2192 nested inset"
     ],
     "rules": [
       {
@@ -265,13 +304,18 @@
         "name": "The Soft Corner Rule",
         "body": "Sharp 0-radius UI and hairline broadsheet layouts are out of character.",
         "section": "shapes"
+      },
+      {
+        "name": "The Content-Width Action Rule",
+        "body": "Buttons size to their label by default. Full-bleed is reserved for primary submits in narrow stacks. Never stretch destructive or secondary actions across a wide settings/list card.",
+        "section": "components"
       }
     ],
     "dos": [
       "Do compose new screens from src/components/ui primitives and @theme tokens in globals.css.",
-      "Do keep 44×44 minimum touch targets for tappable controls.",
+      "Do keep 44\u00d744 minimum touch targets for tappable controls.",
       "Do pad fixed chrome with env(safe-area-inset-*) on iPhone.",
-      "Do use the page → card → nested surface hierarchy.",
+      "Do use the page \u2192 card \u2192 nested surface hierarchy.",
       "Do use Herb Success tokens for positive completion states."
     ],
     "donts": [
@@ -280,7 +324,8 @@
       "Don't nest cards inside cards for decoration.",
       "Don't ship hover-only affordances as the only way to act.",
       "Don't place controls under the iOS home indicator or status bar.",
-      "Don't treat scalloped/lace ornaments as required — they are optional future garnish, not the system."
+      "Don't stretch destructive or secondary actions to the full width of a wide card.",
+      "Don't treat scalloped/lace ornaments as required \u2014 they are optional future garnish, not the system."
     ]
   }
 }
