@@ -46,6 +46,7 @@ function formatDate(value: string | null | undefined): string {
 
 export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
   const router = useRouter();
+  const [passkeys, setPasskeys] = useState(initialPasskeys);
   const [isSupported, setIsSupported] = useState<boolean>(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -119,6 +120,9 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
         throw new Error(payload?.error || 'Passkey revocation failed.');
       }
 
+      setPasskeys((currentPasskeys) =>
+        currentPasskeys.filter((passkey) => passkey.id !== passkeyId),
+      );
       setSuccessMessage('Passkey revoked successfully.');
       router.refresh();
     } catch (error) {
@@ -162,11 +166,11 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
       )}
 
       <div className="mt-6">
-        {initialPasskeys.length === 0 ? (
+        {passkeys.length === 0 ? (
           <p className="text-sm text-muted-foreground">No passkeys registered yet.</p>
         ) : (
           <ul className="space-y-4">
-            {initialPasskeys.map((passkey) => (
+            {passkeys.map((passkey) => (
               <li
                 key={passkey.id}
                 className="flex flex-col gap-2 rounded-lg border border-border bg-card-nested p-4"
