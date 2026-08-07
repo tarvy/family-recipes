@@ -9,11 +9,7 @@ import { cookies } from 'next/headers';
 import { connectDB } from '@/db/connection';
 import { Passkey } from '@/db/models';
 import { getSessionFromCookies } from '@/lib/auth';
-import {
-  HTTP_BAD_REQUEST,
-  HTTP_NOT_FOUND,
-  HTTP_UNAUTHORIZED,
-} from '@/lib/constants/http-status';
+import { HTTP_BAD_REQUEST, HTTP_NOT_FOUND, HTTP_UNAUTHORIZED } from '@/lib/constants/http-status';
 import { logger, withRequestContext } from '@/lib/logger';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
 
