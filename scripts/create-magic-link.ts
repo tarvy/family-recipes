@@ -6,7 +6,7 @@
  *   npm run create-magic-link -- --email person@example.com
  */
 
-import nextEnv from '@next/env';
+import { loadEnvConfig } from '@next/env';
 import { disconnectDB } from '@/db/connection';
 import {
   ensureOwnerAllowlist,
@@ -20,7 +20,7 @@ const PROJECT_DIR = process.cwd();
 const EMAIL_FLAG = '--email';
 const ARG_START_INDEX = 2;
 
-nextEnv.loadEnvConfig(PROJECT_DIR);
+loadEnvConfig(PROJECT_DIR);
 
 function getEmail(args: string[]): string {
   const emailIndex = args.indexOf(EMAIL_FLAG);
