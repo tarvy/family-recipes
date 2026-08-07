@@ -13,25 +13,26 @@
 |-------|--------|-------|
 | Requirements | [x] Draft | Owner-distributed, single-use links defined |
 | Design | [x] Draft | API, UI, security, and rollout designed |
-| Implementation | [ ] Not Started | |
-| Testing | [ ] Unit [ ] Integration [ ] E2E | |
-| Documentation | [ ] Updated [ ] Reviewed | |
+| Implementation | [x] In Progress | Core route, UI, CLI, and Resend removal complete |
+| Testing | [x] Unit [ ] Integration [ ] E2E | Lint, typecheck, and build pass; Thai-lint unavailable |
+| Documentation | [x] Updated [ ] Reviewed | Auth, environment, MCP, and testing docs updated |
 | Cleanup | [ ] Temp files removed [ ] Ready for merge | |
 
 ---
 
 ## Deliverables Checklist
 
-- [ ] `src/lib/auth/magic-link.ts` - Manual token creation without email delivery
-- [ ] `src/app/api/admin/magic-link/route.ts` - Owner-only generation endpoint
-- [ ] `src/components/auth/manual-magic-link-form.tsx` - Copyable link UI
-- [ ] `src/app/(main)/settings/page.tsx` - Owner-only form integration
-- [ ] `src/app/(auth)/login/page.tsx` - Resend-free login guidance
-- [ ] `src/lib/email/send.ts` - Removed
-- [ ] `docs/AUTH.md` - Manual distribution flow documented
-- [ ] `docs/ENVIRONMENT.md` - Resend configuration removed
-- [ ] `package.json` / `package-lock.json` - Resend dependency removed
-- [ ] Automated checks - lint, typecheck, build
+- [x] `src/lib/auth/magic-link.ts` - Manual token creation without email delivery
+- [x] `src/app/api/admin/magic-link/route.ts` - Owner-only generation endpoint
+- [x] `src/components/auth/manual-magic-link-form.tsx` - Copyable link UI
+- [x] `src/app/(main)/settings/page.tsx` - Owner-only form integration
+- [x] `src/app/(auth)/login/page.tsx` - Resend-free login guidance
+- [x] `src/lib/email/send.ts` - Removed
+- [x] `docs/AUTH.md` - Manual distribution flow documented
+- [x] `docs/ENVIRONMENT.md` - Resend configuration removed
+- [x] `package.json` / `package-lock.json` - Resend dependency removed
+- [x] `scripts/create-magic-link.ts` - Recovery CLI
+- [x] Automated checks - lint, typecheck, build
 
 ---
 
@@ -122,17 +123,22 @@ and production recovery flow, then record results here.
 ### Session 1 - 2026-08-07
 
 **Agent**: Cursor
-**Status**: Tracking documents created; implementation pending.
+**Status**: Implementation complete; awaiting deployment and production verification.
 
 **Completed**:
 
 - [x] Created requirements, design, and progress documents.
 - [x] Created feature branch `cursor/manual-magic-links-c785`.
+- [x] Added owner-only API and Settings UI for manual link generation.
+- [x] Added CLI recovery path for initial owner access.
+- [x] Removed Resend runtime dependency and email login flow.
+- [x] Passed Biome lint, TypeScript typecheck, and production build.
 
 **Next Steps**:
 
 - [ ] Register deliverables.
-- [ ] Implement Phase 1.
+- [ ] Deploy and verify the production owner recovery flow.
+- [ ] Remove obsolete Resend variables from Vercel after deployment.
 
 ---
 
