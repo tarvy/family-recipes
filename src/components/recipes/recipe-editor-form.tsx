@@ -248,7 +248,7 @@ export function RecipeEditorForm({
 
       {/* Submit bar */}
       <div
-        className="sticky bottom-0 border-t border-border bg-background py-4"
+        className="sticky bottom-0 border-t border-border bg-background py-4 pb-safe"
         style={{ zIndex: NAV_Z_INDEX.editorSaveBar }}
       >
         <div className="flex justify-end gap-4">

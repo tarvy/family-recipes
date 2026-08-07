@@ -17,12 +17,12 @@ export function UpdatePrompt(): ReactNode {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-4 bg-sunny px-4 py-3 shadow-lg">
-      <span className="text-sm text-cocoa">A new version is available!</span>
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-4 bg-accent px-4 py-3 pb-safe shadow-lg">
+      <span className="text-sm text-accent-foreground">A new version is available!</span>
       <button
         type="button"
         onClick={applyUpdate}
-        className="rounded-lg bg-cocoa px-4 py-1.5 text-sm font-medium text-cream transition-colors hover:bg-cocoa/90"
+        className="min-h-10 rounded-lg bg-cocoa px-4 py-1.5 text-sm font-medium text-cream transition-colors hover:bg-cocoa/90"
       >
         Update Now
       </button>

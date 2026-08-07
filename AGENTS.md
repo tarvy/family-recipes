@@ -242,6 +242,9 @@ Once tracking is confirmed:
 
 | Document | Purpose |
 |----------|---------|
+| [`PRODUCT.md`](PRODUCT.md) | Durable product context (Impeccable) |
+| [`DESIGN.md`](DESIGN.md) | Visual design system + tokens (Impeccable) |
+| [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) | How to build on-brand, iPhone-first UI |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System design, data flow, database schemas |
 | [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) | All credentials, API keys, external service setup |
 | [`docs/LINTING.md`](docs/LINTING.md) | Biome + Thai-lint configuration and usage |

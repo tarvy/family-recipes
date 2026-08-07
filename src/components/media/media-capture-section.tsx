@@ -77,10 +77,10 @@ export function MediaCaptureSection({ recipeSlug, onPhotoUploaded }: MediaCaptur
         <p className="text-sm text-muted-foreground">Uploading photo...</p>
       )}
       {uploadState === 'success' && (
-        <p className="text-sm text-green-600">Photo uploaded successfully!</p>
+        <p className="text-sm text-success">Photo uploaded successfully!</p>
       )}
       {uploadState === 'error' && (
-        <p className="text-sm text-red-600">{uploadError ?? 'Upload failed'}</p>
+        <p className="text-sm text-destructive">{uploadError ?? 'Upload failed'}</p>
       )}
 
       {/* Camera modal */}

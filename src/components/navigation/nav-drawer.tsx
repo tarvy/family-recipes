@@ -10,14 +10,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { NAV_Z_INDEX } from '@/lib/constants/navigation';
+import { DRAWER_WIDTH_PX } from '@/lib/design-system';
 import { useNavigation } from './header-context';
 import { getFilteredNavLinks, NavLinkItem } from './nav-links';
 
 /** Icon stroke width for consistent styling */
 const ICON_STROKE_WIDTH = 2;
-
-/** Drawer width in pixels */
-const DRAWER_WIDTH_PX = 280;
 
 /**
  * Navigation drawer component
@@ -91,13 +89,13 @@ export function NavDrawer({ isFamily = true }: { isFamily?: boolean }) {
         }}
       >
         {/* Drawer header */}
-        <div className="flex items-center justify-between border-b border-border px-4 py-4">
+        <div className="flex items-center justify-between border-b border-border px-4 py-4 pt-safe">
           <span className="text-lg font-bold text-foreground">Menu</span>
           <button
             ref={firstFocusableRef}
             type="button"
             onClick={closeDrawer}
-            className="rounded-lg p-2 text-foreground hover:bg-pink-light"
+            className="flex size-touch items-center justify-center rounded-lg text-foreground hover:bg-pink-light"
             aria-label="Close menu"
           >
             <CloseIcon className="h-5 w-5" />

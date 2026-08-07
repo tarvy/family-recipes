@@ -743,3 +743,33 @@ PR-057:
       path: src/components/menu/family-menu-card.tsx
     - type: file
       path: src/components/menu/vote-button.tsx
+
+# =============================================================================
+# PHASE 30: Impeccable Design System Foundation (PR-058)
+# =============================================================================
+
+PR-058:
+  name: "Impeccable Design System Foundation"
+  checks:
+    - type: file
+      path: PRODUCT.md
+    - type: file
+      path: DESIGN.md
+    - type: file
+      path: .impeccable/design.json
+    - type: file
+      path: docs/DESIGN_SYSTEM.md
+    - type: file
+      path: src/lib/design-system/index.ts
+    - type: file
+      path: src/lib/design-system/tokens.ts
+    - type: file
+      path: src/components/ui/badge.tsx
+    - type: file
+      path: src/components/ui/page-shell.tsx
+    - type: file
+      path: src/components/ui/empty-state.tsx
+    - type: file
+      path: src/components/ui/button.tsx
+    - type: file
+      path: src/app/globals.css

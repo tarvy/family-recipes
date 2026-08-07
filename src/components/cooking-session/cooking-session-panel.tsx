@@ -146,7 +146,7 @@ export function CookingSessionPanel(): ReactNode {
 
       {/* Panel */}
       <div
-        className="fixed bottom-0 left-0 right-0 bg-background shadow-lg ring-1 ring-border"
+        className="fixed bottom-0 left-0 right-0 bg-background pb-safe shadow-lg ring-1 ring-border"
         style={{ zIndex: NAV_Z_INDEX.cookingPanel }}
       >
         {/* Header - always visible */}

@@ -72,6 +72,9 @@ family-recipes/
 ## Documentation
 
 - [AI Agent Instructions](AGENTS.md) - **Read this first if you're an AI agent**
+- [Product](PRODUCT.md) - Durable product context (Impeccable)
+- [Design System](DESIGN.md) - Visual system + tokens (Impeccable)
+- [Design System Guide](docs/DESIGN_SYSTEM.md) - How to build UI on-brand
 - [Architecture](docs/ARCHITECTURE.md)
 - [Environment Setup](docs/ENVIRONMENT.md)
 - [Development Guide](docs/DEVELOPMENT.md) - Local setup, workflow, CI/CD

@@ -2,10 +2,13 @@
  * Navigation constants
  *
  * Configuration values for header and navigation behavior.
+ * Keep HEADER_HEIGHT_PX aligned with --spacing-header in globals.css.
  */
 
-/** Height of the header bar in pixels */
-export const HEADER_HEIGHT_PX = 56;
+import { HEADER_CONTENT_HEIGHT_PX } from '@/lib/design-system';
+
+/** Height of the header content bar in pixels (excludes safe-area inset) */
+export const HEADER_HEIGHT_PX = HEADER_CONTENT_HEIGHT_PX;
 
 /** Minimum scroll distance before triggering fold/unfold */
 export const SCROLL_THRESHOLD_PX = 10;

@@ -17,7 +17,7 @@ export function OfflineIndicator(): ReactNode {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-cocoa px-4 py-2 text-center text-sm text-cream">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-cocoa px-4 py-2 pb-safe text-center text-sm text-cream">
       You&apos;re offline. Some features may be unavailable.
     </div>
   );

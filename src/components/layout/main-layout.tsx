@@ -5,12 +5,12 @@
  *
  * Shared layout wrapper that includes the header, navigation drawer,
  * and search modal. Provides consistent navigation across all pages.
+ * Offsets main content for header height + iOS safe-area inset.
  */
 
 import type { ReactNode } from 'react';
 import { useEdgeSwipe } from '@/components/gestures';
 import { Header, NavDrawer, SearchModal, useNavigation } from '@/components/navigation';
-import { HEADER_HEIGHT_PX } from '@/lib/constants/navigation';
 
 interface MainLayoutProps {
   /** Page content */
@@ -38,10 +38,8 @@ export function MainLayout({ children, className = '', isFamily = true }: MainLa
       <NavDrawer isFamily={isFamily} />
       <SearchModal />
 
-      {/* Main content with header offset */}
-      <main className={`min-h-screen ${className}`} style={{ paddingTop: HEADER_HEIGHT_PX }}>
-        {children}
-      </main>
+      {/* Main content with header + safe-area offset */}
+      <main className={`header-offset min-h-screen ${className}`}>{children}</main>
     </>
   );
 }

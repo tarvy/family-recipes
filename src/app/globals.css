@@ -1,75 +1,83 @@
-@import 'tailwindcss';
-
-/*
+/**
  * Family Recipes Design System
- * Inspired by: Cooking Mama / Grandma's cozy kitchen
+ *
+ * Creative North Star: "Grandma's Cozy Kitchen Table"
+ * Authority: DESIGN.md + PRODUCT.md (Impeccable)
+ * Runtime tokens: @theme below — keep TypeScript mirrors in
+ * src/lib/design-system/tokens.ts in sync when changing brand hex values.
  *
  * Color Palette:
  * - Pink (#FED4D9): Primary - warm, inviting, main brand color
  * - Yellow (#EFEBBA): Accent - highlights, CTAs, warmth
  * - Lavender (#AF93B3): Secondary - gentle contrast, decorative
- * - Gingham Butter (#FBF6E3): Background - tablecloth-inspired warmth, now a touch paler
+ * - Gingham Butter (#FBF6E3): Background - tablecloth-inspired warmth
  * - Cream (#FFFEF9): Light surfaces and highlights
  * - Cocoa (#4A3728): Foreground - warm brown for text
+ * - Herb Success (#5B8F6B): Positive completion states
  *
  * Typography: Nunito - rounded, friendly, approachable
- *
  * Style: Soft, cozy, rounded corners, gentle shadows
- * Future: Can add scalloped borders, lace patterns, flower accents
+ * Mobile: iPhone-first — 44px touch targets, safe-area insets
  */
+
+@import 'tailwindcss';
 
 @theme {
   /* Core brand colors */
-  --color-pink: #FED4D9;
-  --color-pink-dark: #F5B8C0;
-  --color-pink-light: #FFF0F2;
+  --color-pink: #fed4d9;
+  --color-pink-dark: #f5b8c0;
+  --color-pink-light: #fff0f2;
 
-  --color-yellow: #EFEBBA;
-  --color-yellow-dark: #E5DF8A;
-  --color-yellow-light: #F9F8E6;
+  --color-yellow: #efebba;
+  --color-yellow-dark: #e5df8a;
+  --color-yellow-light: #f9f8e6;
 
-  --color-lavender: #AF93B3;
+  --color-lavender: #af93b3;
   --color-lavender-dark: #937598;
-  --color-lavender-light: #D4C6D6;
+  --color-lavender-light: #d4c6d6;
 
-  --color-gingham: #FBF6E3;
-  --color-cream: #FFFEF9;
-  --color-cocoa: #4A3728;
+  --color-gingham: #fbf6e3;
+  --color-cream: #fffef9;
+  --color-cocoa: #4a3728;
 
   /*
    * Surface hierarchy (background → card → nested)
    *
-   * Layer 1 — Page:   bg-background    #FBF6E3  gingham base
-   * Layer 2 — Card:   bg-card          #FFFFFF  primary content surface
-   * Layer 3 — Inset:  bg-card-nested   #F9F8F4  section within a card or form
+   * Layer 1 — Page:   bg-background    gingham base
+   * Layer 2 — Card:   bg-card          primary content surface
+   * Layer 3 — Inset:  bg-card-nested   section within a card or form
    */
   --color-background: var(--color-gingham);
   --color-foreground: var(--color-cocoa);
 
-  --color-card: #FFFFFF;
+  --color-card: #ffffff;
   --color-card-foreground: var(--color-cocoa);
-  --color-card-nested: #F9F8F4;
+  --color-card-nested: #f9f8f4;
 
-  --color-popover: #FFFFFF;
+  --color-popover: #ffffff;
   --color-popover-foreground: var(--color-cocoa);
 
   --color-primary: var(--color-pink);
   --color-primary-foreground: var(--color-cocoa);
 
   --color-secondary: var(--color-lavender);
-  --color-secondary-foreground: #FFFFFF;
+  --color-secondary-foreground: #ffffff;
 
   --color-accent: var(--color-yellow);
   --color-accent-foreground: var(--color-cocoa);
 
-  --color-muted: #F5F3EE;
-  --color-muted-foreground: #7A6B5C;
+  --color-muted: #f5f3ee;
+  --color-muted-foreground: #7a6b5c;
 
-  --color-destructive: #E57373;
-  --color-destructive-foreground: #FFFFFF;
+  --color-destructive: #e57373;
+  --color-destructive-foreground: #ffffff;
 
-  --color-border: #E8E4DC;
-  --color-input: #E8E4DC;
+  --color-success: #5b8f6b;
+  --color-success-foreground: #ffffff;
+  --color-success-soft: #e8f2eb;
+
+  --color-border: #e8e4dc;
+  --color-input: #e8e4dc;
   --color-ring: var(--color-lavender);
 
   /* Rounded, cozy radius */
@@ -92,6 +100,19 @@
   /* Easing functions */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /*
+   * Spacing tokens → Tailwind size utilities (h-touch, min-h-touch, w-touch, …)
+   * 2.75rem = 44px iOS-aligned minimum touch target
+   * 3.5rem  = 56px header content height (excludes safe-area inset)
+   */
+  --spacing-touch: 2.75rem;
+  --spacing-header: 3.5rem;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
 }
 
 /* Global base styles and utilities */
@@ -135,9 +156,40 @@ body {
 
 /* Utility classes for the design system */
 @layer utilities {
-  /* Decorative border styles (for future scalloped/lace effects) */
   .border-decorative {
     border-style: dashed;
     border-color: var(--color-pink-dark);
+  }
+
+  .pt-safe {
+    padding-top: var(--safe-top);
+  }
+
+  .pb-safe {
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .pl-safe {
+    padding-left: var(--safe-left);
+  }
+
+  .pr-safe {
+    padding-right: var(--safe-right);
+  }
+
+  .px-safe {
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+  }
+
+  .safe-area-pad {
+    padding-top: var(--safe-top);
+    padding-right: var(--safe-right);
+    padding-bottom: var(--safe-bottom);
+    padding-left: var(--safe-left);
+  }
+
+  .header-offset {
+    padding-top: calc(var(--spacing-header) + var(--safe-top));
   }
 }

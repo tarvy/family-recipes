@@ -164,9 +164,9 @@ function ConsentForm() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-md">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+          <div className="rounded-lg border border-success/30 bg-success-soft p-6 text-center">
             <svg
-              className="w-12 h-12 text-green-600 mx-auto mb-4"
+              className="mx-auto mb-4 h-12 w-12 text-success"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -179,8 +179,8 @@ function ConsentForm() {
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <h2 className="text-lg font-semibold text-green-700 mb-2">Connected Successfully</h2>
-            <p className="text-green-600">You can close this window.</p>
+            <h2 className="mb-2 text-lg font-semibold text-success">Connected Successfully</h2>
+            <p className="text-muted-foreground">You can close this window.</p>
           </div>
         </div>
       </div>

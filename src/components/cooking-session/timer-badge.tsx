@@ -134,7 +134,7 @@ export function TimerBadge({
       disabled={isCompleted}
       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-pink focus:ring-offset-1 ${
         isCompleted
-          ? 'cursor-default bg-green-100 text-green-800'
+          ? 'cursor-default bg-success-soft text-success'
           : isRunning
             ? 'animate-pulse cursor-pointer bg-yellow text-foreground hover:bg-yellow/80'
             : isPaused

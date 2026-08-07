@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-07T00:50:00Z",
+  "title": "Design System: Family Recipes",
+  "extensions": {
+    "colorMeta": {
+      "pink": {
+        "role": "primary",
+        "displayName": "Pastry Pink",
+        "canonical": "#FED4D9",
+        "tonalRamp": [
+          "#6B3A42",
+          "#8F5059",
+          "#B36B75",
+          "#D48A94",
+          "#FED4D9",
+          "#FFE4E8",
+          "#FFF0F2",
+          "#FFFAFB"
+        ]
+      },
+      "lavender": {
+        "role": "secondary",
+        "displayName": "Hearth Lavender",
+        "canonical": "#AF93B3",
+        "tonalRamp": [
+          "#3F3244",
+          "#5A4860",
+          "#76607D",
+          "#937598",
+          "#AF93B3",
+          "#C4AFC7",
+          "#D4C6D6",
+          "#EFE8F1"
+        ]
+      },
+      "yellow": {
+        "role": "tertiary",
+        "displayName": "Butter Yellow",
+        "canonical": "#EFEBBA",
+        "tonalRamp": [
+          "#6B6830",
+          "#8F8A45",
+          "#B3AC5F",
+          "#D4CC7A",
+          "#EFEBBA",
+          "#F5F2D4",
+          "#F9F8E6",
+          "#FCFBEF"
+        ]
+      },
+      "gingham": {
+        "role": "neutral",
+        "displayName": "Gingham Butter",
+        "canonical": "#FBF6E3",
+        "tonalRamp": [
+          "#4A3728",
+          "#7A6B5C",
+          "#A89A88",
+          "#E8E4DC",
+          "#F5F3EE",
+          "#FBF6E3",
+          "#FFFEF9",
+          "#FFFFFF"
+        ]
+      },
+      "cocoa": {
+        "role": "neutral",
+        "displayName": "Cocoa",
+        "canonical": "#4A3728",
+        "tonalRamp": [
+          "#2A1E16",
+          "#4A3728",
+          "#6B5444",
+          "#7A6B5C",
+          "#A89A88",
+          "#C4B8AA",
+          "#E8E4DC",
+          "#F5F3EE"
+        ]
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Herb Success",
+        "canonical": "#5B8F6B",
+        "tonalRamp": [
+          "#243A2B",
+          "#355542",
+          "#466F58",
+          "#5B8F6B",
+          "#7AA88A",
+          "#A3C4AE",
+          "#E8F2EB",
+          "#F5FAF6"
+        ]
+      },
+      "destructive": {
+        "role": "semantic",
+        "displayName": "Berry Soft",
+        "canonical": "#E57373",
+        "tonalRamp": [
+          "#6B2E2E",
+          "#8F4040",
+          "#B35555",
+          "#E57373",
+          "#F0A0A0",
+          "#F7C8C8",
+          "#FCEAEA",
+          "#FFF8F8"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles only." },
+      "headline": { "displayName": "Headline", "purpose": "Section headers." },
+      "title": { "displayName": "Title", "purpose": "Card and recipe titles." },
+      "body": { "displayName": "Body", "purpose": "Instructions and descriptions." },
+      "label": { "displayName": "Label", "purpose": "Form labels, meta, helpers." }
+    },
+    "shadows": [
+      { "name": "sm", "value": "0 1px 2px rgba(74, 55, 40, 0.05)", "purpose": "Resting cards." },
+      {
+        "name": "default",
+        "value": "0 2px 8px rgba(74, 55, 40, 0.08)",
+        "purpose": "Primary button lift."
+      },
+      {
+        "name": "md",
+        "value": "0 4px 12px rgba(74, 55, 40, 0.1)",
+        "purpose": "Menus and modest overlays."
+      },
+      {
+        "name": "lg",
+        "value": "0 8px 24px rgba(74, 55, 40, 0.12)",
+        "purpose": "Drawers and cooking panel."
+      }
+    ],
+    "motion": [
+      { "name": "duration-fast", "value": "150ms", "purpose": "Micro state changes." },
+      {
+        "name": "duration-normal",
+        "value": "300ms",
+        "purpose": "Header fold, drawer, most transitions."
+      },
+      { "name": "duration-slow", "value": "500ms", "purpose": "Deliberate reveals only." },
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Header and drawer motion."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Standard easing."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main CTA — pastry pink with cocoa text, 44px min height.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Save recipe</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0.625rem 1rem; border: none; border-radius: 0.75rem; background: var(--color-pink, #FED4D9); color: var(--color-cocoa, #4A3728); font: 500 0.875rem/1.25 Nunito, ui-sans-serif, system-ui, sans-serif; box-shadow: 0 2px 8px rgba(74, 55, 40, 0.08); transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; } .ds-btn-primary:hover { background: var(--color-pink-dark, #F5B8C0); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-lavender, #AF93B3); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Lavender fill for secondary emphasis and active filter actions.",
+      "html": "<button class=\"ds-btn-secondary\" type=\"button\">Filter</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0.625rem 1rem; border: none; border-radius: 0.75rem; background: var(--color-lavender, #AF93B3); color: #fff; font: 500 0.875rem/1.25 Nunito, ui-sans-serif, system-ui, sans-serif; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; } .ds-btn-secondary:hover { background: var(--color-lavender-dark, #937598); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--color-lavender, #AF93B3); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Tertiary action with linen border.",
+      "html": "<button class=\"ds-btn-outline\" type=\"button\">Cancel</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0.625rem 1rem; border: 1px solid var(--color-border, #E8E4DC); border-radius: 0.75rem; background: transparent; color: var(--color-cocoa, #4A3728); font: 500 0.875rem/1.25 Nunito, ui-sans-serif, system-ui, sans-serif; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; } .ds-btn-outline:hover { background: var(--color-pink-light, #FFF0F2); } .ds-btn-outline:focus-visible { outline: 2px solid var(--color-lavender, #AF93B3); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Default input — white fill, linen border, lavender focus, 44px height.",
+      "html": "<input class=\"ds-input\" type=\"email\" placeholder=\"you@family.com\" />",
+      "css": ".ds-input { width: 100%; min-height: 44px; padding: 0.5rem 0.75rem; border: 1px solid var(--color-input, #E8E4DC); border-radius: 0.75rem; background: var(--color-card, #fff); color: var(--color-cocoa, #4A3728); font: 400 1rem/1.5 Nunito, ui-sans-serif, system-ui, sans-serif; } .ds-input::placeholder { color: var(--color-muted-foreground, #7A6B5C); } .ds-input:focus { outline: none; border-color: var(--color-lavender, #AF93B3); box-shadow: 0 0 0 1px var(--color-lavender, #AF93B3); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "White content island on the gingham field.",
+      "html": "<div class=\"ds-card\"><strong>Sunday Sauce</strong><p>Family classic with slow-simmered tomatoes.</p></div>",
+      "css": ".ds-card { background: var(--color-card, #fff); color: var(--color-cocoa, #4A3728); border-radius: 0.75rem; padding: 1rem; box-shadow: 0 1px 2px rgba(74, 55, 40, 0.05); box-shadow: 0 1px 2px rgba(74, 55, 40, 0.05); outline: 1px solid var(--color-border, #E8E4DC); font: 400 0.875rem/1.5 Nunito, ui-sans-serif, system-ui, sans-serif; } .ds-card strong { display: block; font-weight: 600; font-size: 1.125rem; margin-bottom: 0.35rem; } .ds-card p { margin: 0; color: var(--color-muted-foreground, #7A6B5C); }"
+    },
+    {
+      "name": "Filter Badge",
+      "kind": "chip",
+      "refersTo": "badge-default",
+      "description": "Pill filter/meta chip; lavender when active.",
+      "html": "<span class=\"ds-badge\">Desserts</span><span class=\"ds-badge ds-badge-active\">Entrees</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; min-height: 32px; padding: 0.25rem 0.75rem; border-radius: 9999px; background: var(--color-pink-light, #FFF0F2); color: var(--color-cocoa, #4A3728); font: 500 0.75rem/1 Nunito, ui-sans-serif, system-ui, sans-serif; } .ds-badge-active { background: var(--color-lavender, #AF93B3); color: #fff; }"
+    },
+    {
+      "name": "App Header",
+      "kind": "nav",
+      "refersTo": "nav-header",
+      "description": "Fixed pastry-pink header with wordmark; pads safe-area-inset-top.",
+      "html": "<header class=\"ds-header\"><span class=\"ds-wordmark\">Family Recipes</span></header>",
+      "css": ".ds-header { display: flex; align-items: center; min-height: 56px; padding: env(safe-area-inset-top, 0px) 1rem 0; background: var(--color-pink, #FED4D9); color: var(--color-cocoa, #4A3728); box-shadow: 0 1px 2px rgba(74, 55, 40, 0.05); font: 700 1.125rem/1 Nunito, ui-sans-serif, system-ui, sans-serif; } .ds-wordmark { font-weight: 700; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Grandma's Cozy Kitchen Table",
+    "overview": "Family Recipes looks and feels like a warm kitchen table covered in a butter-gingham cloth — inviting, rounded, and soft-spoken. Soft pink leads brand and chrome; lavender marks selection and progress; yellow accents warmth without shouting. Cocoa brown carries all reading text. Density stays comfortable for thumbs with generous page padding, soft cocoa-tinted shadows, and pill-friendly radii.",
+    "keyCharacteristics": [
+      "Gingham tablecloth page field with white card surfaces",
+      "Soft pink header chrome and primary CTAs",
+      "Nunito everywhere — rounded, friendly, never clinical",
+      "Cocoa-tinted shadows and borders (never cold gray UI chrome)",
+      "iPhone-first layout with safe areas and 44px touch targets",
+      "Three-layer surface stack: page → card → nested inset"
+    ],
+    "rules": [
+      {
+        "name": "The One Accent Voice Rule",
+        "body": "On any given screen, pink owns primary action; lavender owns selection state; yellow is garnish. Do not invent a fourth accent for variety.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Cold Gray Rule",
+        "body": "Prefer cocoa/mushroom/linen tokens over Tailwind gray-* or blue SaaS links in product UI.",
+        "section": "colors"
+      },
+      {
+        "name": "The Single Family Rule",
+        "body": "Do not introduce Inter, Roboto, or a second display face. Nunito is the product voice.",
+        "section": "typography"
+      },
+      {
+        "name": "The Thumb-First Rule",
+        "body": "Primary actions and list interactions must work in a one-handed iPhone portrait grip.",
+        "section": "layout"
+      },
+      {
+        "name": "The Safe Stage Rule",
+        "body": "Every fixed top/bottom surface pads Apple safe-area insets.",
+        "section": "layout"
+      },
+      {
+        "name": "The Soft Lift Rule",
+        "body": "Prefer ring-1 ring-border + shadow-sm over heavy multi-layer drop shadows or glow.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Soft Corner Rule",
+        "body": "Sharp 0-radius UI and hairline broadsheet layouts are out of character.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do compose new screens from src/components/ui primitives and @theme tokens in globals.css.",
+      "Do keep 44×44 minimum touch targets for tappable controls.",
+      "Do pad fixed chrome with env(safe-area-inset-*) on iPhone.",
+      "Do use the page → card → nested surface hierarchy.",
+      "Do use Herb Success tokens for positive completion states."
+    ],
+    "donts": [
+      "Don't introduce purple-on-white SaaS gradients, Inter/Roboto defaults, or dark-mode-first skins.",
+      "Don't use Tailwind gray-* or default green-* when semantic tokens exist.",
+      "Don't nest cards inside cards for decoration.",
+      "Don't ship hover-only affordances as the only way to act.",
+      "Don't place controls under the iOS home indicator or status bar.",
+      "Don't treat scalloped/lace ornaments as required — they are optional future garnish, not the system."
+    ]
+  }
+}
