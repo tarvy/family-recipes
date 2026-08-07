@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { Button, Card } from '@/components/ui';
 
+const MAGIC_LINK_EXPIRY_MINUTES = 15;
+
 interface ManualMagicLinkResponse {
   url?: string;
   expiresAt?: string;
@@ -60,7 +62,8 @@ export function ManualMagicLinkForm() {
       <div>
         <h2 className="text-lg font-semibold text-foreground">Manual login link</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Generate a one-time link to distribute directly. It expires in 15 minutes.
+          Generate a one-time link to distribute directly. It expires in {MAGIC_LINK_EXPIRY_MINUTES}{' '}
+          minutes.
         </p>
       </div>
 
