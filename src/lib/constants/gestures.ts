@@ -22,8 +22,8 @@ export const PTR_MAX_PULL_PX = 120;
 /** Duration for long press detection (ms) */
 export const LONG_PRESS_DURATION_MS = 500;
 
-/** Minimum touch target size for accessibility (px) */
-export const MIN_TOUCH_TARGET_SIZE_PX = 24;
+/** Minimum touch target size for accessibility (px) — iOS HIG / design system */
+export const MIN_TOUCH_TARGET_SIZE_PX = 44;
 
 /** Maximum time between touch start and end for a tap (ms) */
 export const TAP_DURATION_MS = 200;

@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 const inputBase =
-  'w-full rounded-lg border border-input bg-card px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender';
+  'w-full min-h-touch rounded-lg border border-input bg-card px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-lavender focus:outline-none focus:ring-1 focus:ring-lavender';
 
 export const Input = forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
   ({ className, ...props }, ref) => {
@@ -13,7 +13,9 @@ Input.displayName = 'Input';
 
 export const Textarea = forwardRef<HTMLTextAreaElement, React.ComponentProps<'textarea'>>(
   ({ className, ...props }, ref) => {
-    return <textarea ref={ref} className={cn(inputBase, 'resize-y', className)} {...props} />;
+    return (
+      <textarea ref={ref} className={cn(inputBase, 'min-h-24 resize-y', className)} {...props} />
+    );
   },
 );
 Textarea.displayName = 'Textarea';

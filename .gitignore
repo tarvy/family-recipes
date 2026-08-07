@@ -57,3 +57,9 @@ playwright/.cache/
 # Temporary
 *.tmp
 *.temp
+
+# Impeccable skills for non-Cursor harnesses (reinstall with: npx impeccable install)
+.claude/skills/
+.github/skills/
+.github/agents/
+.github/hooks/

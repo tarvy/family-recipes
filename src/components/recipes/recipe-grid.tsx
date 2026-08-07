@@ -1,3 +1,10 @@
+/**
+ * Recipe Grid Component
+ *
+ * Responsive grid of recipe cards with a design-system empty state.
+ */
+
+import { EmptyState } from '@/components/ui';
 import type { RecipePreview } from '@/lib/recipes/loader';
 import { RecipeCard } from './recipe-card';
 
@@ -16,10 +23,10 @@ interface RecipeGridProps {
 export function RecipeGrid({ recipes, canDelete, isFamily }: RecipeGridProps) {
   if (recipes.length === 0) {
     return (
-      <div className="py-12 text-center">
-        <p className="text-lg text-gray-500">No recipes found</p>
-        <p className="mt-2 text-sm text-gray-400">Try adjusting your search or filter criteria</p>
-      </div>
+      <EmptyState
+        title="No recipes found"
+        description="Try adjusting your search or filter criteria"
+      />
     );
   }
 

@@ -4,7 +4,7 @@
   "description": "Personal recipe management with Cooklang support",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFF9F0",
+  "background_color": "#FBF6E3",
   "theme_color": "#FED4D9",
   "orientation": "portrait-primary",
   "scope": "/",

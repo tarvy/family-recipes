@@ -475,7 +475,7 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
       </div>
 
       {/* Submit button */}
-      <div className="sticky bottom-0 border-t border-border bg-background py-4">
+      <div className="sticky bottom-0 border-t border-border bg-background py-4 pb-safe">
         <div className="flex justify-end gap-4">
           <Button type="button" variant="ghost" onClick={() => router.back()}>
             Cancel

@@ -45,7 +45,7 @@ function formatTimeRemaining(ms: number): string {
  */
 function getContainerClass(status: ActiveTimer['status']): string {
   if (status === 'completed') {
-    return 'bg-green-50 ring-1 ring-green-200';
+    return 'bg-success-soft ring-1 ring-success/30';
   }
   if (status === 'paused') {
     return 'bg-muted/50';
@@ -58,12 +58,12 @@ function getContainerClass(status: ActiveTimer['status']): string {
  */
 function getIconColorClass(status: ActiveTimer['status']): string {
   if (status === 'completed') {
-    return 'text-green-600';
+    return 'text-success';
   }
   if (status === 'paused') {
     return 'text-muted-foreground';
   }
-  return 'text-yellow-600';
+  return 'text-yellow-dark';
 }
 
 /**
@@ -71,13 +71,13 @@ function getIconColorClass(status: ActiveTimer['status']): string {
  */
 function getTimeColorClass(status: ActiveTimer['status'], remainingMs: number): string {
   if (status === 'completed') {
-    return 'text-green-600';
+    return 'text-success';
   }
   if (status === 'paused') {
     return 'text-muted-foreground';
   }
   if (remainingMs <= LOW_TIME_THRESHOLD_MS) {
-    return 'text-red-600';
+    return 'text-destructive';
   }
   return 'text-foreground';
 }

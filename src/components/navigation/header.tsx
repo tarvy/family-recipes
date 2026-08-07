@@ -5,6 +5,7 @@
  *
  * Responsive header with hamburger menu (mobile) and inline links (desktop).
  * Folds/collapses when scrolling down, expands when scrolling up.
+ * Pads safe-area-inset-top for iPhone notch / Dynamic Island / PWA.
  */
 
 import Link from 'next/link';
@@ -27,30 +28,36 @@ export function Header({ isFamily = true }: { isFamily?: boolean }) {
 
   return (
     <header
-      className="fixed left-0 right-0 top-0 bg-pink shadow-sm transition-transform"
+      className="fixed left-0 right-0 top-0 bg-pink pt-safe shadow-sm transition-transform"
       style={{
-        height: HEADER_HEIGHT_PX,
         zIndex: NAV_Z_INDEX.header,
-        transform: isHeaderCollapsed ? `translateY(-${HEADER_HEIGHT_PX}px)` : 'translateY(0)',
+        // Content row is HEADER_HEIGHT_PX; total painted height includes safe-area via pt-safe
+        height: `calc(${HEADER_HEIGHT_PX}px + env(safe-area-inset-top, 0px))`,
+        transform: isHeaderCollapsed
+          ? `translateY(calc(-1 * (${HEADER_HEIGHT_PX}px + env(safe-area-inset-top, 0px))))`
+          : 'translateY(0)',
         transitionDuration: 'var(--duration-normal, 300ms)',
         transitionTimingFunction: 'var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1))',
       }}
     >
-      <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-4">
+      <div
+        className="mx-auto flex max-w-6xl items-center justify-between px-4"
+        style={{ height: HEADER_HEIGHT_PX }}
+      >
         {/* Left side: hamburger (mobile) + logo */}
         <div className="flex items-center gap-3">
           {/* Hamburger menu - mobile only */}
           <button
             type="button"
             onClick={openDrawer}
-            className="rounded-lg p-2 text-foreground hover:bg-pink-dark/20 md:hidden"
+            className="flex size-touch items-center justify-center rounded-lg text-foreground hover:bg-pink-dark/20 md:hidden"
             aria-label="Open navigation menu"
           >
             <HamburgerIcon className="h-6 w-6" size={ICON_SIZE_MD_PX} />
           </button>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex min-h-touch items-center gap-2">
             <span className="text-lg font-bold text-foreground">Family Recipes</span>
           </Link>
         </div>
@@ -66,7 +73,7 @@ export function Header({ isFamily = true }: { isFamily?: boolean }) {
         <button
           type="button"
           onClick={openSearch}
-          className="rounded-lg p-2 text-foreground hover:bg-pink-dark/20"
+          className="flex size-touch items-center justify-center rounded-lg text-foreground hover:bg-pink-dark/20"
           aria-label="Open search"
         >
           <SearchIcon className="h-5 w-5" size={ICON_SIZE_SM_PX} />
