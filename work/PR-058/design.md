@@ -39,6 +39,7 @@ Session cookie → Settings → register passkey
 ```
 Settings page
 ├── existing PasskeyManager
+│   └── revoke action per credential
 └── ManualMagicLinkForm (owner only)
     ├── allowlisted email input
     ├── generate action
@@ -105,6 +106,28 @@ interface CreateManualMagicLinkResponse {
 | 403 | FORBIDDEN | Caller is not the owner or email is not allowlisted |
 | 500 | SERVER_ERROR | Token could not be created |
 
+### `DELETE /api/auth/passkey/[id]`
+
+**Purpose**: Revoke one passkey owned by the current session user.
+
+**Auth**: Any authenticated user; deletion query is scoped by `userId`.
+
+**Response**:
+
+```typescript
+interface DeletePasskeyResponse {
+  success: true;
+}
+```
+
+**Errors**:
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 401 | UNAUTHORIZED | No valid session |
+| 400 | INVALID_ID | Credential ID is not a valid MongoDB ID |
+| 404 | NOT_FOUND | Credential does not belong to the current user |
+
 ### Existing `GET /api/auth/verify`
 
 No contract change. It continues to atomically consume valid tokens, reject
@@ -141,9 +164,12 @@ src/
 ├── app/
 │   ├── (auth)/login/page.tsx
 │   ├── (main)/settings/page.tsx
-│   └── api/admin/magic-link/route.ts
+│   ├── api/admin/magic-link/route.ts
+│   └── api/auth/passkey/[id]/route.ts
 ├── components/auth/manual-magic-link-form.tsx
+├── components/auth/passkey-manager.tsx
 ├── lib/auth/magic-link.ts
+├── db/models/passkey.model.ts
 └── lib/email/send.ts                         # removed
 docs/
 ├── AUTH.md

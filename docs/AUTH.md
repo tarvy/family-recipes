@@ -138,6 +138,19 @@ Start or complete passkey registration for the signed-in user.
 }
 ```
 
+### DELETE /api/auth/passkey/[id]
+
+Revoke a passkey belonging to the signed-in user. Settings requires confirmation
+before sending this request.
+
+**Response:**
+
+```json
+{
+  "success": true
+}
+```
+
 ### POST /api/auth/passkey/authenticate
 
 Start or complete passkey authentication.

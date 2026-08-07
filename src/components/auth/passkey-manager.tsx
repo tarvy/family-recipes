@@ -48,6 +48,7 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
   const router = useRouter();
   const [isSupported, setIsSupported] = useState<boolean>(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -99,6 +100,32 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
       setErrorMessage(message);
     } finally {
       setIsRegistering(false);
+    }
+  }
+
+  async function handleDelete(passkeyId: string): Promise<void> {
+    if (!window.confirm('Revoke this passkey? It will no longer be able to sign you in.')) {
+      return;
+    }
+
+    setDeletingId(passkeyId);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await fetch(`/api/auth/passkey/${passkeyId}`, { method: 'DELETE' });
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error || 'Passkey revocation failed.');
+      }
+
+      setSuccessMessage('Passkey revoked successfully.');
+      router.refresh();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Passkey revocation failed.';
+      setErrorMessage(message);
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -166,6 +193,15 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
                     <span className="text-foreground">{passkey.transports.join(', ')}</span>
                   </div>
                 )}
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDelete(passkey.id)}
+                  disabled={deletingId !== null || isRegistering}
+                >
+                  {deletingId === passkey.id ? 'Revoking...' : 'Revoke passkey'}
+                </Button>
               </li>
             ))}
           </ul>

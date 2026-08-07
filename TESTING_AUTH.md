@@ -12,6 +12,7 @@ Based on the magic link authentication implementation, here's the current state 
 - [x] **Navigation to Login Page** - Sign In link on home page when not authenticated
 - [x] **User Authentication Status Display** - Home page shows current user's email and role
 - [x] **Logout UI** - Sign Out button on home page when authenticated
+- [x] Passkey revocation with confirmation
 
 ### Not Yet Implemented
 - [ ] Protected route example (page that redirects unauthenticated users)
@@ -47,6 +48,7 @@ Based on the magic link authentication implementation, here's the current state 
 - [ ] Expired token → Should redirect to `/login?error=expired`
 - [ ] Used token (click link twice) → Should redirect to `/login?error=invalid_token`
 - [ ] Missing token → Should redirect to `/login?error=missing_token`
+- [ ] Revoke a passkey → Credential disappears and can no longer authenticate
 
 ## Environment Setup
 

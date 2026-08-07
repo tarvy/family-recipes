@@ -96,6 +96,38 @@ Feature: Resend-free authentication
     And authentication does not attempt an external email request
 ```
 
+### Story 4: Revoke a Passkey
+
+**As an** authenticated user
+**I want** to delete a registered passkey
+**So that** a lost, old, or compromised credential can no longer sign in
+
+#### Acceptance Criteria
+
+```gherkin
+Feature: Revoke passkeys
+
+  Scenario: User deletes their own passkey
+    Given I am signed in
+    And the passkey belongs to my account
+    When I confirm deletion of that passkey
+    Then the passkey is removed from the database
+    And it can no longer authenticate me
+    And the Settings list no longer shows it
+
+  Scenario: User cannot delete another user's passkey
+    Given I am signed in
+    And the passkey belongs to another account
+    When I submit a deletion request
+    Then the request is rejected
+    And the passkey remains registered
+
+  Scenario: Deletion requires confirmation
+    Given I am viewing a registered passkey
+    When I select delete
+    Then I see a confirmation prompt before the deletion request is sent
+```
+
 ---
 
 ## Out of Scope
@@ -105,6 +137,7 @@ Feature: Resend-free authentication
 - Bulk link generation.
 - Extending link lifetime beyond the existing 15-minute policy.
 - Displaying existing or previously generated tokens.
+- Administrative deletion of passkeys belonging to other users.
 
 ---
 

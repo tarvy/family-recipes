@@ -763,3 +763,5 @@ PR-058:
       path: src/components/auth/manual-magic-link-form.tsx
     - type: file
       path: scripts/create-magic-link.ts
+    - type: file
+      path: src/app/api/auth/passkey/[id]/route.ts

@@ -32,6 +32,8 @@
 - [x] `docs/ENVIRONMENT.md` - Resend configuration removed
 - [x] `package.json` / `package-lock.json` - Resend dependency removed
 - [x] `scripts/create-magic-link.ts` - Recovery CLI
+- [ ] `src/app/api/auth/passkey/[id]/route.ts` - Authenticated passkey revocation
+- [ ] `src/components/auth/passkey-manager.tsx` - Confirmed delete controls
 - [x] Automated checks - lint, typecheck, build
 
 ---
@@ -101,6 +103,26 @@ npm run build, and Thai-lint if available. Verify the one-time token lifecycle
 and production recovery flow, then record results here.
 ```
 
+### Phase 4: Passkey Revocation
+
+**Dependencies**: Phase 2
+
+**Deliverables**:
+
+- [ ] `src/app/api/auth/passkey/[id]/route.ts`
+- [ ] `src/components/auth/passkey-manager.tsx`
+
+**Agent Prompt**:
+
+```
+Read the passkey model, session helpers, Settings page, and PR-058 requirements
+and design. Add DELETE /api/auth/passkey/[id] with session authentication,
+ObjectId validation, a userId-scoped Mongoose delete, traced database access,
+structured logging, and explicit 401/400/404 responses. Add an accessible,
+confirmed delete action to each passkey in PasskeyManager. Refresh the list after
+successful deletion and preserve existing registration behavior.
+```
+
 ---
 
 ## Test Plan
@@ -115,6 +137,7 @@ and production recovery flow, then record results here.
 | Link opens once | Session created | | [ ] |
 | Link reused | Invalid-token response | | [ ] |
 | Passkey registration | New credential works on configured domain | | [ ] |
+| Passkey deletion | Confirmed deletion removes only selected credential | | [ ] |
 
 ---
 
