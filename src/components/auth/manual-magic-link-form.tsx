@@ -33,7 +33,7 @@ export function ManualMagicLinkForm() {
       });
       const payload = (await response.json()) as ManualMagicLinkResponse;
 
-      if (!response.ok || !payload.url || !payload.expiresAt) {
+      if (!(response.ok && payload.url && payload.expiresAt)) {
         throw new Error(getErrorMessage(payload.error));
       }
 

@@ -8,7 +8,12 @@
 
 import nextEnv from '@next/env';
 import { disconnectDB } from '@/db/connection';
-import { ensureOwnerAllowlist, findAllowedEmail, isValidEmail, normalizeEmail } from '@/lib/auth/allowlist';
+import {
+  ensureOwnerAllowlist,
+  findAllowedEmail,
+  isValidEmail,
+  normalizeEmail,
+} from '@/lib/auth/allowlist';
 import { createMagicLink } from '@/lib/auth/magic-link';
 
 const PROJECT_DIR = process.cwd();
