@@ -6,8 +6,7 @@ Based on the magic link authentication implementation, here's the current state 
 
 ### What's Working
 - [x] Login page exists at `/login`
-- [x] Email input form with validation
-- [x] Magic link generation and email sending (via Resend)
+- [x] Owner-only manual magic-link generation
 - [x] Session creation and management
 - [x] Logout API endpoint exists
 - [x] **Navigation to Login Page** - Sign In link on home page when not authenticated
@@ -16,18 +15,15 @@ Based on the magic link authentication implementation, here's the current state 
 
 ### Not Yet Implemented
 - [ ] Protected route example (page that redirects unauthenticated users)
-- [ ] Dev-only test endpoint for magic links (optional, can check email)
+- [x] CLI test path for manually generated magic links
 
 ## Test Checklist
 
 ### Signup Flow (First-time User)
 - [ ] Navigate to home page (`/`)
 - [ ] Click "Sign In" link
-- [ ] Enter email address
-- [ ] Click "Send magic link"
-- [ ] Verify "Check your email" message appears
-- [ ] Check email inbox for magic link
-- [ ] Click magic link in email
+- [ ] Owner generates a link for the allowlisted email in Settings
+- [ ] Copy and open the generated magic link
 - [ ] Verify redirect to home page
 - [ ] Verify user email is displayed on home page
 - [ ] Check database: user should be created with `role: 'family'`
@@ -35,11 +31,8 @@ Based on the magic link authentication implementation, here's the current state 
 ### Login Flow (Existing User)
 - [ ] Click "Sign Out" on home page (or clear cookies)
 - [ ] Click "Sign In" link
-- [ ] Enter existing user's email
-- [ ] Click "Send magic link"
-- [ ] Verify "Check your email" message appears
-- [ ] Check email for magic link
-- [ ] Click magic link
+- [ ] Owner generates a link for the existing allowlisted email
+- [ ] Copy and open the generated magic link
 - [ ] Verify redirect to home page
 - [ ] Verify user email is displayed
 
@@ -59,7 +52,6 @@ Based on the magic link authentication implementation, here's the current state 
 
 Required in `.env.local`:
 ```env
-RESEND_API_KEY=re_xxx...
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 MONGODB_URI=mongodb+srv://...
 ```
@@ -68,7 +60,6 @@ MONGODB_URI=mongodb+srv://...
 
 - Magic links expire in 15 minutes
 - Sessions last 7 days
-- Email enumeration is prevented (always returns success)
+- Only authenticated owners can generate links
 - First user gets `role: 'family'` (can be promoted to 'owner' later)
 - Magic links are single-use (marked as used after verification)
-- **Resend free tier**: Can only send to the email you signed up with (or verify a custom domain)

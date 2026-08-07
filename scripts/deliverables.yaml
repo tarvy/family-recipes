@@ -743,3 +743,21 @@ PR-057:
       path: src/components/menu/family-menu-card.tsx
     - type: file
       path: src/components/menu/vote-button.tsx
+
+# =============================================================================
+# PHASE 30: Owner-Distributed Magic Links (PR-058)
+# =============================================================================
+
+PR-058:
+  name: "Owner-Distributed Magic Links"
+  checks:
+    - type: file
+      path: work/PR-058/requirements.md
+    - type: file
+      path: work/PR-058/design.md
+    - type: file
+      path: work/PR-058/progress.md
+    - type: file
+      path: src/app/api/admin/magic-link/route.ts
+    - type: file
+      path: src/components/auth/manual-magic-link-form.tsx

@@ -2,7 +2,7 @@
  * GET /api/auth/verify
  *
  * Verify a magic link token, create/find user, create session, and redirect.
- * This is the callback URL from magic link emails.
+ * This is the callback URL from manually distributed magic links.
  */
 
 import { cookies } from 'next/headers';

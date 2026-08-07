@@ -3,7 +3,7 @@
  *
  * Usage:
  *   import {
- *     generateMagicLink,
+ *     createMagicLink,
  *     verifyMagicLink,
  *     createSession,
  *     validateSession,
@@ -15,8 +15,8 @@
  */
 
 export { isFamilyRole } from './authorization';
-export type { GenerateMagicLinkResult, VerifyMagicLinkResult } from './magic-link';
-export { generateMagicLink, verifyMagicLink } from './magic-link';
+export type { CreateMagicLinkResult, VerifyMagicLinkResult } from './magic-link';
+export { createMagicLink, verifyMagicLink } from './magic-link';
 export type { CreateSessionResult, SessionUser, ValidateSessionResult } from './session';
 export {
   createSession,

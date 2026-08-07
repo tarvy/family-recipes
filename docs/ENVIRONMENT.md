@@ -58,19 +58,6 @@ pipeline will ensure this email is present in the allowlist with role `owner`.
 OWNER_EMAIL=you@example.com
 ```
 
-#### `RESEND_API_KEY`
-API key for sending magic link emails.
-
-**How to obtain:**
-1. Create account at [resend.com](https://resend.com)
-2. Go to API Keys section
-3. Create new API key
-4. Optionally verify a custom domain
-
-**Free tier:** 3,000 emails/month (more than enough for personal use)
-
----
-
 ### Logging
 
 #### `LOG_LEVEL`

@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Login page with magic link authentication
+ * Login page with passkey authentication.
  */
 
 import {
@@ -11,14 +11,6 @@ import {
 } from '@simplewebauthn/browser';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
-
-type FormState = 'idle' | 'loading' | 'success' | 'error';
-
-/** Magic link expiry time in minutes - must match TOKEN_EXPIRY_MINUTES in magic-link.ts */
-const MAGIC_LINK_EXPIRY_MINUTES = 15;
-
-/** SVG icon stroke width for consistent styling */
-const ICON_STROKE_WIDTH = 2;
 
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_token: 'This link is invalid or has already been used.',
@@ -40,14 +32,11 @@ function isAuthenticationOptions(value: unknown): value is PublicKeyCredentialRe
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState('');
-  const [formState, setFormState] = useState<FormState>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [passkeySupported, setPasskeySupported] = useState(false);
 
-  // Check for error and return_to from redirect
   const urlError = searchParams.get('error');
   const returnTo = searchParams.get('return_to');
 
@@ -61,35 +50,7 @@ function LoginForm() {
     setPasskeySupported(browserSupportsWebAuthn());
   }, []);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!email.trim()) {
-      return;
-    }
-
-    setFormState('loading');
-    setErrorMessage(null);
-
-    try {
-      const response = await fetch('/api/auth/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Request failed');
-      }
-
-      setFormState('success');
-    } catch {
-      setFormState('error');
-      setErrorMessage('Failed to send login link. Please try again.');
-    }
-  }
-
-  async function handlePasskeySignIn() {
+  async function handlePasskeySignIn(): Promise<void> {
     setPasskeyLoading(true);
     setPasskeyError(null);
 
@@ -109,7 +70,6 @@ function LoginForm() {
       }
 
       const assertion = await startAuthentication({ optionsJSON: optionsPayload.options });
-
       const verificationResponse = await fetch('/api/auth/passkey/authenticate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,9 +83,7 @@ function LoginForm() {
         throw new Error(errorPayload?.error || 'Passkey sign-in failed.');
       }
 
-      // Redirect to return_to if provided, otherwise default to /recipes
-      const destination = returnTo ?? '/recipes';
-      router.push(destination);
+      router.push(returnTo ?? '/recipes');
       router.refresh();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Passkey sign-in failed.';
@@ -135,99 +93,21 @@ function LoginForm() {
     }
   }
 
-  if (formState === 'success') {
-    return (
-      <div className="text-center">
-        <div className="mb-6">
-          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <svg
-              className="w-8 h-8 text-primary"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-label="Email sent"
-              role="img"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={ICON_STROKE_WIDTH}
-                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Check your email</h1>
-        </div>
-        <p className="text-muted-foreground mb-6">
-          We sent a login link to <strong className="text-foreground">{email}</strong>
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Click the link in the email to sign in. The link expires in {MAGIC_LINK_EXPIRY_MINUTES}{' '}
-          minutes.
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            setFormState('idle');
-            setEmail('');
-          }}
-          className="mt-6 text-sm text-primary hover:underline"
-        >
-          Use a different email
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div>
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Sign in to Family Recipes</h1>
-        <p className="text-muted-foreground">Enter your email to receive a magic link</p>
+      <div className="mb-8 text-center">
+        <h1 className="mb-2 text-2xl font-bold text-foreground">Sign in to Family Recipes</h1>
+        <p className="text-muted-foreground">Ask the owner for a one-time login link</p>
       </div>
 
       {errorMessage && (
-        <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+        <div className="mb-6 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
           {errorMessage}
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-            Email address
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            required
-            autoComplete="email"
-            disabled={formState === 'loading'}
-            className="w-full px-4 py-3 border border-input rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={formState === 'loading' || !email.trim()}
-          className="w-full py-3 px-4 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {formState === 'loading' ? 'Sending...' : 'Send magic link'}
-        </button>
-      </form>
-
-      <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-        <div className="h-px flex-1 bg-border" />
-        <span>or</span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
-
       {passkeyError && (
-        <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+        <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
           {passkeyError}
         </div>
       )}
@@ -236,7 +116,7 @@ function LoginForm() {
         type="button"
         onClick={handlePasskeySignIn}
         disabled={!passkeySupported || passkeyLoading}
-        className="w-full py-3 px-4 border border-input rounded-lg bg-background text-foreground font-medium hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full rounded-lg border border-input bg-background px-4 py-3 font-medium text-foreground transition-colors hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {passkeyLoading ? 'Signing in...' : 'Sign in with passkey'}
       </button>

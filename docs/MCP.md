@@ -84,7 +84,7 @@ Ensure these are set in `.env.local` (or Vercel environment variables):
 
 - **`JWT_SECRET`** — Required. Used to sign OAuth access tokens. Generate with `openssl rand -base64 48`.
 - **`NEXT_PUBLIC_APP_URL`** — Required. Base URL of the app (e.g. `http://localhost:3000` for dev, or `https://your-app.vercel.app` for production).
-- **App dependencies** — MongoDB, Resend (for magic links), etc. must be configured so MCP tools (recipes, shopping lists) can run.
+- **App dependencies** — MongoDB and the application runtime must be configured so MCP tools (recipes, shopping lists) can run.
 
 ### 2. Optional MCP variables
 
@@ -167,7 +167,7 @@ claude mcp add --transport http family-recipes http://localhost:3000/mcp
 
 When you first use `/mcp` in Claude Code:
 1. Browser opens for authentication
-2. Log in with email magic link or passkey
+2. Log in with an owner-distributed magic link or passkey
 3. Approve requested permissions
 4. Tools become available
 

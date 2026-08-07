@@ -13,6 +13,7 @@
     "progress": "python scripts/progress.py",
     "convert-paprika": "npx tsx scripts/convert-paprika.ts",
     "allowlist": "npx tsx scripts/allowlist.ts",
+    "create-magic-link": "npx tsx scripts/create-magic-link.ts",
     "logs": "npx tsx scripts/logs.ts",
     "prepare": "husky"
   },
@@ -35,7 +36,6 @@
     "pino": "^10.3.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "resend": "^6.8.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

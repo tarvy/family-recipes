@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { ManualMagicLinkForm } from '@/components/auth/manual-magic-link-form';
 import { PasskeyManager } from '@/components/auth/passkey-manager';
 import { MainLayout } from '@/components/layout';
 import { connectDB } from '@/db/connection';
@@ -65,6 +66,7 @@ export default async function SettingsPage() {
           </div>
 
           <PasskeyManager initialPasskeys={passkeys} />
+          {user.role === 'owner' && <ManualMagicLinkForm />}
         </div>
       </div>
     </MainLayout>
