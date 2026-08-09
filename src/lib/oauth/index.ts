@@ -19,6 +19,18 @@ export { buildAuthError, isAuthorizedForTool, verifyMcpAuth } from './mcp-auth';
 // PKCE
 export { isValidChallengeMethod, isValidVerifier, verifyCodeChallenge } from './pkce';
 
+// mcp-auth resource-server verification (RS256/JWKS) + rollback mode
+export type { McpAuthMode, McpAuthTokenClaims, ProtectedResourceMetadata } from './resource-server';
+export {
+  buildLocalKeySet,
+  buildProtectedResourceMetadata,
+  buildProtectedResourceMetadataUrl,
+  getMcpAuthIssuer,
+  getMcpResourceUrl,
+  resolveMcpAuthMode,
+  verifyMcpAuthResourceToken,
+} from './resource-server';
+
 // Token management
 export {
   generateAccessToken,

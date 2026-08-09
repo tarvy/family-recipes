@@ -1,0 +1,5 @@
+{
+  "resource_url": "https://recipes.tarvy.dev/mcp",
+  "name": "Family Recipes MCP",
+  "scopes": ["recipes:read", "recipes:write", "shopping:read", "shopping:write"]
+}

@@ -105,7 +105,7 @@ MCP authentication uses OAuth 2.1 Bearer tokens only. No API key is implemented.
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `JWT_SECRET` | Yes | Signs OAuth access tokens |
+| `JWT_SECRET` | Yes, in `legacy` mode | Signs self-issued OAuth access tokens |
 | `NEXT_PUBLIC_APP_URL` | Yes | Base URL for OAuth and MCP endpoint |
 
 **Optional MCP variables:**
@@ -115,8 +115,12 @@ MCP authentication uses OAuth 2.1 Bearer tokens only. No API key is implemented.
 | `OAUTH_ISSUER` | OAuth issuer URL (defaults to `NEXT_PUBLIC_APP_URL`) |
 | `OAUTH_REGISTRATION_SECRET` | Protects dynamic client registration endpoint |
 | `OWNER_EMAIL` | Default user for shopping list tools |
+| `MCP_AUTH_MODE` | `mcp-auth` or `legacy`; auto-inferred from `MCP_RESOURCE_URL` if unset |
+| `MCP_RESOURCE_URL` | This app's resource URL registered with mcp-auth, e.g. `https://recipes.tarvy.dev/mcp` |
+| `MCP_AUTH_ISSUER_URL` | mcp-auth issuer (defaults to `https://auth.tarvy.dev`) |
+| `MCP_AUTH_JWKS_URI` | Override the mcp-auth JWKS URI (defaults to `{MCP_AUTH_ISSUER_URL}/.well-known/jwks.json`) |
 
-For full MCP setup (env checklist, OAuth client registration, client configuration), see **docs/MCP.md**.
+For full MCP setup (env checklist, OAuth client registration, client configuration, and the mcp-auth migration/rollback story), see **docs/MCP.md**.
 
 ---
 

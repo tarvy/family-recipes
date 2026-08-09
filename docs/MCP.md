@@ -29,6 +29,16 @@ OAuth metadata is available at:
 - `/.well-known/oauth-authorization-server`
 - `/api/mcp/.well-known/oauth-authorization-server` (MCP-relative)
 
+RFC 9728 protected-resource metadata (used by MCP clients to discover which
+authorization server to use for `/mcp`) is available at:
+- `/.well-known/oauth-protected-resource/mcp` (canonical)
+- `/.well-known/oauth-protected-resource` (root fallback)
+- `/api/mcp/.well-known/oauth-protected-resource` (MCP-relative)
+
+Its `authorization_servers` field points to mcp-auth in `mcp-auth` mode, or
+Family Recipes' own AS in `legacy` mode. See
+[mcp-auth Resource Migration](#mcp-auth-resource-migration).
+
 ### Endpoints
 
 | Endpoint | Description |
@@ -64,21 +74,87 @@ OAuth metadata is available at:
 | `recipes:write` | Create and modify recipes | `recipe_create`, `recipe_update`, `recipe_delete` |
 | `shopping:read` | View shopping lists | `shopping_list_get` |
 | `shopping:write` | Create shopping lists | `shopping_list_create` |
-| `mail:read` | Delegated read access for the Newt MCP resource server | None in Family Recipes |
-| `mail:write` | Delegated confirmed-operation access for Newt | None in Family Recipes |
 
-The `mail:*` scopes are recognized by this authorization server so a token can
-be delegated to the separately hosted Newt MCP resource server. Family Recipes
-does not expose mail tools and does not receive Newt's mail credentials.
+> **Note**: `mail:read`/`mail:write` were temporarily recognized by this
+> authorization server (PR-059) to delegate a token to the separately hosted
+> Newt MCP resource server during Newt's migration off Family Recipes' HS256
+> tokens. Newt now issues its own tokens via `mcp-auth`, so those scopes have
+> been removed here (PR-060). See [mcp-auth Resource Migration](#mcp-auth-resource-migration)
+> below.
+
+## mcp-auth Resource Migration
+
+Family Recipes' `/mcp` endpoint can be verified in two modes, controlled by
+`MCP_AUTH_MODE` (see [Environment](#environment)):
+
+- **`mcp-auth`** (target state): access tokens are RS256 JWTs issued by the
+  standalone [`mcp-auth`](https://auth.tarvy.dev) authorization server.
+  Family Recipes verifies them against that issuer's JWKS with audience
+  binding to this app's own resource URL (`MCP_RESOURCE_URL`). Family Recipes
+  is registered with mcp-auth as an independent resource
+  (`https://recipes.tarvy.dev/mcp`) with its own `recipes:*`/`shopping:*`
+  scopes; Newt is a separate mcp-auth resource with its own `mail:*` scopes.
+  Revoking one resource's grants (in mcp-auth or in each app's own consent UI)
+  does not affect the other.
+- **`legacy`** (rollback): Family Recipes acts as its own OAuth 2.1
+  authorization server exactly as before this migration - self-issued HS256
+  access tokens, local `/api/mcp/oauth/{register,authorize,token}` endpoints,
+  and the `/authorize` consent page. This path is unchanged code and remains
+  available for rollback.
+
+Mode resolution (`resolveMcpAuthMode()` in `src/lib/oauth/resource-server.ts`):
+
+1. If `MCP_AUTH_MODE` is set to `mcp-auth` or `legacy`, that value wins.
+2. Otherwise, `mcp-auth` mode is inferred automatically once `MCP_RESOURCE_URL`
+   is set; without it, the deployment stays in `legacy` mode (today's
+   behavior, no config changes required).
+
+**Important**: this migration only affects MCP resource-server verification
+for `/mcp`. It does **not** touch web application login. Magic links,
+passkeys, and browser sessions (`src/lib/auth/session.ts`) are opaque,
+database-backed tokens unrelated to `JWT_SECRET`/OAuth and are unaffected in
+either mode.
+
+### Registering Family Recipes with mcp-auth (operator steps)
+
+1. Confirm DNS/hosting for `https://recipes.tarvy.dev` (or, during
+   transition, use the current Vercel app URL + `/mcp`).
+2. Register the resource with mcp-auth using
+   [`examples/seed-recipes-resource.json`](../examples/seed-recipes-resource.json)
+   as the payload (see the `mcp-auth` repo's resource-registration docs for
+   the exact CLI/API call).
+3. Set on the Family Recipes deployment:
+   - `MCP_RESOURCE_URL=https://recipes.tarvy.dev/mcp` (or the transitional
+     Vercel URL + `/mcp`)
+   - `MCP_AUTH_ISSUER_URL` only if not using the default
+     (`https://auth.tarvy.dev`)
+   - Leave `MCP_AUTH_MODE` unset to auto-infer `mcp-auth`, or set it
+     explicitly.
+4. Verify: `curl https://recipes.tarvy.dev/.well-known/oauth-protected-resource/mcp`
+   returns `authorization_servers: ["https://auth.tarvy.dev"]` (or your
+   configured issuer).
+5. Have an MCP client complete the mcp-auth authorization flow and confirm
+   `recipe_list` (or another tool) succeeds.
+
+### Rollback
+
+Set `MCP_AUTH_MODE=legacy` (or unset `MCP_RESOURCE_URL`) and redeploy. Family
+Recipes immediately reverts to self-issued HS256 tokens and its own OAuth AS
+endpoints - no code changes, no data migration, and no impact on existing web
+sessions.
 
 ## Environment
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `JWT_SECRET` | Yes | Secret for signing access tokens |
-| `OAUTH_ISSUER` | Optional | OAuth issuer URL (defaults to `NEXT_PUBLIC_APP_URL`) |
+| `JWT_SECRET` | Yes (in `legacy` mode) | Secret for signing self-issued access tokens |
+| `OAUTH_ISSUER` | Optional | OAuth issuer URL (defaults to `NEXT_PUBLIC_APP_URL`); also the `legacy`-mode protected-resource issuer |
 | `OAUTH_REGISTRATION_SECRET` | Optional | Secret to protect client registration |
 | `OWNER_EMAIL` | Optional | Default user for shopping list tools |
+| `MCP_AUTH_MODE` | Optional | `mcp-auth` or `legacy`. Defaults to `mcp-auth` when `MCP_RESOURCE_URL` is set, otherwise `legacy` |
+| `MCP_RESOURCE_URL` | Required for `mcp-auth` mode | This deployment's resource URL as registered with mcp-auth, e.g. `https://recipes.tarvy.dev/mcp` |
+| `MCP_AUTH_ISSUER_URL` | Optional | mcp-auth issuer base URL (defaults to `https://auth.tarvy.dev`) |
+| `MCP_AUTH_JWKS_URI` | Optional | Override the JWKS URI (defaults to `{MCP_AUTH_ISSUER_URL}/.well-known/jwks.json`) |
 
 ## Making MCP Operable
 

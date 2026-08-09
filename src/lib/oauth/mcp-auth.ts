@@ -2,9 +2,12 @@
  * MCP OAuth authentication wrapper.
  *
  * Provides middleware for verifying OAuth Bearer tokens on MCP requests.
+ * Dispatches to either the mcp-auth RS256/JWKS resource-server path or the
+ * legacy self-issued HS256 path depending on `resolveMcpAuthMode()`.
  */
 
 import { getToolScopes, hasRequiredScopes, verifyAccessToken } from './';
+import { resolveMcpAuthMode, verifyMcpAuthResourceToken } from './resource-server';
 
 /** Bearer auth prefix and its length */
 const BEARER_PREFIX = 'Bearer ';
@@ -47,10 +50,10 @@ function extractBearerToken(request: Request): string | null {
  * @param options - Authentication options
  * @returns Authentication result with context or error
  */
-export function verifyMcpAuth(
+export async function verifyMcpAuth(
   request: Request,
   options: { required?: boolean } = {},
-): McpAuthResult {
+): Promise<McpAuthResult> {
   const { required = true } = options;
 
   const token = extractBearerToken(request);
@@ -64,19 +67,32 @@ export function verifyMcpAuth(
     return { authenticated: false, error: '' };
   }
 
-  // Verify token
-  const payload = verifyAccessToken(token);
-  if (!payload) {
+  const context =
+    resolveMcpAuthMode() === 'mcp-auth'
+      ? await verifyMcpAuthResourceToken(token)
+      : verifyLegacyToken(token);
+
+  if (!context) {
     return { authenticated: false, error: 'Invalid or expired access token' };
   }
 
-  const context: McpAuthContext = {
+  return { authenticated: true, context };
+}
+
+/**
+ * Verify a legacy self-issued HS256 access token (rollback path).
+ */
+function verifyLegacyToken(token: string): McpAuthContext | null {
+  const payload = verifyAccessToken(token);
+  if (!payload) {
+    return null;
+  }
+
+  return {
     clientId: payload.sub,
     userId: payload.user_id,
     scopes: payload.scope.split(' '),
   };
-
-  return { authenticated: true, context };
 }
 
 /**

@@ -785,3 +785,29 @@ PR-059:
       path: src/lib/oauth/types.ts
     - type: file
       path: docs/MCP.md
+
+# =============================================================================
+# PHASE 32: mcp-auth Resource Migration (PR-060)
+# =============================================================================
+
+PR-060:
+  name: "mcp-auth Resource Migration"
+  checks:
+    - type: file
+      path: src/lib/oauth/resource-server.ts
+    - type: file
+      path: src/lib/oauth/mcp-auth.ts
+    - type: file
+      path: src/app/.well-known/oauth-protected-resource/mcp/route.ts
+    - type: file
+      path: src/app/.well-known/oauth-protected-resource/route.ts
+    - type: file
+      path: src/app/api/mcp/.well-known/oauth-protected-resource/route.ts
+    - type: file
+      path: examples/seed-recipes-resource.json
+    - type: file
+      path: src/lib/oauth/__tests__/resource-server.test.ts
+    - type: file
+      path: src/lib/oauth/__tests__/types.test.ts
+    - type: file
+      path: vitest.config.ts
