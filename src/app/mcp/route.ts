@@ -13,6 +13,8 @@ import {
 import { logger } from '@/lib/logger';
 import {
   buildAuthError,
+  buildProtectedResourceMetadataUrl,
+  getMcpResourceUrl,
   isAuthorizedForTool,
   type McpAuthContext,
   verifyMcpAuth,
@@ -23,6 +25,7 @@ import { createMcpServer } from '@/mcp/server';
 export const runtime = 'nodejs';
 
 const MCP_PATH = '/mcp';
+const WWW_AUTHENTICATE_HEADER = 'WWW-Authenticate';
 const HTTP_METHOD_NOT_ALLOWED = 405;
 const JSON_RPC_VERSION = '2.0';
 const JSON_RPC_ERROR_CODE = -32000;
@@ -90,15 +93,38 @@ function getToolName(body: unknown): string | null {
 }
 
 /**
+ * Build the RFC 9728 protected-resource metadata URL for this deployment's
+ * `/mcp` resource, for use in `WWW-Authenticate: Bearer resource_metadata="..."`.
+ */
+function resourceMetadataUrl(request: Request): string {
+  const resource = getMcpResourceUrl() ?? new URL(MCP_PATH, request.url).toString();
+  return buildProtectedResourceMetadataUrl(resource);
+}
+
+/**
+ * Build a 401 response advertising the protected-resource metadata URL per
+ * RFC 9728 §5.1, matching the `Bearer error="...", resource_metadata="..."`
+ * convention MCP client libraries look for.
+ */
+function unauthorizedResponse(request: Request, message: string, id: unknown): Response {
+  return Response.json(buildAuthError(message, id), {
+    status: HTTP_UNAUTHORIZED,
+    headers: {
+      [WWW_AUTHENTICATE_HEADER]: `Bearer error="invalid_token", error_description="${message}", resource_metadata="${resourceMetadataUrl(request)}"`,
+    },
+  });
+}
+
+/**
  * Validate OAuth authentication for MCP request.
  */
-function validateMcpOAuth(
+async function validateMcpOAuth(
   request: Request,
   body: unknown,
   span: MinimalSpan,
-): { error: Response | null; context: McpAuthContext | null } {
+): Promise<{ error: Response | null; context: McpAuthContext | null }> {
   const needsAuth = requiresAuth(body);
-  const authResult = verifyMcpAuth(request, { required: needsAuth });
+  const authResult = await verifyMcpAuth(request, { required: needsAuth });
 
   if (!authResult.authenticated) {
     if (needsAuth) {
@@ -110,9 +136,7 @@ function validateMcpOAuth(
 
       const rpcRequest = body as JsonRpcRequest | undefined;
       return {
-        error: Response.json(buildAuthError(authResult.error, rpcRequest?.id), {
-          status: HTTP_UNAUTHORIZED,
-        }),
+        error: unauthorizedResponse(request, authResult.error, rpcRequest?.id),
         context: null,
       };
     }
@@ -205,7 +229,7 @@ async function handleMcpRequest(request: Request): Promise<Response> {
       }
 
       // Validate OAuth authentication
-      const { error: authError, context } = validateMcpOAuth(request, parsedBody.body, span);
+      const { error: authError, context } = await validateMcpOAuth(request, parsedBody.body, span);
       if (authError) {
         return authError;
       }
