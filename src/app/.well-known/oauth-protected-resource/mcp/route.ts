@@ -6,6 +6,7 @@
  * configured, or this app's own OAuth AS during the legacy rollback path.
  */
 
+import { HTTP_NO_CONTENT } from '@/lib/constants/http-status';
 import { buildProtectedResourceMetadata, getOAuthIssuer, OAUTH_SCOPES } from '@/lib/oauth';
 
 export const runtime = 'nodejs';
@@ -29,7 +30,7 @@ export async function GET(): Promise<Response> {
 
 export async function OPTIONS(): Promise<Response> {
   return new Response(null, {
-    status: 204,
+    status: HTTP_NO_CONTENT,
     headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, OPTIONS' },
   });
 }
