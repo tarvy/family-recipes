@@ -380,6 +380,16 @@ The sender email address is derived from `NEXT_PUBLIC_APP_URL`:
 | Passkey sign-in | Session created and redirected to `/` |
 | Logout | Session cleared, cookie removed |
 
+## Relationship to MCP Auth
+
+This document covers web application login only (magic links, passkeys,
+`ISession`/cookie sessions). MCP client authorization (`/mcp`, tools like
+`recipe_list`) is a separate concern documented in **docs/MCP.md**, backed
+either by Family Recipes' own OAuth 2.1 AS (`legacy` mode) or by the
+standalone `mcp-auth` authorization server (`mcp-auth` mode). Neither mode
+touches the session/cookie flow described above - the two systems share no
+tokens, secrets, or code paths.
+
 ## Future Enhancements
 
 The authentication system is designed to be extensible. Potential future additions:
