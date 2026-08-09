@@ -773,3 +773,15 @@ PR-058:
       path: src/components/ui/button.tsx
     - type: file
       path: src/app/globals.css
+
+# =============================================================================
+# PHASE 31: Newt Mail OAuth Scope Delegation (PR-059)
+# =============================================================================
+
+PR-059:
+  name: "Newt Mail OAuth Scope Delegation"
+  checks:
+    - type: file
+      path: src/lib/oauth/types.ts
+    - type: file
+      path: docs/MCP.md

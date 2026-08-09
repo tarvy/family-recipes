@@ -64,6 +64,12 @@ OAuth metadata is available at:
 | `recipes:write` | Create and modify recipes | `recipe_create`, `recipe_update`, `recipe_delete` |
 | `shopping:read` | View shopping lists | `shopping_list_get` |
 | `shopping:write` | Create shopping lists | `shopping_list_create` |
+| `mail:read` | Delegated read access for the Newt MCP resource server | None in Family Recipes |
+| `mail:write` | Delegated confirmed-operation access for Newt | None in Family Recipes |
+
+The `mail:*` scopes are recognized by this authorization server so a token can
+be delegated to the separately hosted Newt MCP resource server. Family Recipes
+does not expose mail tools and does not receive Newt's mail credentials.
 
 ## Environment
 

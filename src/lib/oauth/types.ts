@@ -45,6 +45,8 @@ export const OAUTH_SCOPES = {
   'recipes:write': 'Create and modify recipes',
   'shopping:read': 'View shopping lists',
   'shopping:write': 'Create and modify shopping lists',
+  'mail:read': 'Read mail through the Newt MCP resource server',
+  'mail:write': 'Apply explicitly confirmed mail operations through Newt',
 } as const;
 
 export type OAuthScope = keyof typeof OAUTH_SCOPES;
