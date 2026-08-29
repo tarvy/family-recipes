@@ -811,3 +811,21 @@ PR-060:
       path: src/lib/oauth/__tests__/types.test.ts
     - type: file
       path: vitest.config.ts
+
+# =============================================================================
+# PHASE 33: Fix PWA Client-Side Exception (PR-061)
+# =============================================================================
+
+PR-061:
+  name: "Fix PWA Client-Side Exception"
+  checks:
+    - type: file
+      path: public/sw.js
+    - type: file
+      path: src/lib/pwa/recover-stale-cache.ts
+    - type: file
+      path: src/lib/pwa/register-sw.ts
+    - type: file
+      path: src/app/global-error.tsx
+    - type: file
+      path: src/lib/pwa/__tests__/recover-stale-cache.test.ts
