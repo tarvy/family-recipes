@@ -33,6 +33,12 @@ const CONTROL_RADIUS = '0.75rem';
 /** Minimum touch target (iOS HIG) */
 const TOUCH_TARGET_MIN_PX = 44;
 
+/** Body line height from DESIGN.md (1.5) */
+const BODY_LINE_HEIGHT = 1.5;
+
+/** Semibold weight used for primary actions in DESIGN.md */
+const FONT_WEIGHT_SEMIBOLD = 600;
+
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
     // Best-effort clear so the next load is not poisoned by stale shells
@@ -62,7 +68,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           <p
             style={{
               marginBottom: '1.25rem',
-              lineHeight: 1.5,
+              lineHeight: BODY_LINE_HEIGHT,
               color: '#7a6b5c',
               fontSize: BODY_FONT_SIZE,
             }}
@@ -83,7 +89,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               background: '#FED4D9',
               color: '#4A3728',
               font: 'inherit',
-              fontWeight: 600,
+              fontWeight: FONT_WEIGHT_SEMIBOLD,
               cursor: 'pointer',
             }}
           >
