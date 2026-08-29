@@ -2,7 +2,10 @@
  * Service Worker Registration
  *
  * Handles service worker lifecycle for PWA functionality.
+ * Also installs stale-cache recovery for post-deploy chunk mismatches.
  */
+
+import { installStaleCacheRecovery } from '@/lib/pwa/recover-stale-cache';
 
 /** Check if service workers are supported */
 export function isServiceWorkerSupported(): boolean {
@@ -32,8 +35,10 @@ export interface RegisterSWOptions {
 export function registerServiceWorker(options: RegisterSWOptions = {}): () => void {
   const { onReady, onUpdate, onError, onOffline, onOnline } = options;
 
+  const removeStaleCacheRecovery = installStaleCacheRecovery();
+
   if (!isServiceWorkerSupported()) {
-    return () => {};
+    return removeStaleCacheRecovery;
   }
 
   // Handle online/offline events
@@ -75,6 +80,7 @@ export function registerServiceWorker(options: RegisterSWOptions = {}): () => vo
 
   // Cleanup function
   return () => {
+    removeStaleCacheRecovery();
     window.removeEventListener('online', handleOnline);
     window.removeEventListener('offline', handleOffline);
   };

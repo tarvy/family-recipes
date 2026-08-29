@@ -315,6 +315,22 @@ Ensure your IP is whitelisted in MongoDB Atlas:
 2. Add your current IP or use 0.0.0.0/0 for development
 3. For Vercel preview/production, use 0.0.0.0/0 to allow dynamic serverless IPs
 
+### PWA / service worker client exceptions after deploy
+
+The app registers `public/sw.js` for offline support. **HTML navigations are
+network-first** so clients always prefer the current Vercel deployment. Hashed
+`/_next/static` assets stay cache-first. Do **not** precache app HTML shells
+(`/`, `/recipes`, etc.) — that pinned stale documents and caused iPhone
+“Application error: a client-side exception has occurred” after deploys.
+
+If you change SW caching rules, bump `CACHE_VERSION` in `public/sw.js` so old
+`family-recipes-*-vN` caches are deleted on activate. The client also auto-
+recovers once per tab from Next.js chunk load failures via
+`src/lib/pwa/recover-stale-cache.ts`.
+
+To manually reset a stuck device: open the site in Safari → clear website data
+for the origin, or use the Reload button on the global error screen.
+
 ---
 
 ## Editor Setup
