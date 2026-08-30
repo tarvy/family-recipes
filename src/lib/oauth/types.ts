@@ -45,6 +45,8 @@ export const OAUTH_SCOPES = {
   'recipes:write': 'Create and modify recipes',
   'shopping:read': 'View shopping lists',
   'shopping:write': 'Create and modify shopping lists',
+  'menu:read': 'View weekly meal-plan menus',
+  'menu:write': 'Build and finalize weekly meal-plan menus',
 } as const;
 
 export type OAuthScope = keyof typeof OAUTH_SCOPES;
@@ -63,6 +65,11 @@ export const TOOL_SCOPES: Record<string, OAuthScope[]> = {
   ingredient_lookup: ['recipes:read'],
   shopping_list_get: ['shopping:read'],
   shopping_list_create: ['shopping:write'],
+  menu_get_week: ['menu:read'],
+  menu_add_dinner: ['menu:write'],
+  menu_remove_assignment: ['menu:write'],
+  menu_send_survey: ['menu:write'],
+  menu_finalize: ['menu:write'],
 };
 
 // -----------------------------------------------------------------------------

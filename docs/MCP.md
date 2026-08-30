@@ -74,6 +74,8 @@ Family Recipes' own AS in `legacy` mode. See
 | `recipes:write` | Create and modify recipes | `recipe_create`, `recipe_update`, `recipe_delete` |
 | `shopping:read` | View shopping lists | `shopping_list_get` |
 | `shopping:write` | Create shopping lists | `shopping_list_create` |
+| `menu:read` | View weekly meal-plan menus | `menu_get_week` |
+| `menu:write` | Build and finalize weekly menus | `menu_add_dinner`, `menu_remove_assignment`, `menu_send_survey`, `menu_finalize` |
 
 > **Note**: `mail:read`/`mail:write` were temporarily recognized by this
 > authorization server (PR-059) to delegate a token to the separately hosted
@@ -240,6 +242,21 @@ curl -X POST http://localhost:3000/api/mcp/oauth/register \
 |------|-------|-------------|--------|
 | `shopping_list_create` | `shopping:write` | Create a shopping list | `name?`, `recipeSlugs`, `servingsMultipliers?`, `userEmail?` |
 | `shopping_list_get` | `shopping:read` | Fetch a shopping list | `id` |
+
+### Weekly Menus
+
+Weekly menus schedule recipes onto days of the week and finalize into a shopping
+list. Weeks use ISO labels (`2026-W35`); omit the label for the current week. A
+menu moves through `building` → `survey-sent` → `locked-in`. The acting owner
+defaults to `OWNER_EMAIL`.
+
+| Tool | Scope | Description | Inputs |
+|------|-------|-------------|--------|
+| `menu_get_week` | `menu:read` | Get or create a week's menu | `weekLabel?`, `userEmail?` |
+| `menu_add_dinner` | `menu:write` | Add a cookbook recipe to a day | `recipeSlug`, `day`, `mealSlot?`, `weekLabel?`, `userEmail?` |
+| `menu_remove_assignment` | `menu:write` | Remove an assignment | `menuId`, `assignmentId` |
+| `menu_send_survey` | `menu:write` | Open family voting (before finalizing) | `menuId` |
+| `menu_finalize` | `menu:write` | Lock in the menu and build its shopping list | `menuId`, `userEmail?` |
 
 ## Usage with Claude Code
 

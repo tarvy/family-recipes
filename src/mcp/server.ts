@@ -30,6 +30,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { logger } from '@/lib/logger';
+import { registerMenuTools } from '@/mcp/tools/menu';
 import { registerRecipeTools } from '@/mcp/tools/recipes';
 import { registerShoppingTools } from '@/mcp/tools/shopping';
 
@@ -42,7 +43,9 @@ const MCP_SERVER_VERSION = process.env.npm_package_version ?? '0.0.0';
  */
 const MCP_INSTRUCTIONS = `# Family Recipes MCP Server
 
-This server provides access to a family recipe collection stored in Cooklang format.
+This server provides access to a family recipe collection and its weekly
+meal-plan menus. Recipes are stored in a database; Cooklang is the markup
+language used when reading and writing recipe content.
 
 ## Cooklang Format
 
@@ -90,14 +93,14 @@ and cook for ~{5%minutes} per side until golden brown.
 
 ## Recipe Organization
 
-Recipes are organized by category in folders:
-- \`breakfast/\` - Breakfast items
-- \`cocktails/\` - Cocktails and drinks
-- \`desserts/\` - Desserts
-- \`entrees/\` - Main dishes
-- \`salads/\` - Salads
-- \`sides/\` - Side dishes
-- \`soups/\` - Soups and stews
+Each recipe has a category:
+- \`breakfast\` - Breakfast items
+- \`cocktails\` - Cocktails and drinks
+- \`desserts\` - Desserts
+- \`entrees\` - Main dishes
+- \`salads\` - Salads
+- \`sides\` - Side dishes
+- \`soups\` - Soups and stews
 
 ## Working with Recipes
 
@@ -106,6 +109,19 @@ Recipes are organized by category in folders:
 - Use \`recipe_search\` to search by title, description, or tags
 - Use \`ingredient_lookup\` to find recipes containing a specific ingredient
 - Use \`shopping_list_create\` to generate a shopping list from recipe slugs
+- Use \`shopping_list_get\` to fetch a shopping list by id
+
+## Meal Planning
+
+Weekly menus schedule recipes onto days of the week and can be finalized into a
+shopping list. Weeks use ISO labels like \`2026-W35\`; omit the label for the
+current week. A menu moves through \`building\` → \`survey-sent\` → \`locked-in\`.
+
+- Use \`menu_get_week\` to view (or create) a week's menu and see assignment ids
+- Use \`menu_add_dinner\` to add a recipe by slug to a day (defaults to dinner)
+- Use \`menu_remove_assignment\` to remove a recipe by its assignmentId
+- Use \`menu_send_survey\` to open family voting (required before finalizing)
+- Use \`menu_finalize\` to lock in the plan and generate its shopping list
 
 ## Tips
 
@@ -134,6 +150,7 @@ export function createMcpServer(): McpServer {
 
   registerRecipeTools(server);
   registerShoppingTools(server);
+  registerMenuTools(server);
 
   logger.mcp.info('MCP server initialized', {
     name: MCP_SERVER_NAME,
