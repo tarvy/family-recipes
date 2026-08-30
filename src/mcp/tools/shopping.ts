@@ -3,11 +3,8 @@
  */
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Types } from 'mongoose';
 import * as z from 'zod';
 import { connectDB } from '@/db/connection';
-import { User } from '@/db/models';
-import { isValidEmail, normalizeEmail } from '@/lib/auth/allowlist';
 import { logger } from '@/lib/logger';
 import {
   createShoppingList,
@@ -15,9 +12,8 @@ import {
   type ShoppingListResult,
 } from '@/lib/shopping/service';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
-import { buildToolResult } from '@/mcp/tools/utils';
+import { buildToolResult, resolveMcpUser } from '@/mcp/tools/utils';
 
-const USER_COLLECTION = 'users';
 const SHOPPING_COLLECTION = 'shopping_lists';
 const SERVINGS_MULTIPLIER_MIN = 0;
 
@@ -45,38 +41,6 @@ const shoppingListSchema = z.object({
   itemCount: z.number(),
   checkedItemIds: z.array(z.string()),
 });
-
-interface ResolvedUser {
-  id: Types.ObjectId;
-  email: string;
-}
-
-async function resolveUser(userEmail?: string): Promise<ResolvedUser> {
-  const email = userEmail?.trim() || process.env.OWNER_EMAIL?.trim();
-  if (!email) {
-    throw new Error('User email is required');
-  }
-
-  if (!isValidEmail(email)) {
-    throw new Error('User email is invalid');
-  }
-
-  await connectDB();
-
-  const normalized = normalizeEmail(email);
-  const user = await traceDbQuery('findOne', USER_COLLECTION, async () => {
-    return User.findOne({ email: normalized });
-  });
-
-  if (!user) {
-    throw new Error('User not found for MCP request');
-  }
-
-  return {
-    id: user._id as Types.ObjectId,
-    email: user.email,
-  };
-}
 
 function toShoppingListOutput(result: ShoppingListResult) {
   return {
@@ -106,7 +70,7 @@ export function registerShoppingTools(server: McpServer): void {
       return withTrace('mcp.tool.shopping_list_create', async (span) => {
         span.setAttribute('recipe_count', recipeSlugs.length);
 
-        const user = await resolveUser(userEmail);
+        const user = await resolveMcpUser(userEmail);
         span.setAttribute('user_email', user.email);
 
         const result = await traceDbQuery('create', SHOPPING_COLLECTION, async () => {

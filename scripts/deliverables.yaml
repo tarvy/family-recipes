@@ -811,3 +811,15 @@ PR-060:
       path: src/lib/oauth/__tests__/types.test.ts
     - type: file
       path: vitest.config.ts
+
+# =============================================================================
+# PHASE 33: Weekly-Menu MCP Tools (PR-061)
+# =============================================================================
+
+PR-061:
+  name: "Weekly-Menu MCP Tools"
+  checks:
+    - type: file
+      path: src/mcp/tools/menu.ts
+    - type: file
+      path: src/mcp/tools/__tests__/menu.test.ts
