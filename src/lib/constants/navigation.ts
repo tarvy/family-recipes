@@ -17,7 +17,7 @@ export const SCROLL_THRESHOLD_PX = 10;
 export const HEADER_FOLD_THRESHOLD_PX = 100;
 
 /** Breakpoint for mobile navigation (hamburger menu) */
-export const MOBILE_NAV_BREAKPOINT_PX = 768;
+export { MOBILE_NAV_BREAKPOINT_PX } from '@/lib/design-system';
 
 /** Z-index base values */
 const Z_INDEX_HEADER = 40;

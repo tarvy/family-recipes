@@ -9,6 +9,7 @@ import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { RecipeEditorForm } from '@/components/recipes/recipe-editor-form';
+import { PageShell } from '@/components/ui';
 import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import { getRawCooklangContent as getFromLoader } from '@/lib/recipes/loader';
@@ -66,23 +67,21 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
 
   return (
     <MainLayout isFamily={isFamily}>
-      <div className="px-6 py-6">
-        <div className="mx-auto w-full max-w-6xl">
-          <header className="mb-6">
-            <h1 className="text-2xl font-semibold text-foreground">Edit Recipe</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Edit your recipe using Cooklang syntax. Changes are saved as raw Cooklang.
-            </p>
-          </header>
+      <PageShell width="browse">
+        <header className="mb-6">
+          <h1 className="text-2xl font-semibold text-foreground">Edit Recipe</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Edit your recipe using Cooklang syntax. Changes are saved as raw Cooklang.
+          </p>
+        </header>
 
-          <RecipeEditorForm
-            mode="edit"
-            slug={slug}
-            initialContent={recipe.content}
-            initialCategory={recipe.category}
-          />
-        </div>
-      </div>
+        <RecipeEditorForm
+          mode="edit"
+          slug={slug}
+          initialContent={recipe.content}
+          initialCategory={recipe.category}
+        />
+      </PageShell>
     </MainLayout>
   );
 }

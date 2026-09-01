@@ -13,5 +13,6 @@ export {
   DRAWER_WIDTH_PX,
   HEADER_CONTENT_HEIGHT_PX,
   MOBILE_NAV_BREAKPOINT_PX,
+  motionDurationMs,
   TOUCH_TARGET_MIN_PX,
 } from './tokens';

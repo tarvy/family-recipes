@@ -6,7 +6,7 @@ import { RecipeActions } from '@/components/recipes/recipe-actions';
 import { RecipeBackButton } from '@/components/recipes/recipe-back-button';
 import { RecipeDetailClient } from '@/components/recipes/recipe-detail-client';
 import { RecipeInteractions } from '@/components/recipes/recipe-interactions';
-import { Card } from '@/components/ui';
+import { Card, PageShell } from '@/components/ui';
 import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import { MINUTES_PER_HOUR } from '@/lib/constants/time';
@@ -67,8 +67,8 @@ export default async function RecipeDetailPage({ params, searchParams }: RecipeD
 
   return (
     <MainLayout isFamily={isFamily}>
-      <div className="px-6 py-6">
-        <Card className="relative mx-auto w-full max-w-3xl md:max-w-4xl lg:max-w-5xl p-6 sm:p-8">
+      <PageShell width="detail">
+        <Card className="relative w-full p-6 sm:p-8">
           <RecipeDetailHeader
             slug={slug}
             recipe={recipe}
@@ -123,7 +123,7 @@ export default async function RecipeDetailPage({ params, searchParams }: RecipeD
             </footer>
           )}
         </Card>
-      </div>
+      </PageShell>
     </MainLayout>
   );
 }

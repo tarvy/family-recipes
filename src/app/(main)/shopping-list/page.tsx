@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { MainLayout } from '@/components/layout';
+import { PageShell } from '@/components/ui';
 import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import { getAllRecipes } from '@/lib/recipes/loader';
@@ -56,20 +57,18 @@ export default async function ShoppingListPage() {
 
   return (
     <MainLayout isFamily={isFamily}>
-      <div className="px-6 py-6">
-        <div className="mx-auto w-full max-w-3xl">
-          <div className="mb-8">
-            <h1 className="text-3xl font-semibold text-foreground">Shopping List</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Select recipes to create a shopping list with aggregated ingredients
-            </p>
-          </div>
-
-          <Suspense fallback={<ShoppingListSkeleton />}>
-            <ShoppingListContent />
-          </Suspense>
+      <PageShell width="reading">
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-foreground">Shopping List</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Select recipes to create a shopping list with aggregated ingredients
+          </p>
         </div>
-      </div>
+
+        <Suspense fallback={<ShoppingListSkeleton />}>
+          <ShoppingListContent />
+        </Suspense>
+      </PageShell>
     </MainLayout>
   );
 }

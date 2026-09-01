@@ -1,8 +1,17 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
+/**
+ * Shared Button primitive.
+ *
+ * Default width is content-sized (`w-fit`) so flex parents cannot stretch
+ * actions into full-bleed bars. Pass `fullWidth` only for intentional primary
+ * submits in narrow stacks (auth, empty states). See DESIGN.md
+ * "Content-Width Action Rule".
+ */
+
 const base =
-  'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+  'inline-flex shrink-0 items-center justify-center rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
 
 const variants = {
   primary: 'bg-primary text-primary-foreground shadow hover:bg-pink-dark',
@@ -14,21 +23,30 @@ const variants = {
 
 const sizes = {
   default: 'min-h-touch px-4 py-2',
-  sm: 'min-h-10 px-3 py-1.5 text-xs',
+  /** Still meets 44px touch floor — denser padding only */
+  sm: 'min-h-touch px-3 py-1.5 text-xs',
   icon: 'size-touch p-0',
 } as const;
 
 export interface ButtonProps extends React.ComponentProps<'button'> {
   variant?: keyof typeof variants;
   size?: keyof typeof sizes;
+  /** Stretch to container width — only for primary CTAs in narrow stacks */
+  fullWidth?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'default', ...props }, ref) => {
+  ({ className, variant = 'primary', size = 'default', fullWidth = false, ...props }, ref) => {
     return (
       <button
         ref={ref}
-        className={cn(base, variants[variant], sizes[size], className)}
+        className={cn(
+          base,
+          fullWidth ? 'w-full' : 'w-fit',
+          variants[variant],
+          sizes[size],
+          className,
+        )}
         {...props}
       />
     );

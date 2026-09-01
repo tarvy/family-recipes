@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { PasskeyManager } from '@/components/auth/passkey-manager';
 import { MainLayout } from '@/components/layout';
+import { PageShell } from '@/components/ui';
 import { connectDB } from '@/db/connection';
 import { Passkey } from '@/db/models';
 import { getSessionFromCookies } from '@/lib/auth';
@@ -55,18 +56,16 @@ export default async function SettingsPage() {
 
   return (
     <MainLayout isFamily={isFamily}>
-      <div className="px-6 py-6">
-        <div className="mx-auto w-full max-w-3xl">
-          <div className="mb-8">
-            <h1 className="text-3xl font-semibold text-foreground">Settings</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Manage your account security and authentication options.
-            </p>
-          </div>
-
-          <PasskeyManager initialPasskeys={passkeys} />
+      <PageShell width="reading">
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-foreground">Settings</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Manage your account security and authentication options.
+          </p>
         </div>
-      </div>
+
+        <PasskeyManager initialPasskeys={passkeys} />
+      </PageShell>
     </MainLayout>
   );
 }

@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { MainLayout } from '@/components/layout';
 import { HomeWidget } from '@/components/menu/home-widget';
 import { RecipeBrowser } from '@/components/recipes/recipe-browser';
+import { PageShell } from '@/components/ui';
 import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import { findByWeek } from '@/lib/menu/repository';
@@ -116,31 +117,29 @@ export default async function RecipesPage() {
 
   return (
     <MainLayout isFamily={isFamily}>
-      <div className="px-6 py-6">
-        <div className="mx-auto w-full max-w-6xl">
-          {menu?.status === 'locked-in' ? (
-            <HomeWidget assignments={widgetAssignments} todayIndex={todayIndex} />
-          ) : null}
+      <PageShell width="browse">
+        {menu?.status === 'locked-in' ? (
+          <HomeWidget assignments={widgetAssignments} todayIndex={todayIndex} />
+        ) : null}
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-semibold text-foreground">Recipes</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Browse {recipes.length} family recipes
-            </p>
-          </div>
-
-          <Suspense fallback={<RecipeBrowserSkeleton />}>
-            <RecipeBrowser
-              recipes={recipes}
-              categories={categories}
-              canDelete={canDelete}
-              isFamily={isFamily}
-              sections={sections}
-              needsRandomCookie={needsRandomCookie}
-            />
-          </Suspense>
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-foreground">Recipes</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Browse {recipes.length} family recipes
+          </p>
         </div>
-      </div>
+
+        <Suspense fallback={<RecipeBrowserSkeleton />}>
+          <RecipeBrowser
+            recipes={recipes}
+            categories={categories}
+            canDelete={canDelete}
+            isFamily={isFamily}
+            sections={sections}
+            needsRandomCookie={needsRandomCookie}
+          />
+        </Suspense>
+      </PageShell>
     </MainLayout>
   );
 }

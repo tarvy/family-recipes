@@ -9,6 +9,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { RecipeEditorForm } from '@/components/recipes/recipe-editor-form';
+import { PageShell } from '@/components/ui';
 import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
 
@@ -29,19 +30,17 @@ export default async function CreateRecipePage() {
 
   return (
     <MainLayout isFamily={isFamily}>
-      <div className="px-6 py-6">
-        <div className="mx-auto w-full max-w-6xl">
-          <header className="mb-6">
-            <h1 className="text-2xl font-semibold text-foreground">Create New Recipe</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Write your recipe using Cooklang syntax. Use @ for ingredients, # for cookware, ~ for
-              timers.
-            </p>
-          </header>
+      <PageShell width="browse">
+        <header className="mb-6">
+          <h1 className="text-2xl font-semibold text-foreground">Create New Recipe</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Write your recipe using Cooklang syntax. Use @ for ingredients, # for cookware, ~ for
+            timers.
+          </p>
+        </header>
 
-          <RecipeEditorForm mode="create" />
-        </div>
-      </div>
+        <RecipeEditorForm mode="create" />
+      </PageShell>
     </MainLayout>
   );
 }

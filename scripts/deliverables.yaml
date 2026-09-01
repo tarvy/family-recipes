@@ -823,3 +823,29 @@ PR-061:
       path: src/mcp/tools/menu.ts
     - type: file
       path: src/mcp/tools/__tests__/menu.test.ts
+
+# =============================================================================
+# PHASE 34: Design System Index + Architecture Harden (PR-062)
+# =============================================================================
+
+PR-062:
+  name: "Design System Index + Architecture Harden"
+  checks:
+    - type: file
+      path: DESIGN.md
+    - type: file
+      path: .impeccable/design.json
+    - type: file
+      path: docs/DESIGN_SYSTEM.md
+    - type: file
+      path: src/lib/design-system/tokens.ts
+    - type: file
+      path: src/components/ui/alert.tsx
+    - type: file
+      path: src/components/ui/form-field.tsx
+    - type: file
+      path: src/components/ui/button.tsx
+    - type: file
+      path: src/components/menu/status-badge.tsx
+    - type: file
+      path: work/PR-062/requirements.md

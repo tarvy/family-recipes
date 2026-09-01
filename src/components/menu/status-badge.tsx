@@ -1,21 +1,26 @@
 'use client';
 
-/** Status indicator pill for weekly menu state. */
+/** Status indicator pill for weekly menu state — composes shared Badge. */
+
+import { Badge, type BadgeProps } from '@/components/ui';
 
 type MenuStatus = 'building' | 'survey-sent' | 'locked-in';
 
-const STATUS_CONFIG: Record<MenuStatus, { label: string; className: string }> = {
+const STATUS_CONFIG: Record<
+  MenuStatus,
+  { label: string; variant: NonNullable<BadgeProps['variant']> }
+> = {
   building: {
     label: 'Building',
-    className: 'bg-yellow-light text-foreground',
+    variant: 'accent',
   },
   'survey-sent': {
     label: 'Survey Sent',
-    className: 'bg-lavender-light text-foreground',
+    variant: 'muted',
   },
   'locked-in': {
     label: 'Locked In',
-    className: 'bg-pink text-foreground',
+    variant: 'default',
   },
 };
 
@@ -24,13 +29,6 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const { label, className } = STATUS_CONFIG[status];
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${className}`}
-    >
-      {label}
-    </span>
-  );
+  const { label, variant } = STATUS_CONFIG[status];
+  return <Badge variant={variant}>{label}</Badge>;
 }

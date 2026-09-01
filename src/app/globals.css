@@ -76,6 +76,14 @@
   --color-success-foreground: #ffffff;
   --color-success-soft: #e8f2eb;
 
+  --color-warning: #c4a35a;
+  --color-warning-foreground: #4a3728;
+  --color-warning-soft: #f7f0dd;
+
+  --color-info: #6b8f9e;
+  --color-info-foreground: #4a3728;
+  --color-info-soft: #e8f1f4;
+
   --color-border: #e8e4dc;
   --color-input: #e8e4dc;
   --color-ring: var(--color-lavender);

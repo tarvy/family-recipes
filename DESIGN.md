@@ -27,6 +27,10 @@ colors:
   success: "#5B8F6B"
   success-foreground: "#FFFFFF"
   success-soft: "#E8F2EB"
+  warning: "#C4A35A"
+  warning-soft: "#F7F0DD"
+  info: "#6B8F9E"
+  info-soft: "#E8F1F4"
   border: "#E8E4DC"
   ring: "#AF93B3"
 typography:
@@ -35,31 +39,26 @@ typography:
     fontSize: "1.875rem"
     fontWeight: 600
     lineHeight: 1.25
-    letterSpacing: "normal"
   headline:
     fontFamily: "Nunito, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1.25rem"
     fontWeight: 600
     lineHeight: 1.3
-    letterSpacing: "normal"
   title:
     fontFamily: "Nunito, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1.125rem"
     fontWeight: 600
     lineHeight: 1.35
-    letterSpacing: "normal"
   body:
     fontFamily: "Nunito, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.5
-    letterSpacing: "normal"
   label:
     fontFamily: "Nunito, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: 1.4
-    letterSpacing: "normal"
 rounded:
   sm: "0.5rem"
   md: "0.75rem"
@@ -70,9 +69,8 @@ spacing:
   page-y: "1.5rem"
   section: "1.5rem"
   stack: "1rem"
-  control-y: "0.5rem"
-  control-x: "1rem"
   touch: "2.75rem"
+  header: "3.5rem"
 components:
   button-primary:
     backgroundColor: "{colors.primary}"
@@ -111,7 +109,7 @@ components:
     backgroundColor: "{colors.card}"
     textColor: "{colors.foreground}"
     rounded: "{rounded.md}"
-    padding: "1rem"
+    padding: "0"
   card-section:
     backgroundColor: "{colors.card}"
     textColor: "{colors.foreground}"
@@ -133,6 +131,21 @@ components:
     textColor: "#FFFFFF"
     rounded: "{rounded.full}"
     padding: "0.25rem 0.75rem"
+  badge-success:
+    backgroundColor: "{colors.success-soft}"
+    textColor: "{colors.success}"
+    rounded: "{rounded.full}"
+    padding: "0.25rem 0.75rem"
+  alert-destructive:
+    backgroundColor: "{colors.destructive}"
+    textColor: "{colors.destructive}"
+    rounded: "{rounded.md}"
+    padding: "0.75rem"
+  alert-success:
+    backgroundColor: "{colors.success-soft}"
+    textColor: "{colors.success}"
+    rounded: "{rounded.md}"
+    padding: "0.75rem"
 ---
 
 # Design System: Family Recipes
@@ -141,136 +154,134 @@ components:
 
 **Creative North Star: "Grandma's Cozy Kitchen Table"**
 
-Family Recipes looks and feels like a warm kitchen table covered in a butter-gingham cloth — inviting, rounded, and soft-spoken. Soft pink leads brand and chrome; lavender marks selection and progress; yellow accents warmth without shouting. Cocoa brown carries all reading text. The system is deliberately domestic rather than “foodie lifestyle” or enterprise SaaS.
+Family Recipes is a private household cooking PWA that should feel like a warm kitchen table under a butter-gingham cloth — inviting, rounded, and soft-spoken. Soft pink leads brand and chrome; lavender marks selection; yellow is garnish; cocoa carries all reading text. The system is domestic, not SaaS and not food-blog lifestyle.
 
-Density stays comfortable for thumbs: generous page padding, soft shadows tinted with cocoa, and pill-friendly radii. The gingham page background is atmosphere, not decoration piled on every card. Cards are clean white islands so recipes and lists stay readable under kitchen light.
+This file was refreshed via `/impeccable document` (scan mode) against `src/app/globals.css` and `src/components/ui/*` on 2026-09-01. Tokens in frontmatter are normative; CSS `@theme` is the runtime source of truth.
 
 **Key Characteristics:**
-- Gingham tablecloth page field with white card surfaces
+- Gingham tablecloth page field with white card islands
 - Soft pink header chrome and primary CTAs
 - Nunito everywhere — rounded, friendly, never clinical
 - Cocoa-tinted shadows and borders (never cold gray UI chrome)
-- iPhone-first layout with safe areas and 44px touch targets
-- Three-layer surface stack: page → card → nested inset
+- iPhone-first: 44px touch targets + safe-area insets
+- Three-layer surfaces: page → card → nested inset
+- Content-width actions by default; full-bleed only when opted in
 
 ## Colors
 
 A warm domestic palette: pastry pink, butter yellow, soft lavender, gingham butter, and cocoa.
 
 ### Primary
-- **Pastry Pink** (`#FED4D9`): Brand and primary actions — header bar, primary buttons, theme color. Use for “the family product” moments, not for every chip on screen.
+- **Pastry Pink** (`#FED4D9`): Brand chrome, primary buttons, theme color.
 
 ### Secondary
-- **Hearth Lavender** (`#AF93B3`): Selection, active filters, progress, focus ring. The quiet “this is selected” signal.
+- **Hearth Lavender** (`#AF93B3`): Selection, active filters, focus ring, progress.
 
 ### Tertiary
-- **Butter Yellow** (`#EFEBBA`): Accent warmth — highlights, category cues, update banners. Never the primary CTA fill.
+- **Butter Yellow** (`#EFEBBA`): Accent warmth — highlights and banners, never the primary CTA fill.
 
 ### Neutral
-- **Gingham Butter** (`#FBF6E3`): Page background base under the tablecloth pattern.
-- **Fresh Cream** (`#FFFEF9`): Light highlight surfaces.
-- **Cocoa** (`#4A3728`): All primary text and icon strokes.
-- **Mushroom** (`#7A6B5C`): Secondary/muted text.
-- **Linen Border** (`#E8E4DC`): Borders and input strokes.
+- **Gingham Butter** (`#FBF6E3`): Page background under the tablecloth pattern.
 - **Card White** (`#FFFFFF`) / **Nested Linen** (`#F9F8F4`): Content surfaces.
+- **Cocoa** (`#4A3728`): Primary text.
+- **Mushroom** (`#7A6B5C`): Secondary text.
+- **Linen Border** (`#E8E4DC`): Borders and inputs.
 
 ### Semantic
-- **Berry Soft** (`#E57373`): Destructive / delete.
-- **Herb Success** (`#5B8F6B`) + soft wash (`#E8F2EB`): Positive completion (timers done, OAuth connected, upload OK). Replaces ad-hoc Tailwind greens.
+- **Berry Soft** (`#E57373`): Destructive.
+- **Herb Success** (`#5B8F6B` + soft `#E8F2EB`): Positive completion.
+- **Honey Warning** (`#C4A35A` + soft `#F7F0DD`): Caution / non-blocking alerts.
+- **Sky Info** (`#6B8F9E` + soft `#E8F1F4`): Neutral informational alerts.
 
-**The One Accent Voice Rule.** On any given screen, pink owns primary action; lavender owns selection state; yellow is garnish. Do not invent a fourth accent for “variety.”
+**The One Accent Voice Rule.** Pink owns primary action; lavender owns selection; yellow is garnish. Do not invent a fourth brand accent for variety.
 
 **The No Cold Gray Rule.** Prefer cocoa/mushroom/linen tokens over Tailwind `gray-*` or blue SaaS links in product UI.
 
 ## Typography
 
-**Display Font:** Nunito (with ui-sans-serif / system-ui fallback)
-**Body Font:** Nunito
-**Label/Mono Font:** Nunito for UI; monospace only for Cooklang syntax help snippets
+**Display / Body Font:** Nunito (ui-sans-serif / system-ui fallback)
 
-**Character:** Softly rounded and neighborly — like handwritten recipe cards transcribed into a clean app, not a fashion magazine or a dashboard.
+**Character:** Softly rounded and neighborly — recipe cards transcribed into a clean app.
 
 ### Hierarchy
-- **Display** (600, `text-3xl` / 1.875rem, tight): Page titles (“Recipes”, “Shopping List”).
-- **Headline** (600, `text-xl` / 1.25rem): Section headers within a page.
-- **Title** (600, `text-lg` / 1.125rem): Card titles, recipe names in dense lists.
-- **Body** (400, `text-base` / 1rem, 1.5): Instructions, descriptions; keep measure comfortable on phone (~35–65ch when possible).
-- **Label** (500, `text-sm` / 0.875rem): Form labels, meta chips, helper text. `text-xs` for dense badges only.
+- **Display** (600, `text-3xl` / 1.875rem): Page titles.
+- **Headline** (600, `text-xl` / 1.25rem): Section headers.
+- **Title** (600, `text-lg` / 1.125rem): Card titles.
+- **Body** (400, `text-base` / 1rem, 1.5): Instructions and descriptions.
+- **Label** (500, `text-sm` / 0.875rem): Form labels, meta, helpers.
 
-**The Single Family Rule.** Do not introduce Inter, Roboto, or a second display face. Nunito is the product voice.
+**The Single Family Rule.** Do not introduce Inter, Roboto, or a second display face.
 
 ## Layout
 
-Mobile-first Operate mode. Page chrome uses `px-6 py-6` rhythm with section stacking at `space-y-6`. Content max widths: browse/menu `max-w-6xl`, detail/settings ~`max-w-3xl`–`max-w-5xl`, auth `max-w-md`. Header content height is 56px plus `safe-area-inset-top`. Mobile navigation is a left drawer below `md` (768px); desktop shows inline header links. There is no bottom tab bar.
+Mobile-first Operate mode. Page chrome uses `PageShell` (`px-6 py-6` + max-width presets: auth `max-w-md`, reading `max-w-3xl`, detail `max-w-5xl`, browse `max-w-6xl`). Header content height is 56px plus `safe-area-inset-top`. Mobile navigation is a left drawer below `md` (768px); desktop shows inline header links. No bottom tab bar.
 
-**The Thumb-First Rule.** Primary actions and list interactions must work in a one-handed iPhone portrait grip. Prefer full-width taps over tiny corner icons. Fixed bottom chrome must clear `safe-area-inset-bottom`.
+**The Thumb-First Rule.** Primary actions must work in a one-handed iPhone portrait grip.
 
-**The Safe Stage Rule.** With `viewport-fit=cover`, every fixed top/bottom surface pads Apple safe-area insets. Never place controls under the notch, Dynamic Island, or home indicator.
+**The Safe Stage Rule.** Fixed top/bottom chrome pads Apple safe-area insets (`pt-safe` / `pb-safe`).
+
+**The Content-Width Action Rule.** Buttons size to their label by default (`w-fit`). Full-bleed (`fullWidth`) is reserved for primary submits in narrow stacks (auth, empty states). Never stretch destructive or secondary actions across a wide settings/list card.
 
 ## Elevation & Depth
 
-Hybrid: flat gingham field + softly lifted white cards. Shadows are cocoa-tinted and gentle — atmosphere, not Material “elevation theater.”
+Hybrid: flat gingham field + softly lifted white cards. Shadows are cocoa-tinted and gentle.
 
 ### Shadow Vocabulary
-- **Resting card** (`0 1px 2px rgba(74, 55, 40, 0.05)`): Default cards.
-- **Raised** (`0 2px 8px rgba(74, 55, 40, 0.08)`): Primary buttons, modest lift.
-- **Overlay** (`0 4px 12px` / `0 8px 24px` cocoa alpha): Drawers, menus, cooking panel.
+- **Resting** (`0 1px 2px rgba(74,55,40,0.05)`): Default cards.
+- **Raised** (`0 2px 8px rgba(74,55,40,0.08)`): Primary buttons.
+- **Overlay** (`0 4px 12px` / `0 8px 24px`): Drawers, menus, cooking panel.
 
-**The Soft Lift Rule.** Prefer `ring-1 ring-border` + `shadow-sm` over heavy multi-layer drop shadows or glow.
+**The Soft Lift Rule.** Prefer `ring-1 ring-border` + `shadow-sm` over heavy multi-layer shadows.
 
 ## Shapes
 
-Friendly geometry: default control radius `0.75rem` (`rounded-lg`), larger section cards `1rem` (`rounded-xl`), pills `9999px`. Dashed pink decorative borders are reserved for rare ornamental moments — not default form chrome.
+Friendly geometry: default control radius `0.75rem` (`rounded-lg`), section cards `1rem` (`rounded-xl`), pills `9999px`.
 
-**The Soft Corner Rule.** Sharp 0-radius UI and hairline “broadsheet” layouts are out of character.
+**The Soft Corner Rule.** Sharp 0-radius UI is out of character.
 
 ## Components
 
-### Buttons
-- **Shape:** Soft rectangle (`rounded-lg` / 0.75rem), minimum height 44px for default and icon sizes.
-- **Primary:** Pastry pink fill, cocoa text, soft shadow.
-- **Secondary:** Lavender fill, white text.
-- **Outline / Ghost:** Transparent with linen border or pink-light hover wash.
-- **Destructive:** Berry soft fill, white text.
-- **Focus:** Lavender ring (`:focus-visible`).
+### Buttons (`src/components/ui/button.tsx`)
+- Min height 44px (`min-h-touch`) for default and icon; `sm` is also touch-height for iPhone safety.
+- Width: content-sized unless `fullWidth`.
+- Variants: primary, secondary, destructive, ghost, outline.
 
-### Chips / Badges
-- **Style:** Pill radius; pink-light default; lavender fill when active/selected.
-- **Use:** Category filters, meta tags, status — not as a substitute for primary buttons.
+### Cards
+- `default`: white + soft shadow + ring; **no default padding** (callers add `p-4`/`p-6`).
+- `section`: `rounded-xl` + `p-6` for settings-style blocks.
 
-### Cards / Containers
-- **Corner Style:** `rounded-lg` default; `rounded-xl` for section cards.
-- **Background:** White card on gingham; nested linen for inset groups (ingredients, form blocks).
-- **Shadow Strategy:** `shadow-sm` + `ring-1 ring-border`.
-- **Internal Padding:** Comfortable (`p-4`–`p-6`); avoid cramped kitchen-unreadable stacks.
+### Inputs / FormField
+- Inputs: white fill, linen border, 44px min height, lavender focus.
+- Use `FormField` for label + control + error stacking.
 
-### Inputs / Fields
-- **Style:** White fill, linen border, `rounded-lg`, 44px min height.
-- **Focus:** Lavender border + ring.
-- **Error / Disabled:** Destructive text/border for errors; reduced opacity when disabled.
+### Badge
+- Variants: default, active, accent, muted, success, destructive.
+- Domain wrappers (e.g. menu `StatusBadge`) must compose `Badge`, not fork pill CSS.
+
+### Alert
+- Soft tinted banners for destructive / success / warning / info — replace ad-hoc `bg-destructive/10` copies.
 
 ### Navigation
-- Fixed pastry-pink header with text wordmark “Family Recipes.”
-- Mobile: hamburger → left drawer (280px) + edge-swipe open.
-- Desktop (`md+`): inline links.
-- Header may collapse on scroll down; expand on scroll up — never cover safe areas incorrectly.
+- Fixed pastry-pink header with wordmark; drawer on small screens; safe-area aware.
 
-### Signature: Recipe surfaces
-Recipe cards use category-tinted headers and letter placeholders; detail view is a white sheet with nested ingredient panels. Cooking session uses a fixed bottom panel that must respect the home indicator.
+### PageShell / EmptyState
+- Required chrome for authenticated content pages.
+- Empty lists use `EmptyState`, not ad-hoc gray text blocks.
 
 ## Do's and Don'ts
 
-### Do:
-- **Do** compose new screens from `src/components/ui` primitives and `@theme` tokens in `globals.css`.
-- **Do** keep 44×44 minimum touch targets for tappable controls.
-- **Do** pad fixed chrome with `env(safe-area-inset-*)` on iPhone.
-- **Do** use the page → card → nested surface hierarchy.
-- **Do** use Herb Success tokens for positive completion states.
+### Do
+- Compose from `@/components/ui` and `@theme` tokens in `globals.css`.
+- Keep 44×44 minimum touch targets for tappable controls.
+- Pad fixed chrome with `env(safe-area-inset-*)`.
+- Use page → card → nested surface hierarchy.
+- Use Herb Success / Honey Warning / Sky Info tokens for status.
 
-### Don't:
-- **Don't** introduce purple-on-white SaaS gradients, Inter/Roboto defaults, or dark-mode-first skins.
-- **Don't** use Tailwind `gray-*` or default `green-*` when semantic tokens exist.
-- **Don't** nest cards inside cards for decoration.
-- **Don't** ship hover-only affordances as the only way to act.
-- **Don't** place controls under the iOS home indicator or status bar.
-- **Don't** treat scalloped/lace ornaments as required — they are optional future garnish, not the system.
+### Don't
+- Introduce Inter/Roboto, purple SaaS gradients, or dark-mode-first skins.
+- Use Tailwind `gray-*` or default `green-*` when semantic tokens exist.
+- Nest cards inside cards for decoration.
+- Ship hover-only affordances as the only way to act.
+- Place controls under the notch or home indicator.
+- Stretch destructive/secondary actions across wide cards.
+- Treat scalloped/lace ornaments as required.

@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { MainLayout } from '@/components/layout';
 import { PlannerPage, type SerializedMenu } from '@/components/menu/planner-page';
+import { PageShell } from '@/components/ui';
 import { isFamilyRole } from '@/lib/auth/authorization';
 import { getSessionFromCookies } from '@/lib/auth/session';
 import { getOrCreateMenuForWeek } from '@/lib/menu/service';
@@ -27,11 +28,9 @@ export default async function MenuPage() {
 
   return (
     <MainLayout isFamily={true}>
-      <div className="px-6 py-6">
-        <div className="mx-auto w-full max-w-6xl">
-          <PlannerPage initialMenu={serializedMenu} recipes={recipePreviews} userId={user.id} />
-        </div>
-      </div>
+      <PageShell width="browse">
+        <PlannerPage initialMenu={serializedMenu} recipes={recipePreviews} userId={user.id} />
+      </PageShell>
     </MainLayout>
   );
 }

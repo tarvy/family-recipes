@@ -18,7 +18,7 @@ export const DRAWER_WIDTH_PX = 280;
 /** Breakpoint where inline header nav replaces the hamburger drawer */
 export const MOBILE_NAV_BREAKPOINT_PX = 768;
 
-/** Canonical brand hex values (keep in sync with globals.css) */
+/** Canonical brand + semantic hex values (keep in sync with globals.css) */
 export const brandColors = {
   pink: '#FED4D9',
   pinkDark: '#F5B8C0',
@@ -32,17 +32,29 @@ export const brandColors = {
   gingham: '#FBF6E3',
   cream: '#FFFEF9',
   cocoa: '#4A3728',
-  success: '#5B8F6B',
-  successSoft: '#E8F2EB',
-  destructive: '#E57373',
-  border: '#E8E4DC',
+  background: '#FBF6E3',
+  foreground: '#4A3728',
+  card: '#FFFFFF',
+  cardNested: '#F9F8F4',
+  primary: '#FED4D9',
+  secondary: '#AF93B3',
+  accent: '#EFEBBA',
   muted: '#F5F3EE',
   mutedForeground: '#7A6B5C',
+  success: '#5B8F6B',
+  successSoft: '#E8F2EB',
+  warning: '#C4A35A',
+  warningSoft: '#F7F0DD',
+  info: '#6B8F9E',
+  infoSoft: '#E8F1F4',
+  destructive: '#E57373',
+  border: '#E8E4DC',
+  ring: '#AF93B3',
 } as const;
 
 export type BrandColor = keyof typeof brandColors;
 
-/** Page content max-width presets used across routes */
+/** Page content max-width presets used by PageShell */
 export const contentMaxWidth = {
   auth: 'max-w-md',
   reading: 'max-w-3xl',
@@ -51,3 +63,10 @@ export const contentMaxWidth = {
 } as const;
 
 export type ContentMaxWidth = keyof typeof contentMaxWidth;
+
+/** Motion durations (ms) matching --duration-* tokens */
+export const motionDurationMs = {
+  fast: 150,
+  normal: 300,
+  slow: 500,
+} as const;
