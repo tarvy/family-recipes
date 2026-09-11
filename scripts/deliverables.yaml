@@ -849,3 +849,13 @@ PR-062:
       path: src/components/menu/status-badge.tsx
     - type: file
       path: work/PR-062/requirements.md
+
+# =============================================================================
+# PHASE 35: Recipe Additions (PR-065)
+# =============================================================================
+
+PR-065:
+  name: "Lo Mein Framework Recipe"
+  checks:
+    - type: file
+      path: recipes/entrees/lo-mein-framework.cook
