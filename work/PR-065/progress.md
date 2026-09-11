@@ -11,9 +11,9 @@
 | Requirements | [x] Approved | Acceptance criteria defined |
 | Design | [x] Approved | Static Cooklang recipe; no application changes |
 | Implementation | [ ] Not Started [ ] In Progress [x] Complete | Recipe added |
-| Testing | [ ] Unit [ ] Integration [ ] E2E | Repository quality validation pending |
+| Testing | [ ] Unit [x] Integration [ ] E2E | Cooklang parser, lint, and typecheck pass |
 | Documentation | [x] Updated | Work tracking documents added |
-| Cleanup | [ ] Temp files removed [ ] Ready for merge | |
+| Cleanup | [ ] Temp files removed [ ] Ready for merge | PR creation blocked by GitHub collaborator authorization |
 
 ## Deliverables Checklist
 
@@ -72,13 +72,16 @@ No new unit tests. This is a static Cooklang source addition.
 ### Automated Checks
 
 - [ ] Deliverable registered in `scripts/deliverables.yaml`
-- [ ] Recipe validation passes
-- [ ] `python scripts/progress.py` shows PR complete
+- [x] Recipe validation passes
+- [x] `python scripts/progress.py` shows PR complete
 
 ### Quality Checks
 
-- [ ] No temporary research files added to the repository
-- [ ] Cooklang syntax follows `docs/COOKLANG.md`
+- [x] No temporary research files added to the repository
+- [x] Cooklang syntax follows `docs/COOKLANG.md`
+- [x] `npm run lint:fix && npm run lint` passes
+- [x] `npm run typecheck` passes
+- [ ] Thai-lint passes (command unavailable in this environment)
 
 ## Session Log
 
@@ -99,8 +102,11 @@ No new unit tests. This is a static Cooklang source addition.
 - The YouTube watch page required sign-in for direct caption access. The video
   title, timestamps, and framework were corroborated through indexed source
   material from the video's author and the linked framework article.
+- Draft PR creation was rejected because the authenticated GitHub account is
+  not a collaborator on the repository.
 
 **Next Steps**:
 
-- [ ] Validate the recipe and repository quality checks.
-- [ ] Commit, push, and create the draft PR.
+- [x] Validate the recipe and repository quality checks.
+- [x] Commit and push the branch.
+- [ ] Create the draft PR with a collaborator-authorized GitHub account.
