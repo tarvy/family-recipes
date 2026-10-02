@@ -133,3 +133,23 @@ export function buildAuthError(message: string, id: unknown = null): object {
     },
   };
 }
+
+/**
+ * Build a `WWW-Authenticate` Bearer challenge for a 401 MCP response
+ * (RFC 6750 §3 + RFC 9728 §5.1). When no token was presented, no `error`
+ * code is included (RFC 6750 §3.1); when a token was presented but rejected,
+ * `error="invalid_token"` plus a description is set. `resource_metadata`
+ * always points MCP clients at the protected-resource metadata document.
+ */
+export function buildWwwAuthenticate(
+  resourceMetadataUrl: string,
+  errorDescription?: string,
+): string {
+  const params: string[] = [];
+  if (errorDescription) {
+    params.push('error="invalid_token"');
+    params.push(`error_description="${errorDescription.replaceAll('"', "'")}"`);
+  }
+  params.push(`resource_metadata="${resourceMetadataUrl}"`);
+  return `Bearer ${params.join(', ')}`;
+}

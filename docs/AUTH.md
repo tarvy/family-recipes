@@ -58,9 +58,15 @@ Send a magic link to the provided email address.
 **Request:**
 ```json
 {
-  "email": "user@example.com"
+  "email": "user@example.com",
+  "return_to": "/authorize?client_id=..."
 }
 ```
+
+`return_to` is optional. When it is a same-origin relative path (see
+[Post-login `return_to`](#post-login-return_to)), it is carried through the
+magic link so verification lands back where login started (e.g. the OAuth
+consent page).
 
 **Response:**
 ```json
@@ -77,10 +83,12 @@ Verify a magic link token and create a session. This is the callback URL from ma
 
 **Query Parameters:**
 - `token` - The magic link token from the email
+- `return_to` (optional) - Sanitized same-origin path to land on after sign-in
 
 **Behavior:**
-- On success: Creates session, sets cookie, redirects to `/`
-- On error: Redirects to `/login?error={code}`
+- On success: Creates session, sets cookie, redirects to `return_to` if it is a
+  safe same-origin path, otherwise `/recipes`
+- On error: Redirects to `/login?error={code}` (keeping `return_to`)
 
 **Error Codes:**
 | Code | Description |
@@ -89,6 +97,20 @@ Verify a magic link token and create a session. This is the callback URL from ma
 | `invalid_token` | Token not found, already used, or expired |
 | `not_allowed` | Email not in allowlist |
 | `server_error` | Internal server error |
+
+### Post-login `return_to`
+
+The login page accepts `?return_to=<path>` (the OAuth consent page at
+`/authorize` uses this). It is honored by the magic-link flow, the passkey
+flow, and middleware (an already-signed-in visit to `/login?return_to=...`
+redirects straight to it). Only same-origin relative paths are accepted: the
+value must start with `/` (not `//` or `/\`), contain no backslashes or
+control characters, and must not point at `/login`. Anything else falls back
+to `/recipes`. See `src/lib/auth/return-to.ts`.
+
+`GET /api/auth/status` clears a stale session cookie (cookie present, session
+invalid) so middleware stops treating the browser as signed in; this keeps
+`/authorize` → `/login?return_to=...` from bouncing.
 
 ### POST /api/auth/logout
 

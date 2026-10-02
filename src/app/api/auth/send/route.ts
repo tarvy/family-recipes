@@ -12,6 +12,7 @@ import {
   isValidEmail,
   normalizeEmail,
 } from '@/lib/auth/allowlist';
+import { RETURN_TO_PARAM, sanitizeReturnTo } from '@/lib/auth/return-to';
 import { toError } from '@/lib/errors';
 import { logger, withRequestContext } from '@/lib/logger';
 import { withTrace } from '@/lib/telemetry';
@@ -20,6 +21,7 @@ export const runtime = 'nodejs';
 
 interface SendRequest {
   email?: string;
+  [RETURN_TO_PARAM]?: unknown;
 }
 
 /** Extract and validate email from request body */
@@ -30,6 +32,12 @@ function extractValidEmail(body: SendRequest): string | null {
   }
   const email = normalizeEmail(emailInput);
   return isValidEmail(email) ? email : null;
+}
+
+/** Extract a safe same-origin `return_to` from the request body */
+function extractReturnTo(body: SendRequest): string | null {
+  const raw = body[RETURN_TO_PARAM];
+  return sanitizeReturnTo(typeof raw === 'string' ? raw : null);
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -57,8 +65,9 @@ export async function POST(request: Request): Promise<Response> {
           return Response.json({ success: true });
         }
 
-        // Generate and send magic link
-        const result = await generateMagicLink(email);
+        // Generate and send magic link, carrying a safe return_to (e.g. the
+        // OAuth consent page) through to /api/auth/verify.
+        const result = await generateMagicLink(email, { returnTo: extractReturnTo(body) });
 
         if (!result.success) {
           // Log the error but still return 200 to prevent enumeration

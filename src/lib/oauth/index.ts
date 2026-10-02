@@ -14,7 +14,12 @@
 export { generateSecureToken, sha256Base64Url, sha256Hex, timingSafeEqual } from './crypto';
 // MCP authentication
 export type { McpAuthContext, McpAuthResult } from './mcp-auth';
-export { buildAuthError, isAuthorizedForTool, verifyMcpAuth } from './mcp-auth';
+export {
+  buildAuthError,
+  buildWwwAuthenticate,
+  isAuthorizedForTool,
+  verifyMcpAuth,
+} from './mcp-auth';
 
 // PKCE
 export { isValidChallengeMethod, isValidVerifier, verifyCodeChallenge } from './pkce';
@@ -54,6 +59,7 @@ export type {
   OAuthCodeData,
   OAuthRefreshTokenData,
   OAuthScope,
+  TokenEndpointAuthMethod,
   TokenError,
   TokenResponse,
 } from './types';
@@ -63,12 +69,17 @@ export {
   CLIENT_SECRET_LENGTH,
   CODE_LENGTH,
   CODE_TTL_SECONDS,
+  DEFAULT_TOKEN_ENDPOINT_AUTH_METHOD,
   getToolScopes,
   hasRequiredScopes,
+  isTokenEndpointAuthMethod,
   OAUTH_SCOPES,
   parseScopes,
   REFRESH_TOKEN_LENGTH,
   REFRESH_TOKEN_TTL_SECONDS,
+  SUPPORTED_GRANT_TYPES,
+  SUPPORTED_RESPONSE_TYPES,
+  TOKEN_ENDPOINT_AUTH_METHODS,
   TOOL_SCOPES,
   VALID_SCOPES,
 } from './types';

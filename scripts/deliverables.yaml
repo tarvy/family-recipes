@@ -849,3 +849,21 @@ PR-062:
       path: src/components/menu/status-badge.tsx
     - type: file
       path: work/PR-062/requirements.md
+
+# =============================================================================
+# PHASE 35: MCP OAuth Sign-in Loop (PR-065)
+# =============================================================================
+
+PR-065:
+  name: "MCP OAuth Sign-in Loop"
+  checks:
+    - type: file
+      path: src/lib/auth/return-to.ts
+    - type: file
+      path: src/lib/auth/__tests__/return-to.test.ts
+    - type: file
+      path: src/lib/oauth/__tests__/mcp-route.test.ts
+    - type: file
+      path: src/lib/oauth/__tests__/oauth-client-routes.test.ts
+    - type: file
+      path: work/PR-065-mcp-oauth-loop/requirements.md

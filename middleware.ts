@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { DEFAULT_POST_LOGIN_PATH, RETURN_TO_PARAM, sanitizeReturnTo } from '@/lib/auth/return-to';
 
 const SESSION_COOKIE_NAME = 'session';
 
@@ -19,10 +20,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/recipes/${slug}`, request.url));
   }
 
-  // Login page: redirect to recipes if already authenticated
+  // Login page: if already signed in, continue to the requested same-origin
+  // `return_to` (e.g. the OAuth consent page) or fall back to recipes.
+  // Stale cookies are cleared by /api/auth/status, so this cannot loop with
+  // /authorize.
   if (pathname === '/login') {
     if (isAuthenticated) {
-      return NextResponse.redirect(new URL('/recipes', request.url));
+      const returnTo = sanitizeReturnTo(request.nextUrl.searchParams.get(RETURN_TO_PARAM));
+      return NextResponse.redirect(new URL(returnTo ?? DEFAULT_POST_LOGIN_PATH, request.url));
     }
     return NextResponse.next();
   }

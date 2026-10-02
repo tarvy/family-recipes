@@ -1,5 +1,12 @@
 /**
  * MCP server route with OAuth 2.1 authentication.
+ *
+ * Every MCP request - including `initialize`, `ping`, and notifications -
+ * requires a valid Bearer access token. Missing, invalid, or expired tokens
+ * always get a 401 with `WWW-Authenticate: Bearer resource_metadata="..."`
+ * (RFC 9728 §5.1) so MCP clients consistently (re)start OAuth instead of
+ * believing the connection is authenticated after a 200 `initialize` and then
+ * failing on `tools/list`.
  */
 
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
@@ -14,7 +21,9 @@ import { logger } from '@/lib/logger';
 import {
   buildAuthError,
   buildProtectedResourceMetadataUrl,
+  buildWwwAuthenticate,
   getMcpResourceUrl,
+  getOAuthIssuer,
   isAuthorizedForTool,
   type McpAuthContext,
   verifyMcpAuth,
@@ -29,9 +38,6 @@ const WWW_AUTHENTICATE_HEADER = 'WWW-Authenticate';
 const HTTP_METHOD_NOT_ALLOWED = 405;
 const JSON_RPC_VERSION = '2.0';
 const JSON_RPC_ERROR_CODE = -32000;
-
-/** Methods that don't require authentication */
-const UNAUTHENTICATED_METHODS = new Set(['initialize', 'ping', 'notifications/initialized']);
 
 interface JsonRpcRequest {
   jsonrpc: string;
@@ -59,24 +65,6 @@ function methodNotAllowed(): Response {
 }
 
 /**
- * Determine if a JSON-RPC request requires authentication.
- */
-function requiresAuth(body: unknown): boolean {
-  if (!body || typeof body !== 'object') {
-    return true;
-  }
-
-  const rpcRequest = body as JsonRpcRequest;
-  const method = rpcRequest.method;
-
-  if (!method) {
-    return true;
-  }
-
-  return !UNAUTHENTICATED_METHODS.has(method);
-}
-
-/**
  * Get the tool name from a tools/call request.
  */
 function getToolName(body: unknown): string | null {
@@ -93,61 +81,70 @@ function getToolName(body: unknown): string | null {
 }
 
 /**
- * Build the RFC 9728 protected-resource metadata URL for this deployment's
- * `/mcp` resource, for use in `WWW-Authenticate: Bearer resource_metadata="..."`.
+ * Resolve this deployment's `/mcp` resource URL from the same source as the
+ * protected-resource metadata route (`MCP_RESOURCE_URL` in mcp-auth mode,
+ * otherwise `{OAUTH_ISSUER}/mcp`), so the advertised `resource_metadata` URL
+ * always matches the `resource` that metadata document declares.
  */
-function resourceMetadataUrl(request: Request): string {
-  const resource = getMcpResourceUrl() ?? new URL(MCP_PATH, request.url).toString();
-  return buildProtectedResourceMetadataUrl(resource);
+function mcpResourceUrl(request: Request): string {
+  const configured = getMcpResourceUrl();
+  if (configured) {
+    return configured;
+  }
+  try {
+    return `${getOAuthIssuer()}${MCP_PATH}`;
+  } catch {
+    return new URL(MCP_PATH, request.url).toString();
+  }
 }
 
 /**
- * Build a 401 response advertising the protected-resource metadata URL per
- * RFC 9728 §5.1, matching the `Bearer error="...", resource_metadata="..."`
- * convention MCP client libraries look for.
+ * Build a 401 response advertising the protected-resource metadata URL so
+ * MCP clients (re)discover the authorization server and start OAuth.
  */
-function unauthorizedResponse(request: Request, message: string, id: unknown): Response {
-  return Response.json(buildAuthError(message, id), {
+function unauthorizedResponse(
+  request: Request,
+  tokenPresented: boolean,
+  message: string,
+): Response {
+  const metadataUrl = buildProtectedResourceMetadataUrl(mcpResourceUrl(request));
+  return Response.json(buildAuthError(message, null), {
     status: HTTP_UNAUTHORIZED,
     headers: {
-      [WWW_AUTHENTICATE_HEADER]: `Bearer error="invalid_token", error_description="${message}", resource_metadata="${resourceMetadataUrl(request)}"`,
+      [WWW_AUTHENTICATE_HEADER]: buildWwwAuthenticate(
+        metadataUrl,
+        tokenPresented ? message : undefined,
+      ),
     },
   });
 }
 
 /**
- * Validate OAuth authentication for MCP request.
+ * Validate OAuth authentication for an MCP request. Required for every
+ * method; runs before the body is parsed so requests without a valid token
+ * always get the 401 challenge.
  */
 async function validateMcpOAuth(
   request: Request,
-  body: unknown,
   span: MinimalSpan,
-): Promise<{ error: Response | null; context: McpAuthContext | null }> {
-  const needsAuth = requiresAuth(body);
-  const authResult = await verifyMcpAuth(request, { required: needsAuth });
+): Promise<{ error: Response } | { context: McpAuthContext }> {
+  const authResult = await verifyMcpAuth(request, { required: true });
 
   if (!authResult.authenticated) {
-    if (needsAuth) {
-      logger.mcp.warn('Unauthorized MCP request', {
-        path: MCP_PATH,
-        error: authResult.error,
-      });
-      span.setAttribute('error', 'unauthorized');
-
-      const rpcRequest = body as JsonRpcRequest | undefined;
-      return {
-        error: unauthorizedResponse(request, authResult.error, rpcRequest?.id),
-        context: null,
-      };
-    }
-    // Auth not required and not provided - that's fine
-    return { error: null, context: null };
+    const tokenPresented = request.headers.has('Authorization');
+    logger.mcp.warn('Unauthorized MCP request', {
+      path: MCP_PATH,
+      error: authResult.error,
+      tokenPresented,
+    });
+    span.setAttribute('error', 'unauthorized');
+    return { error: unauthorizedResponse(request, tokenPresented, authResult.error) };
   }
 
   span.setAttribute('client_id', authResult.context.clientId);
   span.setAttribute('user_id', authResult.context.userId);
 
-  return { error: null, context: authResult.context };
+  return { context: authResult.context };
 }
 
 /**
@@ -155,7 +152,7 @@ async function validateMcpOAuth(
  */
 function validateToolAuth(
   body: unknown,
-  context: McpAuthContext | null,
+  context: McpAuthContext,
   span: MinimalSpan,
 ): Response | null {
   const toolName = getToolName(body);
@@ -169,7 +166,7 @@ function validateToolAuth(
   if (!isAuthorizedForTool(context, toolName)) {
     logger.mcp.warn('Insufficient scopes for tool', {
       tool: toolName,
-      clientId: context?.clientId,
+      clientId: context.clientId,
     });
     span.setAttribute('error', 'forbidden');
 
@@ -222,16 +219,16 @@ async function handleMcpRequest(request: Request): Promise<Response> {
     span.setAttribute('method', request.method);
 
     try {
-      // Parse body first (needed for auth decisions)
+      // Every MCP method (including initialize/ping) requires a valid token
+      const auth = await validateMcpOAuth(request, span);
+      if ('error' in auth) {
+        return auth.error;
+      }
+      const { context } = auth;
+
       const parsedBody = await parseRequestBody(request, span);
       if ('response' in parsedBody) {
         return parsedBody.response;
-      }
-
-      // Validate OAuth authentication
-      const { error: authError, context } = await validateMcpOAuth(request, parsedBody.body, span);
-      if (authError) {
-        return authError;
       }
 
       // Validate tool authorization if it's a tool call
@@ -242,7 +239,7 @@ async function handleMcpRequest(request: Request): Promise<Response> {
 
       logger.mcp.info('MCP request received', {
         path: MCP_PATH,
-        clientId: context?.clientId,
+        clientId: context.clientId,
       });
 
       return executeMcpTransport(request, parsedBody.body);
