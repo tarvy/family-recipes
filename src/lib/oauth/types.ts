@@ -138,16 +138,50 @@ export interface AuthorizationRequest {
   code_challenge_method: string;
 }
 
+/** Token endpoint client authentication methods this server supports. */
+export const TOKEN_ENDPOINT_AUTH_METHODS = [
+  'client_secret_basic',
+  'client_secret_post',
+  'none',
+] as const;
+
+export type TokenEndpointAuthMethod = (typeof TOKEN_ENDPOINT_AUTH_METHODS)[number];
+
+/** RFC 7591 default when a client omits `token_endpoint_auth_method`. */
+export const DEFAULT_TOKEN_ENDPOINT_AUTH_METHOD: TokenEndpointAuthMethod = 'client_secret_basic';
+
+/** Grant types this server supports for registered clients. */
+export const SUPPORTED_GRANT_TYPES = ['authorization_code', 'refresh_token'];
+
+/** Response types this server supports for registered clients. */
+export const SUPPORTED_RESPONSE_TYPES = ['code'];
+
+export function isTokenEndpointAuthMethod(value: unknown): value is TokenEndpointAuthMethod {
+  return (
+    typeof value === 'string' && (TOKEN_ENDPOINT_AUTH_METHODS as readonly string[]).includes(value)
+  );
+}
+
 export interface ClientRegistrationRequest {
   client_name: string;
   redirect_uris: string[];
+  token_endpoint_auth_method?: string;
+  grant_types?: string[];
+  response_types?: string[];
 }
 
 export interface ClientRegistrationResponse {
   client_id: string;
+  /** Only issued to confidential clients (not `token_endpoint_auth_method: none`). */
   client_secret?: string;
+  client_id_issued_at: number;
+  /** 0 = never expires; only present when a `client_secret` is issued (RFC 7591 §3.2.1). */
+  client_secret_expires_at?: number;
   client_name: string;
   redirect_uris: string[];
+  token_endpoint_auth_method: TokenEndpointAuthMethod;
+  grant_types: string[];
+  response_types: string[];
 }
 
 // -----------------------------------------------------------------------------

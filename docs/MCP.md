@@ -15,9 +15,19 @@ The MCP server exposes recipe and shopping list tools for AI agents using the Mo
 
 | Header | Required | Description |
 |--------|----------|-------------|
-| `Authorization` | Yes* | `Bearer <access_token>` |
+| `Authorization` | Yes | `Bearer <access_token>` |
 
-*Initial handshake methods (`initialize`, `ping`) do not require authentication.
+Every MCP request - including `initialize`, `ping`, and notifications -
+requires a valid access token. A missing, invalid, or expired token always
+returns `401` with a challenge pointing at the protected-resource metadata:
+
+```
+WWW-Authenticate: Bearer resource_metadata="https://<app>/.well-known/oauth-protected-resource/mcp"
+```
+
+(`error="invalid_token"` and `error_description` are added when a token was
+presented but rejected.) MCP clients use this to (re)start OAuth instead of
+treating a 200 `initialize` as "connected" and then failing on `tools/list`.
 
 ## OAuth 2.1 Authentication
 
@@ -55,10 +65,25 @@ Family Recipes' own AS in `legacy` mode. See
      -H "Content-Type: application/json" \
      -d '{"client_name": "My App", "redirect_uris": ["http://localhost:8080/callback"]}'
    ```
+   `token_endpoint_auth_method` is honored:
+   - `"none"` registers a **public client** (what most MCP clients ask for):
+     no `client_secret` is issued, PKCE is required, and the token endpoint
+     accepts `authorization_code` and `refresh_token` grants with just
+     `client_id`.
+   - `"client_secret_basic"` (default when omitted) or `"client_secret_post"`
+     registers a **confidential client**: a `client_secret` is returned once
+     (stored hashed) and is required at the token endpoint, including on
+     refresh.
+
+   The response echoes `token_endpoint_auth_method`, `client_id_issued_at`,
+   `grant_types`, and `response_types`, plus `client_secret` and
+   `client_secret_expires_at` (`0` = never) for confidential clients.
 
 2. **Authorization Request**:
    - Client redirects user to `/api/mcp/oauth/authorize` with PKCE
-   - User logs in (if needed) and consents to requested scopes
+   - User logs in (if needed) and consents to requested scopes. Login (magic
+     link or passkey) returns to the `/authorize` consent page via
+     `return_to` (see [docs/AUTH.md](AUTH.md#post-login-return_to)).
    - Server redirects back with authorization code
 
 3. **Token Exchange**:
@@ -191,7 +216,7 @@ curl -X POST https://your-app.vercel.app/api/mcp/oauth/register \
   }'
 ```
 
-Response includes `client_id` and `client_secret`. Store these; you will configure the MCP client with them.
+Response includes `client_id` and `client_secret` (confidential client; add `"token_endpoint_auth_method": "none"` to register a public client with no secret). Store these; you will configure the MCP client with them.
 
 For **local development**, use `http://localhost:3000` as the base URL:
 
@@ -304,13 +329,14 @@ await client.close();
 - **PKCE S256** required for all authorization requests
 - **Access tokens** are JWTs with 1-hour expiry
 - **Refresh tokens** rotate on each use (30-day expiry)
-- **Client secrets** are SHA-256 hashed in storage
+- **Client secrets** are SHA-256 hashed in storage (public clients registered
+  with `token_endpoint_auth_method: none` have no secret and rely on PKCE)
 - **Redirect URIs** must exactly match registered values
 - Supports localhost, HTTPS, and custom schemes (e.g., `cursor://`)
 
 ## Notes
 
 - The MCP endpoint is **stateless** and responds with JSON-only payloads.
-- Initial handshake (`initialize`, `ping`) works without authentication.
-- Tool calls require valid OAuth tokens with appropriate scopes.
+- Every request, including the `initialize`/`ping` handshake, requires a valid
+  OAuth token; tool calls additionally require the appropriate scopes.
 - Shopping list tools default to `OWNER_EMAIL` if `userEmail` is not provided.

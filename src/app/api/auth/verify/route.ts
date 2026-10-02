@@ -2,7 +2,10 @@
  * GET /api/auth/verify
  *
  * Verify a magic link token, create/find user, create session, and redirect.
- * This is the callback URL from magic link emails.
+ * This is the callback URL from magic link emails. Redirects to a sanitized
+ * same-origin `return_to` (e.g. the OAuth consent page) when present,
+ * otherwise /recipes. Error redirects back to /login keep `return_to` so a
+ * retry still finishes the original flow.
  */
 
 import { cookies } from 'next/headers';
@@ -16,6 +19,7 @@ import {
   verifyMagicLink,
 } from '@/lib/auth';
 import { ensureOwnerAllowlist } from '@/lib/auth/allowlist';
+import { RETURN_TO_PARAM, resolvePostLoginPath, sanitizeReturnTo } from '@/lib/auth/return-to';
 import { toError } from '@/lib/errors';
 import { logger, withRequestContext } from '@/lib/logger';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
@@ -33,6 +37,15 @@ function buildRedirectUrl(path: string, error?: string): string {
   return url.toString();
 }
 
+/** Redirect to /login with an error code, preserving a safe `return_to`. */
+function loginErrorRedirect(error: string, returnTo: string | null): Response {
+  const url = new URL(buildRedirectUrl('/login', error));
+  if (returnTo) {
+    url.searchParams.set(RETURN_TO_PARAM, returnTo);
+  }
+  return NextResponse.redirect(url.toString());
+}
+
 export async function GET(request: Request): Promise<Response> {
   return withRequestContext(request, () =>
     withTrace('api.auth.verify', async (span) => {
@@ -40,16 +53,18 @@ export async function GET(request: Request): Promise<Response> {
 
       const url = new URL(request.url);
       const token = url.searchParams.get('token');
+      const returnTo = sanitizeReturnTo(url.searchParams.get(RETURN_TO_PARAM));
+      span.setAttribute('has_return_to', returnTo !== null);
 
       // Validate token presence
       if (!token) {
         span.setAttribute('error', 'missing_token');
         logger.auth.warn('Verification attempted without token');
-        return NextResponse.redirect(buildRedirectUrl('/login', 'missing_token'));
+        return loginErrorRedirect('missing_token', returnTo);
       }
 
       try {
-        const verification = await resolveVerification(token, span);
+        const verification = await resolveVerification(token, span, returnTo);
         if ('response' in verification) {
           return verification.response;
         }
@@ -61,7 +76,7 @@ export async function GET(request: Request): Promise<Response> {
 
         const allowedEmail = await resolveAllowedEmail(verification.email);
         if (!allowedEmail) {
-          return NextResponse.redirect(buildRedirectUrl('/login', 'not_allowed'));
+          return loginErrorRedirect('not_allowed', returnTo);
         }
 
         const { user, isNewUser } = await resolveUser(verification.email, allowedEmail.role);
@@ -80,10 +95,10 @@ export async function GET(request: Request): Promise<Response> {
           email: user.email,
         });
 
-        return NextResponse.redirect(buildRedirectUrl('/recipes'));
+        return NextResponse.redirect(buildRedirectUrl(resolvePostLoginPath(returnTo)));
       } catch (error) {
         logger.api.error('Auth verify endpoint error', toError(error));
-        return NextResponse.redirect(buildRedirectUrl('/login', 'server_error'));
+        return loginErrorRedirect('server_error', returnTo);
       }
     }),
   );
@@ -92,6 +107,7 @@ export async function GET(request: Request): Promise<Response> {
 async function resolveVerification(
   token: string,
   span: { setAttribute: (key: string, value: string) => void },
+  returnTo: string | null,
 ): Promise<VerificationOutcome> {
   const verification = await verifyMagicLink(token);
 
@@ -101,9 +117,7 @@ async function resolveVerification(
       error: verification.error,
     });
     return {
-      response: NextResponse.redirect(
-        buildRedirectUrl('/login', verification.error || 'invalid_token'),
-      ),
+      response: loginErrorRedirect(verification.error || 'invalid_token', returnTo),
     };
   }
 

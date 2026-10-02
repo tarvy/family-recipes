@@ -11,6 +11,7 @@ import {
 } from '@simplewebauthn/browser';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { RETURN_TO_PARAM, resolvePostLoginPath, sanitizeReturnTo } from '@/lib/auth/return-to';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -49,7 +50,8 @@ function LoginForm() {
 
   // Check for error and return_to from redirect
   const urlError = searchParams.get('error');
-  const returnTo = searchParams.get('return_to');
+  // Only same-origin relative paths are honored (prevents open redirects)
+  const returnTo = sanitizeReturnTo(searchParams.get(RETURN_TO_PARAM));
 
   useEffect(() => {
     if (urlError) {
@@ -75,7 +77,9 @@ function LoginForm() {
       const response = await fetch('/api/auth/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify(
+          returnTo ? { email: email.trim(), [RETURN_TO_PARAM]: returnTo } : { email: email.trim() },
+        ),
       });
 
       if (!response.ok) {
@@ -123,9 +127,8 @@ function LoginForm() {
         throw new Error(errorPayload?.error || 'Passkey sign-in failed.');
       }
 
-      // Redirect to return_to if provided, otherwise default to /recipes
-      const destination = returnTo ?? '/recipes';
-      router.push(destination);
+      // Redirect to the sanitized return_to if provided, otherwise /recipes
+      router.push(resolvePostLoginPath(returnTo));
       router.refresh();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Passkey sign-in failed.';

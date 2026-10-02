@@ -8,6 +8,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { RETURN_TO_PARAM } from '@/lib/auth/return-to';
 import { OAUTH_SCOPES, type OAuthScope } from '@/lib/oauth';
 
 type ConsentState = 'loading' | 'ready' | 'submitting' | 'success' | 'error';
@@ -84,9 +85,12 @@ function ConsentForm() {
         });
 
         if (!response.ok) {
-          // Redirect to login with return_to
-          const returnTo = encodeURIComponent(window.location.href);
-          router.push(`/login?return_to=${returnTo}`);
+          // Redirect to login, preserving this consent request as a
+          // same-origin relative return_to so login lands back here.
+          const returnTo = encodeURIComponent(
+            `${window.location.pathname}${window.location.search}`,
+          );
+          router.push(`/login?${RETURN_TO_PARAM}=${returnTo}`);
           return;
         }
 

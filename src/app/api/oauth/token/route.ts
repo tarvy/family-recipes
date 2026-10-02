@@ -4,6 +4,11 @@
  * Handles:
  * - authorization_code grant (with PKCE verification)
  * - refresh_token grant (with rotation)
+ *
+ * Client authentication: confidential clients (registered with a secret) must
+ * present it via Basic auth or `client_secret` on both grants. Public clients
+ * (registered with `token_endpoint_auth_method: none`, so no stored secret)
+ * authenticate with `client_id` alone; PKCE protects their code exchange.
  */
 
 import { connectDB } from '@/db/connection';

@@ -6,8 +6,8 @@
  * Usage:
  *   import { generateMagicLink, verifyMagicLink } from '@/lib/auth/magic-link';
  *
- *   // Generate and send magic link
- *   const result = await generateMagicLink('user@example.com');
+ *   // Generate and send magic link (optionally returning to a same-origin path)
+ *   const result = await generateMagicLink('user@example.com', { returnTo: '/authorize?...' });
  *
  *   // Verify token from URL
  *   const verification = await verifyMagicLink(token);
@@ -19,6 +19,7 @@ import { MagicLink } from '@/db/models';
 import { sendEmail } from '@/lib/email/send';
 import { logger } from '@/lib/logger';
 import { traceDbQuery, withTrace } from '@/lib/telemetry';
+import { RETURN_TO_PARAM, sanitizeReturnTo } from './return-to';
 
 /** Magic link token expiry time in minutes */
 const TOKEN_EXPIRY_MINUTES = 15;
@@ -31,6 +32,11 @@ const SECONDS_PER_MINUTE = 60;
 
 /** Milliseconds per second for time calculations */
 const MILLISECONDS_PER_SECOND = 1000;
+
+export interface GenerateMagicLinkOptions {
+  /** Same-origin relative path to land on after verification. */
+  returnTo?: string | null;
+}
 
 export interface GenerateMagicLinkResult {
   success: boolean;
@@ -51,17 +57,27 @@ function normalizeEmail(email: string): string {
 }
 
 /**
- * Build the verification URL for the magic link
+ * Build the verification URL for the magic link. A sanitized `return_to` is
+ * appended so /api/auth/verify can send the user back to where login started
+ * (e.g. the OAuth consent page) instead of always landing on /recipes.
  */
-function buildVerificationUrl(token: string): string {
+export function buildVerificationUrl(token: string, returnTo?: string | null): string {
   const baseUrl = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000';
-  return `${baseUrl}/api/auth/verify?token=${token}`;
+  const url = new URL('/api/auth/verify', baseUrl);
+  url.searchParams.set('token', token);
+  const safeReturnTo = sanitizeReturnTo(returnTo);
+  if (safeReturnTo) {
+    url.searchParams.set(RETURN_TO_PARAM, safeReturnTo);
+  }
+  return url.toString();
 }
 
 /**
  * Build the HTML email content for the magic link
  */
-function buildEmailHtml(verifyUrl: string): string {
+function buildEmailHtml(rawVerifyUrl: string): string {
+  // Escape `&` so query separators (token + return_to) are valid HTML
+  const verifyUrl = rawVerifyUrl.replaceAll('&', '&amp;');
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
       <h2>Sign in to Family Recipes</h2>
@@ -99,7 +115,10 @@ If you didn't request this email, you can safely ignore it.`;
 /**
  * Generate a magic link and send it to the user's email
  */
-export async function generateMagicLink(email: string): Promise<GenerateMagicLinkResult> {
+export async function generateMagicLink(
+  email: string,
+  options: GenerateMagicLinkOptions = {},
+): Promise<GenerateMagicLinkResult> {
   return withTrace('auth.magic-link.generate', async (span) => {
     const normalizedEmail = normalizeEmail(email);
     span.setAttribute('email', normalizedEmail);
@@ -133,7 +152,7 @@ export async function generateMagicLink(email: string): Promise<GenerateMagicLin
       });
 
       // Build and send email
-      const verifyUrl = buildVerificationUrl(token);
+      const verifyUrl = buildVerificationUrl(token, options.returnTo);
       const emailResult = await sendEmail({
         to: normalizedEmail,
         subject: 'Sign in to Family Recipes',
