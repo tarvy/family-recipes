@@ -248,7 +248,7 @@ curl -X POST http://localhost:3000/api/mcp/oauth/register \
 | Tool | Scope | Description | Inputs |
 |------|-------|-------------|--------|
 | `recipe_list` | `recipes:read` | List recipe previews | `category?`, `limit?` |
-| `recipe_get` | `recipes:read` | Fetch full recipe by slug | `slug` |
+| `recipe_get` | `recipes:read` | Fetch full recipe by slug (metadata, ingredients, cookware, steps with per-step ingredients/timers, tags, `updatedAt`, `rating`, `cookLog`) | `slug` |
 | `recipe_search` | `recipes:read` | Search recipe metadata | `query`, `cuisine?`, `course?`, `tags?`, `limit?`, `skip?` |
 | `recipe_categories` | `recipes:read` | List valid recipe categories | (none) |
 | `ingredient_lookup` | `recipes:read` | Find recipes by ingredient | `ingredient` |
@@ -337,6 +337,12 @@ await client.close();
 ## Notes
 
 - The MCP endpoint is **stateless** and responds with JSON-only payloads.
+- Every tool declares an `outputSchema`. The SDK publishes it as JSON Schema
+  with `additionalProperties: false`, and MCP clients reject structured
+  content carrying undeclared fields. When a tool's output gains a field
+  (e.g. `RecipeDetail` in `src/lib/recipes/repository.ts`), declare it in the
+  tool's schema too; `src/mcp/__tests__/output-schemas.test.ts` drives every
+  tool through a real SDK client and fails on any mismatch.
 - Every request, including the `initialize`/`ping` handshake, requires a valid
   OAuth token; tool calls additionally require the appropriate scopes.
 - Shopping list tools default to `OWNER_EMAIL` if `userEmail` is not provided.
