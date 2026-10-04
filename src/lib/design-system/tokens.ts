@@ -64,9 +64,14 @@ export const contentMaxWidth = {
 
 export type ContentMaxWidth = keyof typeof contentMaxWidth;
 
+/** Motion duration values (ms); keep in sync with --duration-* in globals.css */
+const DURATION_FAST_MS = 150;
+const DURATION_NORMAL_MS = 300;
+const DURATION_SLOW_MS = 500;
+
 /** Motion durations (ms) matching --duration-* tokens */
 export const motionDurationMs = {
-  fast: 150,
-  normal: 300,
-  slow: 500,
+  fast: DURATION_FAST_MS,
+  normal: DURATION_NORMAL_MS,
+  slow: DURATION_SLOW_MS,
 } as const;

@@ -879,3 +879,15 @@ PR-066:
       path: src/mcp/__tests__/output-schemas.test.ts
     - type: file
       path: work/PR-066-mcp-output-schemas/requirements.md
+
+# =============================================================================
+# PHASE 38: Thai-lint Magic Numbers in Design Tokens (PR-068)
+# =============================================================================
+
+PR-068:
+  name: "Thai-lint Magic Numbers in Design Tokens"
+  checks:
+    - type: file
+      path: src/lib/design-system/tokens.ts
+    - type: file
+      path: work/PR-068-thai-lint-tokens/requirements.md
