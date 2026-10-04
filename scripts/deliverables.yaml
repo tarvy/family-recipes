@@ -867,3 +867,15 @@ PR-065:
       path: src/lib/oauth/__tests__/oauth-client-routes.test.ts
     - type: file
       path: work/PR-065-mcp-oauth-loop/requirements.md
+
+# =============================================================================
+# PHASE 36: MCP Tool Output Schema Mismatches (PR-066)
+# =============================================================================
+
+PR-066:
+  name: "MCP Tool Output Schema Mismatches"
+  checks:
+    - type: file
+      path: src/mcp/__tests__/output-schemas.test.ts
+    - type: file
+      path: work/PR-066-mcp-output-schemas/requirements.md
