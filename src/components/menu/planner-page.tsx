@@ -11,6 +11,7 @@ import { type DraggedRecipe, DragProvider } from './drag-context';
 import { PlannerActions } from './planner-actions';
 import { RecipeSourcePanel } from './recipe-source-panel';
 import { StatusBadge } from './status-badge';
+import { SurveyShare } from './survey-share';
 import { WeekSwitcher } from './week-switcher';
 
 // --- Client-side serialized types (mirrors Mongoose .toJSON() output) ---
@@ -102,12 +103,18 @@ function getWeekDateRange(weekLabel: string): string {
   return `${monMonth} ${monDay} \u2013 ${sunMonth} ${sunDay}`;
 }
 
+async function readErrorMessage(res: Response, fallback: string): Promise<string> {
+  const body = (await res.json().catch(() => ({}))) as { error?: unknown };
+  return typeof body.error === 'string' ? `${fallback}: ${body.error}` : fallback;
+}
+
 export function PlannerPage({ initialMenu, recipes, userId: _userId }: PlannerPageProps) {
   const [menu, setMenu] = useState(initialMenu);
   const [activeWeek, setActiveWeek] = useState<ActiveWeek>('current');
   const [activeTab, setActiveTab] = useState<ActiveTab>('cookbook');
   const [searchQuery, setSearchQuery] = useState('');
   const [overlayAssignments, setOverlayAssignments] = useState<SerializedAssignment[] | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   const currentWeekLabel = useMemo(() => getCurrentWeekLabel(), []);
   const nextWeekLabel = useMemo(() => getNextWeekLabel(), []);
@@ -167,7 +174,8 @@ export function PlannerPage({ initialMenu, recipes, userId: _userId }: PlannerPa
         mealSlot: slot,
       };
       if (recipe.source === 'cookbook') {
-        body['recipeId'] = recipe.id;
+        // Cookbook cards are keyed by slug; the API resolves it to the recipe id.
+        body['recipeSlug'] = recipe.id;
       }
       if (recipe.source === 'discovery') {
         body['discoveryRecipeId'] = recipe.id;
@@ -188,6 +196,9 @@ export function PlannerPage({ initialMenu, recipes, userId: _userId }: PlannerPa
           ...prev,
           assignments: [...prev.assignments, data.assignment],
         }));
+        setMessage(null);
+      } else {
+        setMessage(await readErrorMessage(res, `Couldn't add ${recipe.title} to the menu`));
       }
     },
     [menu._id],
@@ -206,6 +217,9 @@ export function PlannerPage({ initialMenu, recipes, userId: _userId }: PlannerPa
           ...prev,
           assignments: prev.assignments.filter((a) => a._id !== assignmentId),
         }));
+        setMessage(null);
+      } else {
+        setMessage(await readErrorMessage(res, "Couldn't remove that recipe"));
       }
     },
     [menu._id],
@@ -248,10 +262,28 @@ export function PlannerPage({ initialMenu, recipes, userId: _userId }: PlannerPa
           menuStatus={menu.status}
         />
 
+        {menu.status === 'survey-sent' && menu.votingToken ? (
+          <SurveyShare
+            votingToken={menu.votingToken}
+            {...(menu.votingClosesAt ? { votingClosesAt: menu.votingClosesAt } : {})}
+            voterNames={menu.votes.map((vote) => vote.voterName)}
+          />
+        ) : null}
+
+        {message ? (
+          <p
+            role="alert"
+            className="rounded-lg border border-pink-dark bg-pink-light px-4 py-2 text-sm text-foreground"
+          >
+            {message}
+          </p>
+        ) : null}
+
         <PlannerActions
           status={menu.status}
           menuId={menu._id}
           onStatusChange={handleStatusChange}
+          onMessage={setMessage}
         />
 
         {overlayAssignments && (

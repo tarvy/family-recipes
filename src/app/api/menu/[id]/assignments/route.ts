@@ -7,6 +7,7 @@ import {
   HTTP_BAD_REQUEST,
   HTTP_FORBIDDEN,
   HTTP_INTERNAL_SERVER_ERROR,
+  HTTP_NOT_FOUND,
   HTTP_UNAUTHORIZED,
 } from '@/lib/constants/http-status';
 import { toError, toErrorMessage } from '@/lib/errors';
@@ -18,6 +19,7 @@ import {
   menuErrorHttpStatus,
   removeAssignment,
 } from '@/lib/menu/service';
+import { getRecipeBySlug } from '@/lib/recipes/repository';
 import { withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
@@ -92,6 +94,44 @@ function validateAssignmentBody(
   return { valid: true, data: buildAssignmentInput(data) };
 }
 
+/**
+ * The planner UI only knows cookbook recipes by slug (recipe previews come from
+ * the filesystem and carry no database id), so it sends `recipeSlug`. Resolve
+ * it to the stored recipe's `_id` — the same lookup MCP `menu_add_dinner` does —
+ * so finalize can find the recipe's ingredients for the shopping list.
+ */
+async function resolveCookbookRecipe(
+  body: unknown,
+  input: AddAssignmentInput,
+): Promise<AddAssignmentInput | Response> {
+  const slug = (body as Record<string, unknown>)['recipeSlug'];
+  if (input.source !== 'cookbook' || input.recipeId || typeof slug !== 'string' || !slug) {
+    return input;
+  }
+  const recipe = await getRecipeBySlug(slug);
+  if (!recipe) {
+    return Response.json({ error: `Recipe not found: ${slug}` }, { status: HTTP_NOT_FOUND });
+  }
+  return { ...input, recipeId: recipe._id.toString(), title: recipe.title };
+}
+
+/** Validate the request body and resolve any cookbook slug. */
+async function prepareAssignment(
+  body: unknown,
+  span: SpanLike,
+): Promise<AddAssignmentInput | Response> {
+  const validation = validateAssignmentBody(body);
+  if (!validation.valid) {
+    span.setAttribute('error', 'validation_failed');
+    return Response.json({ error: validation.error }, { status: HTTP_BAD_REQUEST });
+  }
+  const resolved = await resolveCookbookRecipe(body, validation.data);
+  if (resolved instanceof Response) {
+    span.setAttribute('error', 'recipe_not_found');
+  }
+  return resolved;
+}
+
 export async function POST(request: Request, { params }: RouteParams): Promise<Response> {
   return withRequestContext(request, () =>
     withTrace('api.menu.addAssignment', async (span) => {
@@ -105,14 +145,12 @@ export async function POST(request: Request, { params }: RouteParams): Promise<R
       span.setAttribute('user_id', authResult.id);
 
       try {
-        const body = await request.json();
-        const validation = validateAssignmentBody(body);
-        if (!validation.valid) {
-          span.setAttribute('error', 'validation_failed');
-          return Response.json({ error: validation.error }, { status: HTTP_BAD_REQUEST });
+        const resolved = await prepareAssignment(await request.json(), span);
+        if (resolved instanceof Response) {
+          return resolved;
         }
 
-        const updated = await addAssignment(id, validation.data);
+        const updated = await addAssignment(id, resolved);
         const newAssignment = updated.assignments[updated.assignments.length - 1];
         return Response.json({ assignment: newAssignment });
       } catch (error) {

@@ -867,3 +867,17 @@ PR-065:
       path: src/lib/oauth/__tests__/oauth-client-routes.test.ts
     - type: file
       path: work/PR-065-mcp-oauth-loop/requirements.md
+
+# =============================================================================
+# PHASE 37: Weekly Menu Flow Fixes (PR-067)
+# =============================================================================
+
+PR-067:
+  name: "Weekly Menu Flow Fixes"
+  checks:
+    - type: file
+      path: src/components/menu/survey-share.tsx
+    - type: file
+      path: src/lib/menu/__tests__/menu-flow.test.ts
+    - type: file
+      path: work/PR-067-menu-flow/requirements.md
