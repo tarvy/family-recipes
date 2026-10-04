@@ -35,6 +35,19 @@ const recipePreviewSchema = z.object({
   ingredientCount: z.number(),
 });
 
+const recipeIngredientSchema = z.object({
+  name: z.string(),
+  quantity: z.string().optional(),
+  unit: z.string().optional(),
+});
+
+/**
+ * Output shape of `recipe_get`. Must declare every field `toRecipeDetail()`
+ * (src/lib/recipes/repository.ts) can emit: the SDK publishes this as JSON
+ * Schema with `additionalProperties: false`, and MCP clients reject any
+ * structured content carrying undeclared keys. Covered by
+ * src/mcp/__tests__/output-schemas.test.ts.
+ */
 const recipeDetailSchema = z.object({
   slug: z.string(),
   title: z.string(),
@@ -47,13 +60,7 @@ const recipeDetailSchema = z.object({
   difficulty: z.string().optional(),
   cuisine: z.string().optional(),
   course: z.string().optional(),
-  ingredients: z.array(
-    z.object({
-      name: z.string(),
-      quantity: z.string().optional(),
-      unit: z.string().optional(),
-    }),
-  ),
+  ingredients: z.array(recipeIngredientSchema),
   cookware: z.array(
     z.object({
       name: z.string(),
@@ -71,9 +78,25 @@ const recipeDetailSchema = z.object({
           }),
         )
         .optional(),
+      ingredients: z
+        .array(recipeIngredientSchema)
+        .optional()
+        .describe('Ingredients referenced in this step'),
     }),
   ),
   tags: z.array(z.string()),
+  updatedAt: z.string().optional().describe('ISO 8601 timestamp of the last update'),
+  rating: z.number().optional().describe('Family rating (1-5)'),
+  cookLog: z
+    .array(
+      z.object({
+        id: z.string(),
+        cookedAt: z.string().describe('ISO 8601 timestamp'),
+        note: z.string().optional(),
+      }),
+    )
+    .optional()
+    .describe('History of times this recipe was cooked'),
 });
 
 const recipeSummarySchema = z.object({
@@ -111,14 +134,15 @@ function deriveCategory(filePath?: string): string | undefined {
 }
 
 function toRecipeSummary(doc: IRecipeDocument): RecipeSummary {
+  // `?? undefined` drops stored nulls, which the optional output fields reject
   return {
     slug: doc.slug,
     title: doc.title,
-    description: doc.description,
-    cuisine: doc.cuisine,
-    course: doc.course,
+    description: doc.description ?? undefined,
+    cuisine: doc.cuisine ?? undefined,
+    course: doc.course ?? undefined,
     tags: doc.tags ?? [],
-    category: deriveCategory(doc.filePath),
+    category: doc.category ?? deriveCategory(doc.filePath),
   };
 }
 
