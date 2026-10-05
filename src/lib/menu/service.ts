@@ -94,6 +94,42 @@ export type { AddAssignmentInput } from '@/lib/menu/repository';
 // Helpers
 // ---------------------------------------------------------------------------
 
+/** A Mongo ObjectId in its canonical 24-character hex form. */
+const OBJECT_ID_PATTERN = /^[0-9a-f]{24}$/i;
+
+/** True when `value` is a canonical 24-hex ObjectId string (rejects 12-char strings). */
+export function isObjectIdString(value: string): boolean {
+  return OBJECT_ID_PATTERN.test(value);
+}
+
+/**
+ * Build the shareable voting link for a token.
+ *
+ * Absolute when the app's public URL is configured (`NEXT_PUBLIC_APP_URL`,
+ * falling back to `OAUTH_ISSUER`) so it can be shared outside the app (e.g.
+ * by an MCP assistant); otherwise a relative path.
+ */
+export function buildVotingUrl(votingToken: string): string {
+  const base = process.env.NEXT_PUBLIC_APP_URL || process.env.OAUTH_ISSUER || '';
+  const path = `/vote/${encodeURIComponent(votingToken)}`;
+  return base ? `${base.replace(/\/+$/, '')}${path}` : path;
+}
+
+function assertValidAssignmentIds(input: AddAssignmentInput): void {
+  if (input.recipeId !== undefined && !isObjectIdString(input.recipeId)) {
+    throw new MenuError('recipeId must be a valid recipe id', 'BAD_REQUEST');
+  }
+  if (input.discoveryRecipeId !== undefined && !isObjectIdString(input.discoveryRecipeId)) {
+    throw new MenuError('discoveryRecipeId must be a valid discovery recipe id', 'BAD_REQUEST');
+  }
+  if (input.source === 'cookbook' && !input.recipeId) {
+    throw new MenuError('Cookbook assignments require a recipe', 'BAD_REQUEST');
+  }
+  if (input.source === 'discovery' && !input.discoveryRecipeId) {
+    throw new MenuError('Discovery assignments require a discovery recipe', 'BAD_REQUEST');
+  }
+}
+
 /**
  * Compute the Monday of a given ISO week label (e.g. "2026-W15").
  */
@@ -167,6 +203,7 @@ export async function deleteMenu(menuId: string): Promise<void> {
  * Add a recipe assignment. Menu must be in "building" status.
  */
 export async function addAssignment(menuId: string, input: AddAssignmentInput) {
+  assertValidAssignmentIds(input);
   const menu = await findById(menuId);
   if (!menu) {
     throw new MenuError('Menu not found', 'NOT_FOUND');
@@ -186,6 +223,9 @@ export async function addAssignment(menuId: string, input: AddAssignmentInput) {
  * Remove an assignment by ID. Menu must be in "building" status.
  */
 export async function removeAssignment(menuId: string, assignmentId: string) {
+  if (!isObjectIdString(assignmentId)) {
+    throw new MenuError('Assignment not found', 'NOT_FOUND');
+  }
   const menu = await findById(menuId);
   if (!menu) {
     throw new MenuError('Menu not found', 'NOT_FOUND');
@@ -239,8 +279,7 @@ export async function sendSurvey(menuId: string): Promise<SurveyResult> {
 
   log.info('Survey opened', { menuId, votingClosesAt: votingClosesAt.toISOString() });
 
-  const votingUrl = `/vote/${votingToken}`;
-  return { votingToken, votingUrl };
+  return { votingToken, votingUrl: buildVotingUrl(votingToken) };
 }
 
 /**

@@ -11,17 +11,59 @@ interface PlannerActionsProps {
   status: MenuStatus;
   menuId: string;
   onStatusChange: (newStatus: MenuStatus) => void;
+  /** Called with a user-facing message (an error, or finalize alerts), or null to clear it. */
+  onMessage: (message: string | null) => void;
 }
 
-async function callStatusAction(url: string, method: string): Promise<boolean> {
-  const resp = await fetch(url, { method });
-  return resp.ok;
+/** Response body from POST /api/menu/[id]/finalize. */
+interface FinalizeResponse {
+  alerts?: Array<{ recipeTitle: string; reason: string }>;
 }
 
-function BuildingActions({ menuId, onStatusChange, isLoading, setIsLoading }: ActionGroupProps) {
+/**
+ * Call a status-transition endpoint. Returns the parsed JSON body on success;
+ * on failure reports the server's error message via `onMessage` and returns null.
+ */
+async function callStatusAction(
+  url: string,
+  method: string,
+  onMessage: (message: string | null) => void,
+): Promise<Record<string, unknown> | null> {
+  try {
+    const resp = await fetch(url, { method });
+    const body = (await resp.json().catch(() => ({}))) as Record<string, unknown>;
+    if (!resp.ok) {
+      const message = typeof body['error'] === 'string' ? body['error'] : 'Something went wrong';
+      onMessage(message);
+      return null;
+    }
+    onMessage(null);
+    return body;
+  } catch {
+    onMessage('Network error. Please try again.');
+    return null;
+  }
+}
+
+function describeFinalizeAlerts(body: FinalizeResponse): string | null {
+  const alerts = body.alerts ?? [];
+  if (alerts.length === 0) {
+    return null;
+  }
+  const titles = alerts.map((alert) => alert.recipeTitle).join(', ');
+  return `Menu locked in. Left off the shopping list (ingredients could not be read): ${titles}`;
+}
+
+function BuildingActions({
+  menuId,
+  onStatusChange,
+  onMessage,
+  isLoading,
+  setIsLoading,
+}: ActionGroupProps) {
   async function handleSendSurvey() {
     setIsLoading(true);
-    const ok = await callStatusAction(`/api/menu/${menuId}/survey`, 'POST');
+    const ok = await callStatusAction(`/api/menu/${menuId}/survey`, 'POST', onMessage);
     if (ok) {
       onStatusChange('survey-sent');
     }
@@ -35,13 +77,19 @@ function BuildingActions({ menuId, onStatusChange, isLoading, setIsLoading }: Ac
   );
 }
 
-function SurveySentActions({ menuId, onStatusChange, isLoading, setIsLoading }: ActionGroupProps) {
+function SurveySentActions({
+  menuId,
+  onStatusChange,
+  onMessage,
+  isLoading,
+  setIsLoading,
+}: ActionGroupProps) {
   async function handleCancelSurvey() {
     if (!window.confirm('Are you sure you want to cancel the survey?')) {
       return;
     }
     setIsLoading(true);
-    const ok = await callStatusAction(`/api/menu/${menuId}/survey`, 'DELETE');
+    const ok = await callStatusAction(`/api/menu/${menuId}/survey`, 'DELETE', onMessage);
     if (ok) {
       onStatusChange('building');
     }
@@ -50,8 +98,9 @@ function SurveySentActions({ menuId, onStatusChange, isLoading, setIsLoading }: 
 
   async function handleFinalize() {
     setIsLoading(true);
-    const ok = await callStatusAction(`/api/menu/${menuId}/finalize`, 'POST');
-    if (ok) {
+    const result = await callStatusAction(`/api/menu/${menuId}/finalize`, 'POST', onMessage);
+    if (result) {
+      onMessage(describeFinalizeAlerts(result as FinalizeResponse));
       onStatusChange('locked-in');
     }
     setIsLoading(false);
@@ -69,13 +118,19 @@ function SurveySentActions({ menuId, onStatusChange, isLoading, setIsLoading }: 
   );
 }
 
-function LockedInActions({ menuId, onStatusChange, isLoading, setIsLoading }: ActionGroupProps) {
+function LockedInActions({
+  menuId,
+  onStatusChange,
+  onMessage,
+  isLoading,
+  setIsLoading,
+}: ActionGroupProps) {
   async function handleUnlock() {
     if (!window.confirm('Are you sure you want to unlock and edit this menu?')) {
       return;
     }
     setIsLoading(true);
-    const ok = await callStatusAction(`/api/menu/${menuId}/unlock`, 'POST');
+    const ok = await callStatusAction(`/api/menu/${menuId}/unlock`, 'POST', onMessage);
     if (ok) {
       onStatusChange('building');
     }
@@ -92,14 +147,21 @@ function LockedInActions({ menuId, onStatusChange, isLoading, setIsLoading }: Ac
 interface ActionGroupProps {
   menuId: string;
   onStatusChange: (newStatus: MenuStatus) => void;
+  onMessage: (message: string | null) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
 }
 
-export function PlannerActions({ status, menuId, onStatusChange }: PlannerActionsProps) {
+export function PlannerActions({ status, menuId, onStatusChange, onMessage }: PlannerActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const groupProps: ActionGroupProps = { menuId, onStatusChange, isLoading, setIsLoading };
+  const groupProps: ActionGroupProps = {
+    menuId,
+    onStatusChange,
+    onMessage,
+    isLoading,
+    setIsLoading,
+  };
 
   return (
     <div className="flex flex-wrap gap-2">

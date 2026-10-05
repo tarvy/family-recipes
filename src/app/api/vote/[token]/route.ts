@@ -1,5 +1,7 @@
 /** GET + POST /api/vote/[token] — public, no auth required */
 
+import type { Types } from 'mongoose';
+import type { IWeeklyMenuAssignment } from '@/db/types';
 import {
   HTTP_BAD_REQUEST,
   HTTP_GONE,
@@ -17,6 +19,26 @@ interface RouteParams {
   params: Promise<{ token: string }>;
 }
 
+/** A menu assignment as stored in a mongoose subdocument (carries an _id). */
+type StoredAssignment = IWeeklyMenuAssignment & { _id: Types.ObjectId };
+
+interface VotableMenu {
+  status: string;
+  votingClosesAt?: Date | null;
+}
+
+/**
+ * Voting is open only while the survey is out and the window hasn't closed.
+ * Finalizing keeps the token (so the vote page can show the locked-in menu),
+ * so status must be checked as well as the deadline.
+ */
+function isVotingOpen(menu: VotableMenu): boolean {
+  if (menu.status !== 'survey-sent' || !menu.votingClosesAt) {
+    return false;
+  }
+  return new Date() < menu.votingClosesAt;
+}
+
 export async function GET(request: Request, { params }: RouteParams): Promise<Response> {
   return withRequestContext(request, () =>
     withTrace('api.vote.get', async (span) => {
@@ -29,7 +51,7 @@ export async function GET(request: Request, { params }: RouteParams): Promise<Re
           return Response.json({ error: 'Invalid voting token' }, { status: HTTP_NOT_FOUND });
         }
 
-        const isOpen = menu.votingClosesAt ? new Date() < menu.votingClosesAt : false;
+        const isOpen = isVotingOpen(menu);
 
         return Response.json({
           assignments: menu.assignments,
@@ -96,8 +118,7 @@ export async function POST(request: Request, { params }: RouteParams): Promise<R
           return Response.json({ error: 'Invalid voting token' }, { status: HTTP_NOT_FOUND });
         }
 
-        const isOpen = menu.votingClosesAt ? new Date() < menu.votingClosesAt : false;
-        if (!isOpen) {
+        if (!isVotingOpen(menu)) {
           return Response.json({ error: 'Voting window has closed' }, { status: HTTP_GONE });
         }
 
@@ -107,10 +128,21 @@ export async function POST(request: Request, { params }: RouteParams): Promise<R
           return Response.json({ error: validation.error }, { status: HTTP_BAD_REQUEST });
         }
 
+        const assignmentIds = new Set(
+          (menu.assignments as StoredAssignment[]).map((a) => a._id.toString()),
+        );
+        const picks = [...new Set(validation.picks)];
+        if (!picks.every((pick) => assignmentIds.has(pick))) {
+          return Response.json(
+            { error: 'picks must be assignments on this menu' },
+            { status: HTTP_BAD_REQUEST },
+          );
+        }
+
         await addVote(menu._id.toString(), {
           voterName: validation.voterName,
           voterToken: validation.voterToken,
-          picks: validation.picks,
+          picks,
         });
 
         return Response.json({ success: true });
