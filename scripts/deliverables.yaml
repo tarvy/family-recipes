@@ -905,3 +905,17 @@ PR-068:
       path: src/lib/design-system/tokens.ts
     - type: file
       path: work/PR-068-thai-lint-tokens/requirements.md
+
+# =============================================================================
+# PHASE 39: Personal git identity hook (PR-069)
+# =============================================================================
+
+PR-069:
+  name: "Personal git identity hook"
+  checks:
+    - type: file
+      path: .cursor/hooks/git-identity.sh
+    - type: file
+      path: .cursor/hooks/git-identity.test.sh
+    - type: file
+      path: work/PR-069-git-identity/requirements.md
