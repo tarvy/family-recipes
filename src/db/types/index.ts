@@ -88,6 +88,25 @@ export interface IPasskey {
 
 export interface IPasskeyDocument extends IPasskey, Document {}
 
+/** Add a scope only together with a route that checks it. */
+export const API_KEY_SCOPES = ['captures:write'] as const;
+
+export type ApiKeyScope = (typeof API_KEY_SCOPES)[number];
+
+export interface IApiKey {
+  keyId: string;
+  /** SHA-256 hex of the secret half of the token; the secret is never stored */
+  secretHash: string;
+  label: string;
+  userId: Types.ObjectId;
+  scopes: ApiKeyScope[];
+  lastUsedAt: Date | null;
+  revokedAt: Date | null;
+  createdAt: Date;
+}
+
+export interface IApiKeyDocument extends IApiKey, Document {}
+
 // -----------------------------------------------------------------------------
 // Recipes
 // -----------------------------------------------------------------------------

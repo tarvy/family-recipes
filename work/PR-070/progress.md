@@ -8,8 +8,8 @@
 
 | Phase | Status | Check |
 |-------|--------|-------|
-| 1. Shared lists and household fields | [ ] | repository update test, `npm run typecheck` |
-| 2. Device keys | [ ] | api-key test |
+| 1. Shared lists and household fields | [x] | repository update test, `npm run typecheck` |
+| 2. Device keys | [x] | api-key test |
 | 3. Capture module and routes | [ ] | capture tests, lease test |
 | 4. Docs | [ ] | `npm run lint`, `npm run typecheck` |
 

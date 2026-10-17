@@ -12,6 +12,7 @@
 // Re-export types for convenience
 export type {
   AllowedEmailRole,
+  ApiKeyScope,
   AssignmentSource,
   AuditLevel,
   AuditOperation,
@@ -21,6 +22,8 @@ export type {
   DiscoverySource,
   IAllowedEmail,
   IAllowedEmailDocument,
+  IApiKey,
+  IApiKeyDocument,
   IAuditActor,
   IAuditLog,
   IAuditLogDocument,
@@ -69,6 +72,7 @@ export type {
   WeeklyMenuStatus,
 } from '../types';
 export { AllowedEmail } from './allowed-email.model';
+export { ApiKey } from './api-key.model';
 export { AuditLog } from './audit-log.model';
 export { DiscoveryRecipe } from './discovery-recipe.model';
 export { MagicLink } from './magic-link.model';
