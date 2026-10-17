@@ -6,6 +6,12 @@
         "command": "[ ! -f \".cursor/skills/impeccable/scripts/hook-before-edit.mjs\" ] || node \".cursor/skills/impeccable/scripts/hook-before-edit.mjs\"",
         "timeout": 5
       }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "bash .cursor/hooks/git-identity.sh",
+        "timeout": 10
+      }
     ]
   }
 }
