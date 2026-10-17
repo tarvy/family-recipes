@@ -1,8 +1,8 @@
 /**
  * GET /api/captures/[id]
  *
- * Read a capture's current status. Read-only: it never starts a new
- * attempt. Resubmitting the same files is the retry path.
+ * Return a capture's status. If the recipe was already written and the
+ * lease expired, mark the capture saved. This does not start a new attempt.
  *
  * Auth: Bearer device key with scope captures:write.
  */

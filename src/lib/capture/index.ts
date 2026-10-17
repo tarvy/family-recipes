@@ -308,7 +308,6 @@ export async function submitCapture(
   });
 }
 
-/** Read a capture. Settles a committed draft, but never starts a new attempt. */
 export async function getCapture(id: string): Promise<CaptureView | null> {
   return withTrace('capture.get', async (span) => {
     span.setAttribute('capture_id', id);

@@ -8,10 +8,6 @@
  *
  * Usage:
  *   const auth = await authenticateApiKey(request, 'captures:write');
- *   if (!auth.ok) {
- *     return unauthorized(auth.reason);
- *   }
- *
  *   const minted = await mintApiKey({ email, label, scopes: ['captures:write'] });
  */
 
