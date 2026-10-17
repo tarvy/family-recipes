@@ -146,4 +146,5 @@ export const logger = {
   recipes: createLogger('recipes'),
   shopping: createLogger('shopping'),
   mcp: createLogger('mcp'),
+  capture: createLogger('capture'),
 };

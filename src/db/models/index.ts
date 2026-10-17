@@ -17,6 +17,7 @@ export type {
   AuditLevel,
   AuditOperation,
   AuditSource,
+  CaptureStatus,
   DayOfWeek,
   DiscoveryAction,
   DiscoverySource,
@@ -28,6 +29,8 @@ export type {
   IAuditLog,
   IAuditLogDocument,
   IAuditResource,
+  ICapture,
+  ICaptureDocument,
   ICookware,
   IDiscoveryRecipe,
   IDiscoveryRecipeDocument,
@@ -74,6 +77,7 @@ export type {
 export { AllowedEmail } from './allowed-email.model';
 export { ApiKey } from './api-key.model';
 export { AuditLog } from './audit-log.model';
+export { Capture } from './capture.model';
 export { DiscoveryRecipe } from './discovery-recipe.model';
 export { MagicLink } from './magic-link.model';
 export { OAuthClient } from './oauth-client.model';

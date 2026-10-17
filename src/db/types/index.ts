@@ -407,3 +407,86 @@ export interface IUserDiscoveryState {
 }
 
 export interface IUserDiscoveryStateDocument extends IUserDiscoveryState, Document {}
+
+// -----------------------------------------------------------------------------
+// Captures (PR-070)
+// -----------------------------------------------------------------------------
+
+export const CAPTURE_STATUSES = [
+  'pending',
+  'drafted',
+  'saved',
+  'needs_attention',
+  'failed',
+] as const;
+export type CaptureStatus = (typeof CAPTURE_STATUSES)[number];
+
+export const CAPTURE_PROBLEM_REASONS = [
+  'not_a_recipe',
+  'unreadable',
+  'duplicate',
+  'ambiguous_target',
+  'target_not_found',
+  'target_has_no_cooklang',
+  'conflict',
+  'gave_up',
+] as const;
+export type CaptureProblemReason = (typeof CAPTURE_PROBLEM_REASONS)[number];
+
+export const CAPTURE_INTENT_KINDS = ['add', 'change'] as const;
+export type CaptureIntentKind = (typeof CAPTURE_INTENT_KINDS)[number];
+
+export const CAPTURE_MEDIA_KINDS = ['image', 'audio'] as const;
+export type CaptureMediaKind = (typeof CAPTURE_MEDIA_KINDS)[number];
+
+export const CAPTURE_CHANGES = ['created', 'updated'] as const;
+export type CaptureChange = (typeof CAPTURE_CHANGES)[number];
+
+export const DRAFT_TARGET_KINDS = ['new', 'change'] as const;
+export type DraftTargetKind = (typeof DRAFT_TARGET_KINDS)[number];
+
+/** Metadata only. Capture bytes are never stored. */
+export interface ICaptureMedia {
+  kind: CaptureMediaKind;
+  mediaType: string;
+  bytes: number;
+  sha256: string;
+}
+
+export interface ICaptureDraft {
+  cooklang: string;
+  category: string;
+  title: string;
+  slug: string;
+  warnings: string[];
+  target: {
+    kind: DraftTargetKind;
+    slug: string | null;
+    baseCooklang: string | null;
+  };
+}
+
+export interface ICaptureProblem {
+  reason: CaptureProblemReason;
+  detail: string;
+  candidates: string[];
+}
+
+export interface ICapture {
+  key: string;
+  submittedBy: { userId: Types.ObjectId; keyId: string };
+  intent: { kind: CaptureIntentKind; slug: string | null };
+  media: ICaptureMedia[];
+  status: CaptureStatus;
+  attempt: number;
+  leaseExpiresAt: Date | null;
+  draft: ICaptureDraft | null;
+  savedSlug: string | null;
+  change: CaptureChange | null;
+  problem: ICaptureProblem | null;
+  errorMessage: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ICaptureDocument extends ICapture, Document {}

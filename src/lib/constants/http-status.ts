@@ -11,6 +11,9 @@ export const HTTP_OK = 200;
 /** 201 Created - The request was successful and a new resource was created */
 export const HTTP_CREATED = 201;
 
+/** 202 Accepted - The request was accepted and is still being processed */
+export const HTTP_ACCEPTED = 202;
+
 /** 204 No Content - The request was successful but there is no content to return */
 export const HTTP_NO_CONTENT = 204;
 
@@ -34,6 +37,12 @@ export const HTTP_CONFLICT = 409;
 
 /** 410 Gone - The resource is no longer available */
 export const HTTP_GONE = 410;
+
+/** 413 Content Too Large - The request body exceeds the accepted size */
+export const HTTP_CONTENT_TOO_LARGE = 413;
+
+/** 415 Unsupported Media Type - The request body's media type is not accepted */
+export const HTTP_UNSUPPORTED_MEDIA_TYPE = 415;
 
 /** 500 Internal Server Error - An unexpected server error occurred */
 export const HTTP_INTERNAL_SERVER_ERROR = 500;

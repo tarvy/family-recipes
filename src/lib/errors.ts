@@ -20,3 +20,17 @@ export function toError(error: unknown): Error | undefined {
 export function toErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'unknown';
 }
+
+const MONGO_DUPLICATE_KEY_CODE = 11000;
+
+/**
+ * True when a MongoDB write failed on a unique index (E11000).
+ */
+export function isDuplicateKeyError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === MONGO_DUPLICATE_KEY_CODE
+  );
+}
