@@ -110,8 +110,10 @@ export interface IStep {
   timers?: { duration: number; unit: string }[];
 }
 
-/** Source of recipe data */
-export type RecipeSource = 'mcp' | 'api' | 'sync' | 'import';
+/** Every writer of recipe data. Audit sources extend this list. */
+export const RECIPE_SOURCES = ['mcp', 'api', 'sync', 'import', 'capture'] as const;
+
+export type RecipeSource = (typeof RECIPE_SOURCES)[number];
 
 export interface IRecipe {
   filePath: string;
@@ -275,7 +277,8 @@ export interface IOAuthRefreshTokenDocument extends IOAuthRefreshToken, Document
 // -----------------------------------------------------------------------------
 
 export type AuditOperation = 'recipe:create' | 'recipe:update' | 'recipe:delete';
-export type AuditSource = 'mcp' | 'api' | 'web' | 'sync' | 'cli' | 'import';
+export const AUDIT_SOURCES = [...RECIPE_SOURCES, 'web', 'cli'] as const;
+export type AuditSource = (typeof AUDIT_SOURCES)[number];
 export type AuditLevel = 'info' | 'warn' | 'error';
 
 export interface IAuditActor {

@@ -919,3 +919,29 @@ PR-069:
       path: .cursor/hooks/git-identity.test.sh
     - type: file
       path: work/PR-069-git-identity/requirements.md
+
+# =============================================================================
+# PHASE 40: Capture a recipe from a photo or voice note (PR-070)
+# =============================================================================
+
+PR-070:
+  name: "Capture a recipe from a photo or voice note"
+  checks:
+    - type: file
+      path: src/lib/recipes/categories.ts
+    - type: file
+      path: src/db/models/api-key.model.ts
+    - type: file
+      path: src/lib/auth/api-key.ts
+    - type: file
+      path: scripts/api-key.ts
+    - type: file
+      path: src/db/models/capture.model.ts
+    - type: file
+      path: src/lib/capture/index.ts
+    - type: file
+      path: src/app/api/captures/route.ts
+    - type: file
+      path: docs/CAPTURE.md
+    - type: file
+      path: work/PR-070/requirements.md

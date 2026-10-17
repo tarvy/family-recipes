@@ -491,9 +491,20 @@ export async function updateRecipe(
       }
     }
 
-    // Update the recipe
+    // Photos, rating, cook log, usage, and createdAt belong to the household,
+    // not the Cooklang, so a content update never writes them.
+    const {
+      photoUrls: _photoUrls,
+      primaryPhotoUrl: _primaryPhotoUrl,
+      rating: _rating,
+      cookLog: _cookLog,
+      useCount: _useCount,
+      lastUsedAt: _lastUsedAt,
+      createdAt: _createdAt,
+      ...cooklangFields
+    } = parsedRecipe;
     const updateData: Partial<IRecipe> = {
-      ...parsedRecipe,
+      ...cooklangFields,
       slug: newSlug,
       filePath: buildFilePath(category, newSlug),
       rawCooklang: content,

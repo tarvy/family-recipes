@@ -19,6 +19,7 @@ import {
   RANDOM_RECIPES_COOKIE_NAME,
 } from '@/lib/constants/random-recipes';
 import { logger } from '@/lib/logger';
+import { RECIPE_CATEGORIES } from '@/lib/recipes/categories';
 import {
   getAllRecipes as getAllRecipesFromDb,
   getRawCooklangContent,
@@ -152,7 +153,7 @@ export async function getAllRecipes(): Promise<RecipePreview[]> {
  * @returns Array of category names sorted alphabetically
  */
 export function getCategories(): string[] {
-  return ['breakfast', 'cocktails', 'desserts', 'entrees', 'salads', 'sides', 'soups'];
+  return [...RECIPE_CATEGORIES];
 }
 
 // -----------------------------------------------------------------------------

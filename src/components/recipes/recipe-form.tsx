@@ -16,9 +16,7 @@ import {
 } from '@/components/recipes/ingredient-input';
 import { createEmptySteps, StepInput, type StepRow } from '@/components/recipes/step-input';
 import { Button, Input, Select, Textarea } from '@/components/ui';
-
-/** Available recipe categories */
-const CATEGORIES = ['breakfast', 'desserts', 'entrees', 'salads', 'sides', 'soups'] as const;
+import { RECIPE_CATEGORIES } from '@/lib/recipes/categories';
 
 /** Difficulty options */
 const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
@@ -269,7 +267,7 @@ export function RecipeForm({ initialData, slug, mode }: RecipeFormProps) {
               className="mt-1.5"
             >
               <option value="">Select a category</option>
-              {CATEGORIES.map((cat) => (
+              {RECIPE_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat} className="capitalize">
                   {cat}
                 </option>

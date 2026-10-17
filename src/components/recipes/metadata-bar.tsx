@@ -8,10 +8,8 @@
  */
 
 import { Input, Select } from '@/components/ui';
+import { RECIPE_CATEGORIES } from '@/lib/recipes/categories';
 import { cn } from '@/lib/utils';
-
-/** Available recipe categories */
-const CATEGORIES = ['breakfast', 'desserts', 'entrees', 'salads', 'sides', 'soups'] as const;
 
 export interface RecipeMetadata {
   title: string;
@@ -66,7 +64,7 @@ export function MetadataBar({ metadata, onChange, className }: MetadataBarProps)
             onChange={(e) => updateField('category', e.target.value)}
           >
             <option value="">Select...</option>
-            {CATEGORIES.map((cat) => (
+            {RECIPE_CATEGORIES.map((cat) => (
               <option key={cat} value={cat} className="capitalize">
                 {cat}
               </option>

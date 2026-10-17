@@ -6,7 +6,7 @@
  */
 
 import mongoose, { type Model, Schema } from 'mongoose';
-import type { IAuditLogDocument } from '../types';
+import { AUDIT_SOURCES, type IAuditLogDocument } from '../types';
 
 const AUDIT_TTL_DAYS = 30;
 const HOURS_PER_DAY = 24;
@@ -15,7 +15,6 @@ const SECONDS_PER_MINUTE = 60;
 const AUDIT_TTL_SECONDS = AUDIT_TTL_DAYS * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 
 const AUDIT_OPERATIONS = ['recipe:create', 'recipe:update', 'recipe:delete'] as const;
-const AUDIT_SOURCES = ['mcp', 'api', 'web', 'sync', 'cli', 'import'] as const;
 const AUDIT_LEVELS = ['info', 'warn', 'error'] as const;
 
 const actorSchema = new Schema(

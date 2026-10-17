@@ -7,7 +7,7 @@
  */
 
 import mongoose, { type Model, Schema } from 'mongoose';
-import type { IRecipeDocument } from '../types';
+import { type IRecipeDocument, RECIPE_SOURCES } from '../types';
 
 /** Maximum allowed star rating value */
 const MAX_STAR_RATING = 5;
@@ -148,7 +148,7 @@ const recipeSchema = new Schema<IRecipeDocument>(
     },
     source: {
       type: String,
-      enum: ['mcp', 'api', 'sync', 'import'],
+      enum: RECIPE_SOURCES,
     },
     // Usage tracking (PR-044)
     useCount: {

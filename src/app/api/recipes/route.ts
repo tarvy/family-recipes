@@ -19,21 +19,11 @@ import {
 } from '@/lib/constants/http-status';
 import { extractMetadataFromContent } from '@/lib/cooklang/metadata';
 import { logger, withRequestContext } from '@/lib/logger';
+import { isRecipeCategory } from '@/lib/recipes/categories';
 import { createRecipe as createRecipeInDb } from '@/lib/recipes/repository';
 import { withTrace } from '@/lib/telemetry';
 
 export const runtime = 'nodejs';
-
-/** Valid recipe categories */
-const VALID_CATEGORIES = [
-  'breakfast',
-  'cocktails',
-  'desserts',
-  'entrees',
-  'salads',
-  'sides',
-  'soups',
-];
 
 interface CreateRecipeRequest {
   /** Raw Cooklang content including metadata */
@@ -59,7 +49,7 @@ function validateRequest(
     return { valid: false, error: 'Recipe content is required' };
   }
 
-  if (typeof data['category'] !== 'string' || !VALID_CATEGORIES.includes(data['category'])) {
+  if (typeof data['category'] !== 'string' || !isRecipeCategory(data['category'])) {
     return { valid: false, error: 'Valid category is required' };
   }
 
