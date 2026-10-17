@@ -97,6 +97,20 @@ Vercel Blob storage token for recipe photos.
 
 ---
 
+### Recipe Capture
+
+#### `GOOGLE_GENERATIVE_AI_API_KEY`
+Gemini API key for the capture agent. Required for `POST /api/captures`.
+
+**How to obtain:** create a key in Google AI Studio.
+
+#### `CAPTURE_MODEL`
+Optional Gemini model id. Defaults to `gemini-2.5-flash`.
+
+Device keys for phones are not environment variables. Mint one per device with `npm run api-key -- create`. See [CAPTURE.md](CAPTURE.md).
+
+---
+
 ### MCP Server (OAuth 2.1)
 
 MCP authentication uses OAuth 2.1 Bearer tokens only. No API key is implemented.

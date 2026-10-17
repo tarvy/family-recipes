@@ -11,7 +11,7 @@
 | 1. Shared lists and household fields | [x] | repository update test, `npm run typecheck` |
 | 2. Device keys | [x] | api-key test |
 | 3. Capture module and routes | [x] | capture tests, lease test |
-| 4. Docs | [ ] | `npm run lint`, `npm run typecheck` |
+| 4. Docs | [x] | `npm run lint`, `npm run typecheck` |
 
 ## Session log
 

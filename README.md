@@ -83,6 +83,7 @@ family-recipes/
 - [Authentication](docs/AUTH.md)
 - [MCP Server](docs/MCP.md)
 - [Cooklang Format](docs/COOKLANG.md)
+- [Recipe Capture](docs/CAPTURE.md) - Photos and voice notes to recipes
 
 ## License
 

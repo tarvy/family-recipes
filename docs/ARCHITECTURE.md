@@ -47,6 +47,7 @@ ever warrants the added complexity.
 2. **Sync Process**: On git push, files are parsed and metadata synced to MongoDB
 3. **Search**: Full-text search uses MongoDB text indexes (Atlas Search on M10+ tiers)
 4. **Photos**: Stored in Vercel Blob, URLs referenced in database
+5. **Capture**: `POST /api/captures` turns photos or voice notes into Cooklang and writes MongoDB through the recipe repository (`createRecipe` and `updateRecipe`), like the API and MCP writes. It writes no `.cook` file. See [CAPTURE.md](CAPTURE.md).
 
 ### Authentication
 
@@ -213,6 +214,8 @@ recipe_notes
 | `/api/shopping-lists` | GET/POST | List/create shopping lists |
 | `/api/shopping-lists/[id]` | GET/PUT/DELETE | Shopping list CRUD |
 | `/api/photos/upload` | POST | Upload photo |
+| `/api/captures` | POST | Capture a recipe from photos or voice notes (device key) |
+| `/api/captures/[id]` | GET | Capture status (device key) |
 | `/mcp` | POST | MCP server endpoint |
 
 ## MCP Tools
